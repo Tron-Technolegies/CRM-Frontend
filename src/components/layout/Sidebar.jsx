@@ -1,213 +1,172 @@
-// import React from "react";
-// import {
-//   LayoutDashboard,
-//   Users,
-//   ShoppingCart,
-//   Settings,
-//   Bell,
-//   LogOut,
-//   Package,
-// } from "lucide-react";
-// import { NavLink } from "react-router-dom";
-
-// export default function Sidebar({ sidebarOpen }) {
-//   const menuItems = [
-//     {
-//       name: "Dashboard",
-//       icon: <LayoutDashboard size={20} />,
-//       path: "/",
-//     },
-//     {
-//       name: "Users",
-//       icon: <Users size={20} />,
-//       path: "/users",
-//     },
-//     {
-//       name: "Orders",
-//       icon: <ShoppingCart size={20} />,
-//       path: "/orders",
-//     },
-//     {
-//       name: "Products",
-//       icon: <Package size={20} />,
-//       path: "/products",
-//     },
-//     {
-//       name: "Notifications",
-//       icon: <Bell size={20} />,
-//       path: "/notifications",
-//     },
-//     {
-//       name: "Settings",
-//       icon: <Settings size={20} />,
-//       path: "/settings",
-//     },
-//   ];
-
-//   return (
-//     <aside
-//       className={`${
-//         sidebarOpen ? "w-72" : "w-20"
-//       } duration-300 bg-[#020617] border-r border-[#1e293b] flex flex-col`}
-//     >
-//       {/* Logo */}
-//       <div className="h-20 border-b border-[#1e293b] flex items-center px-6">
-//         <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center text-xl font-bold">
-//           T
-//         </div>
-
-//         {sidebarOpen && (
-//           <div className="ml-3">
-//             <h1 className="text-lg font-semibold">Tron Admin</h1>
-//             <p className="text-xs text-gray-400">Dashboard Panel</p>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* Menus */}
-//       <div className="flex-1 px-4 py-5 space-y-2">
-//         {menuItems.map((item, index) => (
-//           <NavLink
-//             key={index}
-//             to={item.path}
-//             className={({ isActive }) =>
-//               `flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 border
-
-//               ${
-//                 isActive
-//                   ? "bg-blue-600 border-blue-500 text-white shadow-lg"
-//                   : "border-transparent hover:bg-[#0f172a] hover:border-[#334155] text-gray-300"
-//               }`
-//             }
-//           >
-//             {item.icon}
-
-//             {sidebarOpen && <span className="font-medium">{item.name}</span>}
-//           </NavLink>
-//         ))}
-//       </div>
-
-//       {/* Logout */}
-//       <div className="p-4 border-t border-[#1e293b]">
-//         <button className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-red-400 border border-transparent hover:bg-red-500/10 hover:border-red-500/30 transition-all">
-//           <LogOut size={20} />
-
-//           {sidebarOpen && <span>Logout</span>}
-//         </button>
-//       </div>
-//     </aside>
-//   );
-// }
-
 import React from "react";
 import {
   LayoutDashboard,
   Users,
-  ShoppingCart,
+  GitBranch,
+  Activity,
+  UserRound,
+  Ticket,
+  BarChart3,
+  Bot,
   Settings,
-  Bell,
   LogOut,
-  Package,
+  Box,
 } from "lucide-react";
+
 import { NavLink } from "react-router-dom";
 
 export default function Sidebar({ sidebarOpen }) {
-  const menuItems = [
+  const menuSections = [
     {
-      name: "Dashboard",
-      icon: <LayoutDashboard size={20} />,
-      path: "/",
+      title: "MAIN",
+      menus: [
+        {
+          name: "Dashboard",
+          icon: <LayoutDashboard size={18} />,
+          path: "/",
+        },
+        {
+          name: "Leads",
+          icon: <Users size={18} />,
+          path: "/leads",
+          count: 12,
+        },
+        {
+          name: "Pipeline",
+          icon: <GitBranch size={18} />,
+          path: "/pipeline",
+        },
+        {
+          name: "Activities",
+          icon: <Activity size={18} />,
+          path: "/activities",
+        },
+      ],
     },
+
     {
-      name: "Leads",
-      icon: <Users size={20} />,
-      path: "/users",
+      title: "MANAGEMENT",
+      menus: [
+        {
+          name: "Customers",
+          icon: <UserRound size={18} />,
+          path: "/customers",
+        },
+        {
+          name: "Support Tickets",
+          icon: <Ticket size={18} />,
+          path: "/support-tickets",
+        },
+        {
+          name: "Reports",
+          icon: <BarChart3 size={18} />,
+          path: "/reports",
+        },
+      ],
     },
+
     {
-      name: "Pipeline",
-      icon: <ShoppingCart size={20} />,
-      path: "/orders",
-    },
-    {
-      name: "Activities",
-      icon: <Package size={20} />,
-      path: "/products",
-    },
-    {
-      name: "Customers",
-      icon: <Bell size={20} />,
-      path: "/notifications",
-    },
-    {
-      name: "Support Tickets",
-      icon: <Settings size={20} />,
-      path: "/settings",
-    },
-    {
-      name: "Reports",
-      icon: <Settings size={20} />,
-      path: "/settings",
-    },
-    {
-      name: "Automation",
-      icon: <Settings size={20} />,
-      path: "/settings",
-    },
-    {
-      name: "Settings",
-      icon: <Settings size={20} />,
-      path: "/settings",
+      title: "SYSTEM",
+      menus: [
+        {
+          name: "Automations",
+          icon: <Bot size={18} />,
+          path: "/automations",
+        },
+        {
+          name: "Settings",
+          icon: <Settings size={18} />,
+          path: "/settings",
+        },
+      ],
     },
   ];
 
   return (
-    <div
+    <aside
       className={`${
-        sidebarOpen ? "w-72" : "w-20"
-      } duration-300  bg-[#F1F5F9] flex flex-col border-r border-gray-200`}
+        sidebarOpen ? "w-[260px]" : "w-24"
+      } duration-300 bg-[#F8FAFC] border-r border-[#E2E8F0] flex flex-col h-screen`}
     >
-      <div className="h-20 flex items-center px-6 border border-gray-200">
-        <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center text-xl font-bold">
-          C
+      {/* LOGO */}
+      <div className="h-20 border-b border-[#E2E8F0] flex items-center px-6">
+        <div className="w-11 h-11 rounded-xl bg-[#2563EB] flex items-center justify-center">
+          <Box size={22} className="text-white" />
         </div>
+
         {sidebarOpen && (
           <div className="ml-3">
-            <h1 className="text-lg text-black font-semibold">CRM</h1>
-            <p className="text-xs text-gray-400">Dashboard Panel</p>
+            <h1 className="text-[24px] font-bold text-[#0F172A]">CRM</h1>
           </div>
         )}
       </div>
 
-      <div className="flex-1 px-4 py-5 space-y-2">
-        {menuItems.map((item, index) => (
-          <NavLink
-            key={index}
-            to={item.path}
-            className={({ isActive }) =>
-              `flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 border
+      {/* MENU */}
+      <div className="flex-1 overflow-y-auto overflow-y-hidden px-4 py-6">
+        {menuSections.map((section, index) => (
+          <div key={index} className="mb-8">
+            {sidebarOpen && (
+              <p className="text-xs font-semibold tracking-[2px] text-[#94A3B8] mb-3 px-3">
+                {section.title}
+              </p>
+            )}
 
-              ${
-                isActive
-                  ? "bg-blue-600 border-blue-500 text-white shadow-lg"
-                  : "border-transparent hover:bg-[#b9d1f3] hover:border-gray-200 text-[#0F1724]"
-              }`
-            }
-          >
-            {item.icon}
+            <div className="space-y-1">
+              {section.menus.map((item, idx) => (
+                <NavLink
+                  key={idx}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center justify-between px-3 py-3 rounded-xl transition-all duration-200 group
+                     
+                     ${
+                       isActive
+                         ? "bg-[#E8F0FF] text-[#2563EB]"
+                         : "text-[#0F172A] hover:bg-[#EFF6FF]"
+                     }`
+                  }
+                >
+                  <div className="flex items-center gap-3">
+                    <div>{item.icon}</div>
 
-            {sidebarOpen && <span className="font-medium">{item.name}</span>}
-          </NavLink>
+                    {sidebarOpen && <span className="font-medium text-[15px]">{item.name}</span>}
+                  </div>
+
+                  {sidebarOpen && item.count && (
+                    <span className="text-xs font-semibold text-[#0F172A]">{item.count}</span>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
 
-      {/* Logout */}
-      <div className="p-4 border-t border-gray-200">
-        <button className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-red-500 border border-transparent hover:bg-red-500/10 hover:border-red-500/30 transition-all">
-          <LogOut size={20} />
+      {/* PROFILE + LOGOUT */}
+      <div className="border-t border-[#E2E8F0] p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img
+              src="https://i.pravatar.cc/100?img=12"
+              alt="profile"
+              className="w-11 h-11 rounded-full object-cover"
+            />
 
-          {sidebarOpen && <span>Logout</span>}
-        </button>
+            {sidebarOpen && (
+              <div>
+                <h3 className="text-sm font-semibold text-[#0F172A]">Sarah Jenkins</h3>
+                <p className="text-xs text-[#64748B]">Manager</p>
+              </div>
+            )}
+          </div>
+
+          {sidebarOpen && (
+            <button className="text-[#64748B] hover:text-red-500 transition">
+              <LogOut size={18} />
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </aside>
   );
 }

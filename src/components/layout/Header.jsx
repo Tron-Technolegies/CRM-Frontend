@@ -1,7 +1,5 @@
-// src/components/Header.jsx
-
 import React from "react";
-import { Menu, Search, Bell } from "lucide-react";
+import { Menu, Search, Bell, Plus } from "lucide-react";
 
 export default function Header({ setSidebarOpen }) {
   return (
@@ -41,17 +39,10 @@ export default function Header({ setSidebarOpen }) {
         </button>
 
         {/* Profile */}
-        <div className="flex items-center gap-3  border border-[#dddddd] rounded-xl px-3 py-2">
-          <img
-            src="https://i.pravatar.cc/100"
-            alt="profile"
-            className="w-10 h-10 rounded-full object-cover border border-[#334155] "
-          />
-
-          <div className="hidden md:block">
-            <h3 className="text-sm font-semibold text-black">Admin</h3>
-            <p className="text-xs text-gray-400">Administrator</p>
-          </div>
+        <div className="flex items-center gap-3  border border-[#dddddd] cursor-pointer bg-[#2563EB] text-white rounded-xl px-3 py-2">
+          <button className="flex items-center gap-2">
+            <Plus size={18} /> Add New Lead
+          </button>
         </div>
       </div>
     </header>
