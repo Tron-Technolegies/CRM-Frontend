@@ -18,7 +18,7 @@ export default function DashboardGraph() {
       {/* HEADER */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-[28px] font-semibold text-[#111827]">Revenue Forecast</h1>
+          <h1 className="text-[20px] font-semibold text-[#111827]">Revenue Forecast</h1>
 
           <p className="text-[#6B7280] text-sm mt-1">
             Won deals versus projected pipeline across the last 7 months.

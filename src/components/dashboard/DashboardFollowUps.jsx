@@ -32,7 +32,7 @@ export default function DashboardFollowUps() {
       {/* HEADER */}
       <div className="p-6 border-b border-[#E5E7EB] flex items-start justify-between">
         <div>
-          <h1 className="text-[28px] font-semibold text-[#111827]">Recent Follow-ups</h1>
+          <h1 className="text-[20px] font-semibold text-[#111827]">Recent Follow-ups</h1>
 
           <p className="text-sm text-[#6B7280] mt-1">Latest calls, emails, and updates.</p>
         </div>

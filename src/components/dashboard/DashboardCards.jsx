@@ -42,7 +42,7 @@ export default function DashboardCards() {
 
           {/* CONTENT */}
           <div className="mt-6">
-            <h1 className="text-[26px] font-semibold text-[#111827]">{item.title}</h1>
+            <h1 className="text-[20px] font-semibold text-[#111827]">{item.title}</h1>
 
             <p className="text-[#6B7280] text-sm leading-6 mt-4">{item.desc}</p>
           </div>

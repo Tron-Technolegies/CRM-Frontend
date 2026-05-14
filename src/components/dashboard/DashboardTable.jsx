@@ -39,7 +39,7 @@ export default function DashboardTable() {
       {/* HEADER */}
       <div className="p-6 border-b border-[#E5E7EB] flex items-center justify-between">
         <div>
-          <h1 className="text-[30px] font-semibold text-[#111827]">New & Active Leads</h1>
+          <h1 className="text-[20px] font-semibold text-[#111827]">New & Active Leads</h1>
 
           <p className="text-sm text-[#6B7280] mt-1">
             Prioritized list of fresh inbound leads and high-intent opportunities.

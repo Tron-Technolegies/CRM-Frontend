@@ -63,7 +63,7 @@ export default function DashboardStats() {
             </div>
 
             {/* VALUE */}
-            <h1 className="text-[42px] font-bold text-[#0F172A] mt-5 leading-none">{stat.value}</h1>
+            <h1 className="text-[30px] font-bold text-[#0F172A] mt-5 leading-none">{stat.value}</h1>
 
             {/* GROWTH */}
             <div

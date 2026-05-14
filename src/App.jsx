@@ -4,7 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import HomeLayout from "./components/layout/HomeLayout";
 
 import Dashboard from "./pages/Dashboard";
-// import Leads from "./pages/Leads";
+import LeadsManagement from "./pages/LeadsManagement";
 // import Pipeline from "./pages/Pipeline";
 // import Activities from "./pages/Activities";
 // import Customers from "./pages/Customers";
@@ -19,8 +19,8 @@ function App() {
       <Route path="/" element={<HomeLayout />}>
         <Route index element={<Dashboard />} />
 
-        {/* <Route path="leads" element={<Leads />} />
-        <Route path="pipeline" element={<Pipeline />} />
+        <Route path="leads" element={<LeadsManagement />} />
+        {/*<Route path="pipeline" element={<Pipeline />} />
         <Route path="activities" element={<Activities />} />
         <Route path="customers" element={<Customers />} />
         <Route path="support-tickets" element={<SupportTickets />} />
