@@ -1,17 +1,15 @@
-import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 import HomeLayout from "./components/layout/HomeLayout";
 
 import Dashboard from "./pages/Dashboard";
 import LeadsManagement from "./pages/LeadsManagement";
-// import Pipeline from "./pages/Pipeline";
-// import Activities from "./pages/Activities";
-// import Customers from "./pages/Customers";
-// import SupportTickets from "./pages/SupportTickets";
-// import Reports from "./pages/Reports";
-// import Automations from "./pages/Automations";
-// import Settings from "./pages/Settings";
+import Deals from "./pages/Deals";
+import Customers from "./pages/Customers";
+import Tasks from "./pages/Tasks";
+import Reports from "./pages/Reports";
+import Users from "./pages/Users";
+import Settings from "./pages/Settings";
 
 function App() {
   return (
@@ -20,13 +18,12 @@ function App() {
         <Route index element={<Dashboard />} />
 
         <Route path="leads" element={<LeadsManagement />} />
-        {/*<Route path="pipeline" element={<Pipeline />} />
-        <Route path="activities" element={<Activities />} />
+        <Route path="deals" element={<Deals />} />
         <Route path="customers" element={<Customers />} />
-        <Route path="support-tickets" element={<SupportTickets />} />
+        <Route path="tasks" element={<Tasks />} />
         <Route path="reports" element={<Reports />} />
-        <Route path="automations" element={<Automations />} />
-        <Route path="settings" element={<Settings />} /> */}
+        <Route path="users" element={<Users />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>
   );

@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Users, BadgeCheck, Clock3, TrendingUp } from "lucide-react";
 
 export default function LeadsStats() {

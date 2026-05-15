@@ -1,33 +1,30 @@
-import React from "react";
 
-import DashboardStats from "../components/dashboard/DashboardStats";
-import DashboardGraph from "../components/dashboard/DashboardGraph";
-import DashboardFollowUps from "../components/dashboard/DashboardFollowUps";
-import DashboardCards from "../components/dashboard/DashboardCards";
-import DashboardTable from "../components/dashboard/DashboardTable";
+
+import DashboardKpis from "../components/dashboard/DashboardKpis";
+import DashboardGrowth from "../components/dashboard/DashboardGrowth";
+import DashboardLeadsBySource from "../components/dashboard/DashboardLeadsBySource";
+import DashboardRecentActivities from "../components/dashboard/DashboardRecentActivities";
+import DashboardTasksDueToday from "../components/dashboard/DashboardTasksDueToday";
 
 export default function Dashboard() {
   return (
     <div className="space-y-6">
-      {/* TOP STATS */}
-      <DashboardStats />
+      <DashboardKpis />
 
-      {/* GRAPH + FOLLOWUPS */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-stretch">
         <div className="xl:col-span-2">
-          <DashboardGraph />
+          <DashboardGrowth />
         </div>
 
-        <div>
-          <DashboardFollowUps />
+        <div className="xl:col-span-1">
+          <DashboardLeadsBySource />
         </div>
       </div>
 
-      {/* CARDS */}
-      <DashboardCards />
-
-      {/* TABLE */}
-      <DashboardTable />
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
+        <DashboardRecentActivities />
+        <DashboardTasksDueToday />
+      </div>
     </div>
   );
 }

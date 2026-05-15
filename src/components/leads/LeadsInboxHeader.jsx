@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Search, UserPlus, WandSparkles } from "lucide-react";
 
 export default function LeadsInboxHeader() {
