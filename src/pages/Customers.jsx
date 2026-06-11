@@ -1,144 +1,124 @@
-
-
 import { Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 import CustomersKpis from "../components/customers/CustomersKpis";
 import CustomersList from "../components/customers/CustomersList";
 import CustomerFormModal from "../components/customers/CustomerFormModal";
+import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { useToast } from "../components/ui/toastContext.js";
 
-const initialCustomers = [
-  {
-    id: 1,
-    companyName: "ABC Solutions",
-    contactName: "John Smith",
-    email: "john@abcsolutions.com",
-    phone: "+1 555-123-4567",
-    industry: "Technology",
-    status: "Active",
-    lifetimeValue: 45000,
-    joinDate: "2024-01-15",
-  },
-  {
-    id: 2,
-    companyName: "XYZ Ltd",
-    contactName: "Sarah Johnson",
-    email: "sarah@xyzltd.com",
-    phone: "+1 555-678-9012",
-    industry: "Finance",
-    status: "Active",
-    lifetimeValue: 128000,
-    joinDate: "2023-03-22",
-  },
-  {
-    id: 3,
-    companyName: "TechCorp",
-    contactName: "David Lee",
-    email: "david@techcorp.com",
-    phone: "+1 555-345-6789",
-    industry: "Technology",
-    status: "Active",
-    lifetimeValue: 250000,
-    joinDate: "2022-11-05",
-  },
-  {
-    id: 4,
-    companyName: "Green Earth",
-    contactName: "Emily Davis",
-    email: "emily@greenearth.org",
-    phone: "+1 555-456-7890",
-    industry: "Nonprofit",
-    status: "Active",
-    lifetimeValue: 12000,
-    joinDate: "2024-07-18",
-  },
-  {
-    id: 5,
-    companyName: "Bright Ideas",
-    contactName: "Michael Brown",
-    email: "michael@brightideas.co",
-    phone: "+1 555-567-8901",
-    industry: "Marketing",
-    status: "Active",
-    lifetimeValue: 34500,
-    joinDate: "2023-09-30",
-  },
-  {
-    id: 6,
-    companyName: "InnovateX",
-    contactName: "Jessica Wilson",
-    email: "jessica@innovatex.io",
-    phone: "+1 555-890-1234",
-    industry: "Technology",
-    status: "Active",
-    lifetimeValue: 185000,
-    joinDate: "2023-02-14",
-  },
-  {
-    id: 7,
-    companyName: "Pixel Perfect",
-    contactName: "Chris Martin",
-    email: "chris@pixelperfect.design",
-    phone: "+1 555-789-0123",
-    industry: "Design",
-    status: "Active",
-    lifetimeValue: 28000,
-    joinDate: "2024-08-25",
-  },
-  {
-    id: 8,
-    companyName: "Global Tech",
-    contactName: "Laura Taylor",
-    email: "laura@globaltech.inc",
-    phone: "+1 555-890-1234",
-    industry: "Software",
-    status: "Churned",
-    lifetimeValue: 9500,
-    joinDate: "2024-04-10",
-  },
-];
+const api = axios.create({
+  baseURL: "http://localhost:8000/api/admin",
+});
 
 export default function Customers() {
   const { pushToast } = useToast();
-  const [customers, setCustomers] = useState(initialCustomers);
-
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
+  const [editCustomer, setEditCustomer] = useState(null);
 
-  const nextId = useMemo(() => Math.max(0, ...customers.map((c) => c.id)) + 1, [customers]);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const fetchCustomers = () => {
+    api.get("/customer/view/")
+      .then((res) => setCustomers(res.data))
+      .catch((err) => {
+        console.error("Failed to fetch customers:", err);
+        pushToast({ title: "Failed to load customers", variant: "error" });
+      })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  const requestDelete = (id) => {
+    setDeleteTargetId(id);
+    setConfirmDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleteLoading(true);
+    try {
+      await api.delete(`/customer/delete/${deleteTargetId}/`);
+      setCustomers((prev) => prev.filter((c) => c.id !== deleteTargetId));
+      pushToast({ title: "Customer deleted", variant: "success" });
+    } catch (err) {
+      console.error("Delete failed:", err);
+      pushToast({ title: "Failed to delete customer", variant: "error" });
+    } finally {
+      setDeleteLoading(false);
+      setConfirmDeleteOpen(false);
+      setDeleteTargetId(null);
+    }
+  };
 
   const addCustomer = async (form) => {
     setAddLoading(true);
-    await new Promise((r) => window.setTimeout(r, 700));
-
-    const newCustomer = {
-      id: nextId,
-      companyName: form.companyName.trim(),
-      contactName: form.contactName.trim(),
-      email: form.email.trim(),
-      phone: form.phone.trim(),
-      industry: form.industry,
-      status: form.status,
-      lifetimeValue: Number(form.lifetimeValue || 0),
-      joinDate: form.joinDate || new Date().toISOString().slice(0, 10),
-    };
-
-    setCustomers((prev) => [newCustomer, ...prev]);
-    setAddLoading(false);
-    setAddOpen(false);
-    pushToast({
-      title: "Customer created",
-      message: `${newCustomer.companyName} added successfully`,
-      variant: "success",
-    });
+    try {
+      await api.post("/customer/add/", {
+        company_name: form.companyName.trim(),
+        contact_name: form.contactName.trim(),
+        phone_number: form.phone.trim(),
+        email: form.email.trim(),
+        industry: form.industry,
+        status: form.status.toLowerCase(),
+        lifetime_value: Number(form.lifetimeValue || 0),
+        deal_id: form.dealId || null,
+      });
+      fetchCustomers();
+      pushToast({ title: "Customer created", message: `${form.companyName} added successfully`, variant: "success" });
+    } catch (err) {
+      console.error("Add customer failed:", err);
+      pushToast({ title: "Failed to add customer", variant: "error" });
+    } finally {
+      setAddLoading(false);
+      setAddOpen(false);
+    }
   };
+
+  const updateCustomer = async (form) => {
+    setAddLoading(true);
+    try {
+      await api.put(`/customer/update/${editCustomer.id}/`, {
+        company_name: form.companyName.trim(),
+        contact_name: form.contactName.trim(),
+        phone_number: form.phone.trim(),
+        email: form.email.trim(),
+        industry: form.industry,
+        status: form.status.toLowerCase(),
+        lifetime_value: Number(form.lifetimeValue || 0),
+      });
+      fetchCustomers();
+      pushToast({ title: "Customer updated", message: `${form.companyName} updated successfully`, variant: "success" });
+    } catch (err) {
+      console.error("Update customer failed:", err);
+      pushToast({ title: "Failed to update customer", variant: "error" });
+    } finally {
+      setAddLoading(false);
+      setEditCustomer(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm text-[#64748B]">Loading customers...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-[28px] font-semibold text-[#111827]">Customers</h1>
-
         <button
           type="button"
           onClick={() => setAddOpen(true)}
@@ -149,14 +129,35 @@ export default function Customers() {
         </button>
       </div>
 
-      <CustomersKpis />
-      <CustomersList customers={customers} />
+      <CustomersKpis customers={customers} />
+      <CustomersList customers={customers} onDelete={requestDelete} onEdit={(c) => setEditCustomer(c)} />
 
+      {/* Add modal */}
       <CustomerFormModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
         onSubmit={addCustomer}
         loading={addLoading}
+      />
+
+      {/* Edit modal */}
+      <CustomerFormModal
+        open={!!editCustomer}
+        onClose={() => setEditCustomer(null)}
+        onSubmit={updateCustomer}
+        loading={addLoading}
+        initialData={editCustomer}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Delete customer?"
+        description="This action cannot be undone."
+        confirmText="Delete"
+        danger
+        loading={deleteLoading}
+        onCancel={() => (deleteLoading ? null : setConfirmDeleteOpen(false))}
+        onConfirm={confirmDelete}
       />
     </div>
   );

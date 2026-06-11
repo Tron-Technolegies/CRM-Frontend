@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
 
@@ -12,31 +12,50 @@ function validateLead(form) {
   if (!form.fullName.trim()) errors.fullName = "Full name is required";
   if (!form.phoneNumber.trim()) errors.phoneNumber = "Phone number is required";
   if (!form.companyName.trim()) errors.companyName = "Company name is required";
-  if (!form.assignedTo) errors.assignedTo = "Assignee is required";
   if (!form.leadSource) errors.leadSource = "Lead source is required";
   if (!form.priority) errors.priority = "Priority is required";
   return errors;
 }
 
-export default function LeadFormModal({ open, onClose, onSubmit, loading = false }) {
-  const initialForm = useMemo(
-    () => ({
-      fullName: "",
-      countryCode: "+91",
-      phoneNumber: "",
-      email: "",
-      companyName: "",
-      leadSource: "Website",
-      assignedTo: "",
-      priority: "Medium",
-      expectedClosingDate: "",
-      description: "",
-    }),
-    [],
-  );
+export default function LeadFormModal({ open, onClose, onSubmit, loading = false, initialData = null }) {
+  const blankForm = useMemo(() => ({
+    fullName: "",
+    countryCode: "+91",
+    phoneNumber: "",
+    email: "",
+    companyName: "",
+    leadSource: "Website",
+    assignedTo: "",
+    priority: "Medium",
+    expectedClosingDate: "",
+    description: "",
+    status: "new",
+  }), []);
 
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState(blankForm);
   const [touched, setTouched] = useState({});
+
+  // Reset form whenever initialData changes (different lead clicked)
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        fullName: initialData.name || "",
+        countryCode: "+91",
+        phoneNumber: initialData.phone || "",
+        email: initialData.email || "",
+        companyName: initialData.companyName || "",
+        leadSource: initialData.source || "Website",
+        assignedTo: "",
+        priority: initialData.priority || "Medium",
+        expectedClosingDate: "",
+        description: initialData.description || "",
+        status: initialData.status?.toLowerCase() || "new",
+      });
+    } else {
+      setForm(blankForm);
+    }
+    setTouched({});
+  }, [initialData]);
 
   const errors = validateLead(form);
   const hasErrors = Object.keys(errors).length > 0;
@@ -47,7 +66,7 @@ export default function LeadFormModal({ open, onClose, onSubmit, loading = false
 
   const closeAndReset = () => {
     if (loading) return;
-    setForm(initialForm);
+    setForm(blankForm);
     setTouched({});
     onClose();
   };
@@ -68,8 +87,8 @@ export default function LeadFormModal({ open, onClose, onSubmit, loading = false
   return (
     <Modal
       open={open}
-      title="Add New Lead"
-      subtitle="Fill in the details below to add a new lead to your CRM"
+      title={initialData ? "Edit Lead" : "Add New Lead"}
+      subtitle={initialData ? "Update the lead details below" : "Fill in the details below to add a new lead to your CRM"}
       onClose={closeAndReset}
       maxWidthClassName="max-w-3xl"
     >
@@ -101,12 +120,9 @@ export default function LeadFormModal({ open, onClose, onSubmit, loading = false
               className="h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
             >
               {defaultCountryCodes.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
-
             <input
               value={form.phoneNumber}
               onChange={(e) => setField("phoneNumber", e.target.value)}
@@ -157,9 +173,7 @@ export default function LeadFormModal({ open, onClose, onSubmit, loading = false
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
             {defaultSources.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
+              <option key={s} value={s}>{s}</option>
             ))}
           </select>
           {touched.leadSource && errors.leadSource && (
@@ -168,27 +182,18 @@ export default function LeadFormModal({ open, onClose, onSubmit, loading = false
         </div>
 
         <div>
-          <label className="text-sm text-[#111827] font-medium">
-            Assigned To <span className="text-red-500">*</span>
-          </label>
+          <label className="text-sm text-[#111827] font-medium">Assigned To</label>
           <select
             value={form.assignedTo}
             onChange={(e) => setField("assignedTo", e.target.value)}
             onBlur={() => setTouched((p) => ({ ...p, assignedTo: true }))}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
-            <option value="" disabled>
-              Select team member
-            </option>
+            <option value="" disabled>Select team member</option>
             {defaultAssignees.map((a) => (
-              <option key={a} value={a}>
-                {a}
-              </option>
+              <option key={a} value={a}>{a}</option>
             ))}
           </select>
-          {touched.assignedTo && errors.assignedTo && (
-            <p className="text-xs text-red-600 mt-1">{errors.assignedTo}</p>
-          )}
         </div>
 
         <div>
@@ -202,9 +207,7 @@ export default function LeadFormModal({ open, onClose, onSubmit, loading = false
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
             {defaultPriorities.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
+              <option key={p} value={p}>{p}</option>
             ))}
           </select>
           {touched.priority && errors.priority && (
@@ -220,6 +223,20 @@ export default function LeadFormModal({ open, onClose, onSubmit, loading = false
             onChange={(e) => setField("expectedClosingDate", e.target.value)}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
           />
+        </div>
+
+        <div>
+            <label className="text-sm text-[#111827] font-medium">Status</label>
+            <select
+              value={form.status}
+              onChange={(e) => setField("status", e.target.value)}
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="converted">Converted</option>
+              <option value="lost">Lost</option>
+            </select>
         </div>
 
         <div className="md:col-span-2">
@@ -242,7 +259,6 @@ export default function LeadFormModal({ open, onClose, onSubmit, loading = false
         >
           Cancel
         </button>
-
         <button
           type="button"
           onClick={submit}
@@ -256,4 +272,3 @@ export default function LeadFormModal({ open, onClose, onSubmit, loading = false
     </Modal>
   );
 }
-
