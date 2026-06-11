@@ -1,49 +1,63 @@
 import { DollarSign, TrendingUp, Trophy, XCircle } from "lucide-react";
 
-const kpis = [
-  {
-    label: "Total Deals",
-    value: "72",
-    subtext: "All Time",
-    icon: DollarSign,
-    iconBg: "bg-blue-50",
-    iconColor: "text-blue-600",
-  },
-  {
-    label: "Open Deals",
-    value: "34",
-    subtext: "In Progress",
-    icon: TrendingUp,
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-600",
-  },
-  {
-    label: "Won Deals",
-    value: "28",
-    subtext: "This Month",
-    icon: Trophy,
-    iconBg: "bg-violet-50",
-    iconColor: "text-violet-600",
-  },
-  {
-    label: "Lost Deals",
-    value: "10",
-    subtext: "This Month",
-    icon: XCircle,
-    iconBg: "bg-rose-50",
-    iconColor: "text-rose-600",
-  },
-  {
-    label: "Total Value",
-    value: "$245,000",
-    subtext: "This Month",
-    icon: DollarSign,
-    iconBg: "bg-amber-50",
-    iconColor: "text-amber-600",
-  },
-];
+function formatCurrency(value) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 
-export default function DealsKpis() {
+export default function DealsKpis({ deals = [] }) {
+  const total = deals.length;
+  const open = deals.filter((d) => d.stage !== "Won" && d.stage !== "Lost").length;
+  const won = deals.filter((d) => d.stage === "Won").length;
+  const lost = deals.filter((d) => d.stage === "Lost").length;
+  const totalValue = deals.reduce((sum, d) => sum + Number(d.value || 0), 0);
+
+  const kpis = [
+    {
+      label: "Total Deals",
+      value: total,
+      subtext: "All Time",
+      icon: DollarSign,
+      iconBg: "bg-blue-50",
+      iconColor: "text-blue-600",
+    },
+    {
+      label: "Open Deals",
+      value: open,
+      subtext: "In Progress",
+      icon: TrendingUp,
+      iconBg: "bg-emerald-50",
+      iconColor: "text-emerald-600",
+    },
+    {
+      label: "Won Deals",
+      value: won,
+      subtext: "All Time",
+      icon: Trophy,
+      iconBg: "bg-violet-50",
+      iconColor: "text-violet-600",
+    },
+    {
+      label: "Lost Deals",
+      value: lost,
+      subtext: "All Time",
+      icon: XCircle,
+      iconBg: "bg-rose-50",
+      iconColor: "text-rose-600",
+    },
+    {
+      label: "Total Value",
+      value: formatCurrency(totalValue),
+      subtext: "All Time",
+      icon: DollarSign,
+      iconBg: "bg-amber-50",
+      iconColor: "text-amber-600",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-5">
       {kpis.map((kpi) => {
@@ -56,7 +70,6 @@ export default function DealsKpis() {
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${kpi.iconBg}`}>
               <Icon className={kpi.iconColor} size={22} />
             </div>
-
             <div className="min-w-0">
               <p className="text-sm text-[#64748B]">{kpi.label}</p>
               <p className="text-3xl font-bold text-[#111827] leading-tight">{kpi.value}</p>
@@ -68,4 +81,3 @@ export default function DealsKpis() {
     </div>
   );
 }
-

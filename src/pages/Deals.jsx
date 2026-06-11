@@ -1,129 +1,127 @@
 import { Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 import DealsKpis from "../components/deals/DealsKpis";
 import DealsList from "../components/deals/DealsList";
 import DealFormModal from "../components/deals/DealFormModal";
+import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { useToast } from "../components/ui/toastContext.js";
 
-const initialDeals = [
-  {
-    id: 1,
-    name: "Website Redesign",
-    customer: "ABC Solutions",
-    stage: "Proposal",
-    value: 15000,
-    expectedCloseDate: "2025-05-25",
-    assignedTo: "Mark Brown",
-    status: "Open",
-  },
-  {
-    id: 2,
-    name: "CRM Implementation",
-    customer: "XYZ Ltd",
-    stage: "Negotiation",
-    value: 35000,
-    expectedCloseDate: "2025-05-30",
-    assignedTo: "Sarah Wilson",
-    status: "Open",
-  },
-  {
-    id: 3,
-    name: "Mobile App Development",
-    customer: "TechCorp",
-    stage: "Proposal",
-    value: 22000,
-    expectedCloseDate: "2025-06-05",
-    assignedTo: "David Lee",
-    status: "Open",
-  },
-  {
-    id: 4,
-    name: "Digital Marketing",
-    customer: "Green Earth",
-    stage: "Discussion",
-    value: 8000,
-    expectedCloseDate: "2025-05-20",
-    assignedTo: "Mark Brown",
-    status: "Open",
-  },
-  {
-    id: 5,
-    name: "SEO Services",
-    customer: "Bright Ideas",
-    stage: "Won",
-    value: 12000,
-    expectedCloseDate: "2025-05-15",
-    assignedTo: "Sarah Wilson",
-    status: "Won",
-  },
-  {
-    id: 6,
-    name: "Cloud Migration",
-    customer: "InnovateX",
-    stage: "Won",
-    value: 45000,
-    expectedCloseDate: "2025-05-10",
-    assignedTo: "David Lee",
-    status: "Won",
-  },
-  {
-    id: 7,
-    name: "UI/UX Design",
-    customer: "Pixel Perfect",
-    stage: "Lost",
-    value: 6000,
-    expectedCloseDate: "2025-05-12",
-    assignedTo: "Mark Brown",
-    status: "Lost",
-  },
-  {
-    id: 8,
-    name: "IT Support Services",
-    customer: "Global Tech",
-    stage: "Lost",
-    value: 9000,
-    expectedCloseDate: "2025-05-08",
-    assignedTo: "Sarah Wilson",
-    status: "Lost",
-  },
-];
+const api = axios.create({
+  baseURL: "http://localhost:8000/api/admin",
+});
 
 export default function Deals() {
   const { pushToast } = useToast();
-  const [deals, setDeals] = useState(initialDeals);
-
+  const [deals, setDeals] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
+  const [editDeal, setEditDeal] = useState(null);
 
-  const nextId = useMemo(() => Math.max(0, ...deals.map((d) => d.id)) + 1, [deals]);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const fetchDeals = () => {
+    api.get("/deal/view/")
+      .then((res) => setDeals(res.data))
+      .catch((err) => {
+        console.error("Failed to fetch deals:", err);
+        pushToast({ title: "Failed to load deals", variant: "error" });
+      })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchDeals();
+  }, []);
+
+  const requestDelete = (id) => {
+    setDeleteTargetId(id);
+    setConfirmDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleteLoading(true);
+    try {
+      await api.delete(`/deal/delete/${deleteTargetId}/`);
+      setDeals((prev) => prev.filter((d) => d.id !== deleteTargetId));
+      pushToast({ title: "Deal deleted", variant: "success" });
+    } catch (err) {
+      console.error("Delete failed:", err);
+      pushToast({ title: "Failed to delete deal", variant: "error" });
+    } finally {
+      setDeleteLoading(false);
+      setConfirmDeleteOpen(false);
+      setDeleteTargetId(null);
+    }
+  };
 
   const addDeal = async (form) => {
     setAddLoading(true);
-    await new Promise((r) => window.setTimeout(r, 700));
-
-    const newDeal = {
-      id: nextId,
-      name: form.dealName.trim(),
-      customer: form.companyName.trim(),
-      stage: form.stage,
-      value: Number(form.dealAmount || 0),
-      expectedCloseDate: form.expectedCloseDate,
-      assignedTo: form.assignedTo,
-      status: "Open",
-    };
-
-    setDeals((prev) => [newDeal, ...prev]);
-    setAddLoading(false);
-    setAddOpen(false);
-    pushToast({ title: "Deal created", message: `${newDeal.name} added successfully`, variant: "success" });
+    try {
+      await api.post("/deal/add/", {
+        deal_name: form.dealName.trim(),
+        company_name: form.companyName.trim(),
+        deal_amount: Number(form.dealAmount),
+        stage: form.stage,
+        assigned_to: null,
+        expected_close_date: form.expectedCloseDate,
+        deal_source: form.dealSource,
+        priority: form.priority,
+        deal_description: form.description.trim(),
+        lead_id: form.leadId || null, 
+      });
+      fetchDeals();
+      pushToast({ title: "Deal created", message: `${form.dealName} added successfully`, variant: "success" });
+    } catch (err) {
+      console.error("Add deal failed:", err);
+      pushToast({ title: "Failed to add deal", variant: "error" });
+    } finally {
+      setAddLoading(false);
+      setAddOpen(false);
+    }
   };
+
+  const updateDeal = async (form) => {
+    setAddLoading(true);
+    try {
+      await api.put(`/deal/update/${editDeal.id}/`, {
+        deal_name: form.dealName.trim(),
+        company_name: form.companyName.trim(),
+        deal_amount: Number(form.dealAmount),
+        stage: form.stage,
+        expected_close_date: form.expectedCloseDate,
+        deal_source: form.dealSource,
+        priority: form.priority,
+        deal_description: form.description.trim(),
+      });
+      fetchDeals();
+      pushToast({ title: "Deal updated", message: `${form.dealName} updated successfully`, variant: "success" });
+    } catch (err) {
+      console.error("Update deal failed:", err);
+      pushToast({ title: "Failed to update deal", variant: "error" });
+    } finally {
+      setAddLoading(false);
+      setEditDeal(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm text-[#64748B]">Loading deals...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-[28px] font-semibold text-[#111827]">Deals</h1>
-
         <button
           type="button"
           onClick={() => setAddOpen(true)}
@@ -134,10 +132,36 @@ export default function Deals() {
         </button>
       </div>
 
-      <DealsKpis />
-      <DealsList deals={deals} />
+      <DealsKpis deals={deals} />
+      <DealsList deals={deals} onDelete={requestDelete} onEdit={(deal) => setEditDeal(deal)} />
 
-      <DealFormModal open={addOpen} onClose={() => setAddOpen(false)} onSubmit={addDeal} loading={addLoading} />
+      {/* Add modal */}
+      <DealFormModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onSubmit={addDeal}
+        loading={addLoading}
+      />
+
+      {/* Edit modal */}
+      <DealFormModal
+        open={!!editDeal}
+        onClose={() => setEditDeal(null)}
+        onSubmit={updateDeal}
+        loading={addLoading}
+        initialData={editDeal}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Delete deal?"
+        description="This action cannot be undone."
+        confirmText="Delete"
+        danger
+        loading={deleteLoading}
+        onCancel={() => (deleteLoading ? null : setConfirmDeleteOpen(false))}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

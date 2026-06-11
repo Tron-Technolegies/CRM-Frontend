@@ -1,16 +1,22 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
-const data = [
-  { name: "Website", value: 40, color: "#3B82F6" },
-  { name: "WhatsApp", value: 30, color: "#10B981" },
-  { name: "Facebook Ads", value: 15, color: "#8B5CF6" },
-  { name: "Phone Call", value: 10, color: "#F59E0B" },
-  { name: "Others", value: 5, color: "#64748B" },
-];
-
-const total = 128;
+const api = axios.create({ baseURL: "http://localhost:8000/api/admin" });
 
 export default function DashboardLeadsBySource() {
+  const [data, setData] = useState([]);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    api.get("/leads/by-source/")
+      .then((res) => {
+        setData(res.data.data);
+        setTotal(res.data.total);
+      })
+      .catch((err) => console.error("Failed to fetch leads by source:", err));
+  }, []);
+
   return (
     <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 h-full">
       <h2 className="text-[20px] font-semibold text-[#111827]">Leads by Source</h2>

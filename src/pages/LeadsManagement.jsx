@@ -1,6 +1,6 @@
-
 import { Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 import LeadsKpis from "../components/leads/LeadsKpis";
 import LeadsList from "../components/leads/LeadsList";
@@ -8,100 +8,35 @@ import LeadFormModal from "../components/leads/LeadFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { useToast } from "../components/ui/toastContext.js";
 
-const initialLeads = [
-  {
-    id: 1,
-    name: "John Smith",
-    phone: "+1 555-123-4567",
-    email: "john.smith@email.com",
-    source: "Website",
-    status: "New",
-    assignedTo: "Mark Brown",
-    dateAdded: "May 18, 2025",
-  },
-  {
-    id: 2,
-    name: "Sarah Johnson",
-    phone: "+1 555-234-5678",
-    email: "sarah.o@email.com",
-    source: "WhatsApp",
-    status: "Contacted",
-    assignedTo: "David Lee",
-    dateAdded: "May 18, 2025",
-  },
-  {
-    id: 3,
-    name: "Michael Lee",
-    phone: "+1 555-345-6789",
-    email: "michael.lee@email.com",
-    source: "Facebook Ads",
-    status: "Qualified",
-    assignedTo: "Mark Brown",
-    dateAdded: "May 17, 2025",
-  },
-  {
-    id: 4,
-    name: "Emily Davis",
-    phone: "+1 555-456-7890",
-    email: "emily.davis@email.com",
-    source: "Referral",
-    status: "New",
-    assignedTo: "Sarah Wilson",
-    dateAdded: "May 17, 2025",
-  },
-  {
-    id: 5,
-    name: "Daniel Wilson",
-    phone: "+1 555-567-8901",
-    email: "daniel.w@email.com",
-    source: "Website",
-    status: "Contacted",
-    assignedTo: "David Lee",
-    dateAdded: "May 16, 2025",
-  },
-  {
-    id: 6,
-    name: "Jessica Brown",
-    phone: "+1 555-678-9012",
-    email: "jessica.b@email.com",
-    source: "Google Ads",
-    status: "Qualified",
-    assignedTo: "Sarah Wilson",
-    dateAdded: "May 16, 2025",
-  },
-  {
-    id: 7,
-    name: "Chris Martin",
-    phone: "+1 555-789-0123",
-    email: "chris.martin@email.com",
-    source: "WhatsApp",
-    status: "Converted",
-    assignedTo: "Mark Brown",
-    dateAdded: "May 15, 2025",
-  },
-  {
-    id: 8,
-    name: "Laura Taylor",
-    phone: "+1 555-890-1234",
-    email: "laura.taylor@email.com",
-    source: "Website",
-    status: "Converted",
-    assignedTo: "David Lee",
-    dateAdded: "May 15, 2025",
-  },
-];
+const api = axios.create({
+  baseURL: "http://localhost:8000/api/admin",
+});
 
 export default function LeadsManagement() {
   const { pushToast } = useToast();
-  const [leads, setLeads] = useState(initialLeads);
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
+  const [editLead, setEditLead] = useState(null);
 
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const nextId = useMemo(() => Math.max(0, ...leads.map((l) => l.id)) + 1, [leads]);
+  const fetchLeads = () => {
+    api.get("/lead/view/")
+      .then((res) => setLeads(res.data))
+      .catch((err) => {
+        console.error("Failed to fetch leads:", err);
+        pushToast({ title: "Failed to load leads", variant: "error" });
+      })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchLeads();
+  }, []);
 
   const requestDelete = (id) => {
     setDeleteTargetId(id);
@@ -111,42 +46,82 @@ export default function LeadsManagement() {
   const confirmDelete = async () => {
     if (!deleteTargetId) return;
     setDeleteLoading(true);
-
-    await new Promise((r) => window.setTimeout(r, 700));
-
-    setLeads((prev) => prev.filter((l) => l.id !== deleteTargetId));
-    setDeleteLoading(false);
-    setConfirmDeleteOpen(false);
-    setDeleteTargetId(null);
-    pushToast({ title: "Lead deleted", variant: "success" });
+    try {
+      await api.delete(`/lead/delete/${deleteTargetId}/`);
+      setLeads((prev) => prev.filter((l) => l.id !== deleteTargetId));
+      pushToast({ title: "Lead deleted", variant: "success" });
+    } catch (err) {
+      console.error("Delete failed:", err);
+      pushToast({ title: "Failed to delete lead", variant: "error" });
+    } finally {
+      setDeleteLoading(false);
+      setConfirmDeleteOpen(false);
+      setDeleteTargetId(null);
+    }
   };
 
   const addLead = async (form) => {
     setAddLoading(true);
-    await new Promise((r) => window.setTimeout(r, 700));
-
-    const newLead = {
-      id: nextId,
-      name: form.fullName.trim(),
-      phone: `${form.countryCode} ${form.phoneNumber.trim()}`,
-      email: form.email.trim(),
-      source: form.leadSource,
-      status: "New",
-      assignedTo: form.assignedTo,
-      dateAdded: "Today",
-    };
-
-    setLeads((prev) => [newLead, ...prev]);
-    setAddLoading(false);
-    setAddOpen(false);
-    pushToast({ title: "Lead created", message: `${newLead.name} added successfully`, variant: "success" });
+    try {
+      await api.post("/lead/add/", {
+        full_name: form.fullName.trim(),
+        phone_number: `${form.countryCode} ${form.phoneNumber.trim()}`,
+        email: form.email.trim(),
+        company_name: form.companyName.trim(),
+        lead_source: form.leadSource,
+        assigned_to: null,
+        priority: form.priority,
+        expected_closing_date: form.expectedClosingDate || null,
+        lead_description: form.description.trim(),
+      });
+      fetchLeads();
+      pushToast({ title: "Lead created", message: `${form.fullName} added successfully`, variant: "success" });
+    } catch (err) {
+      console.error("Add lead failed:", err);
+      pushToast({ title: "Failed to add lead", variant: "error" });
+    } finally {
+      setAddLoading(false);
+      setAddOpen(false);
+    }
   };
+
+  const updateLead = async (form) => {
+    setAddLoading(true);
+    try {
+      await api.put(`/lead/update/${editLead.id}/`, {
+        full_name: form.fullName.trim(),
+        phone_number: form.phoneNumber.trim(),  
+        email: form.email.trim(),
+        company_name: form.companyName.trim(),
+        lead_source: form.leadSource,
+        priority: form.priority,
+        status: form.status.toLowerCase(),
+        expected_closing_date: form.expectedClosingDate || null,
+        lead_description: form.description.trim(),
+      });
+      fetchLeads();
+      pushToast({ title: "Lead updated", message: `${form.fullName} updated successfully`, variant: "success" });
+    } catch (err) {
+      console.error("Update lead failed:", err);
+      pushToast({ title: "Failed to update lead", variant: "error" });
+    } finally {
+      setAddLoading(false);
+      setEditLead(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm text-[#64748B]">Loading leads...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-[28px] font-semibold text-[#111827]">Leads</h1>
-
         <button
           type="button"
           onClick={() => setAddOpen(true)}
@@ -157,10 +132,25 @@ export default function LeadsManagement() {
         </button>
       </div>
 
-      <LeadsKpis />
-      <LeadsList leads={leads} onDelete={requestDelete} />
+      <LeadsKpis leads={leads} />
+      <LeadsList leads={leads} onDelete={requestDelete} onEdit={(lead) => setEditLead(lead)} />
 
-      <LeadFormModal open={addOpen} onClose={() => setAddOpen(false)} onSubmit={addLead} loading={addLoading} />
+      {/* Add modal */}
+      <LeadFormModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onSubmit={addLead}
+        loading={addLoading}
+      />
+
+      {/* Edit modal */}
+      <LeadFormModal
+        open={!!editLead}
+        onClose={() => setEditLead(null)}
+        onSubmit={updateLead}
+        loading={addLoading}
+        initialData={editLead}
+      />
 
       <ConfirmDialog
         open={confirmDeleteOpen}

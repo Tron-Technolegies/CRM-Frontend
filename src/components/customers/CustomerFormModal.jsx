@@ -1,9 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
 
+const api = axios.create({ baseURL: "http://localhost:8000/api/admin" });
+
 const defaultIndustries = ["Technology", "Finance", "Software", "Design", "Marketing", "Nonprofit"];
-const defaultStatuses = ["Active", "On Hold", "Churned"];
+const defaultStatuses = ["Active", "Inactive"];
 
 function validateCustomer(form) {
   const errors = {};
@@ -18,23 +21,47 @@ function validateCustomer(form) {
   return errors;
 }
 
-export default function CustomerFormModal({ open, onClose, onSubmit, loading = false }) {
-  const initialForm = useMemo(
-    () => ({
-      companyName: "",
-      contactName: "",
-      email: "",
-      phone: "",
-      industry: "Technology",
-      status: "Active",
-      lifetimeValue: "",
-      joinDate: "",
-    }),
-    [],
-  );
+export default function CustomerFormModal({ open, onClose, onSubmit, loading = false, initialData = null }) {
+  const blankForm = useMemo(() => ({
+    companyName: "",
+    contactName: "",
+    email: "",
+    phone: "",
+    industry: "Technology",
+    status: "Active",
+    lifetimeValue: "",
+    dealId: "",
+  }), []);
 
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState(blankForm);
   const [touched, setTouched] = useState({});
+  const [wonDeals, setWonDeals] = useState([]);
+
+  useEffect(() => {
+    if (open && !initialData) {
+      api.get("/deals/linkable/")
+        .then((res) => setWonDeals(res.data))
+        .catch((err) => console.error("Failed to fetch deals:", err));
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        companyName: initialData.companyName || "",
+        contactName: initialData.contactName || "",
+        email: initialData.email || "",
+        phone: initialData.phone || "",
+        industry: initialData.industry || "Technology",
+        status: initialData.status || "Active",
+        lifetimeValue: initialData.lifetimeValue || "",
+        dealId: "",
+      });
+    } else {
+      setForm(blankForm);
+    }
+    setTouched({});
+  }, [initialData]);
 
   const errors = validateCustomer(form);
   const hasErrors = Object.keys(errors).length > 0;
@@ -45,7 +72,7 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
 
   const closeAndReset = () => {
     if (loading) return;
-    setForm(initialForm);
+    setForm(blankForm);
     setTouched({});
     onClose();
   };
@@ -67,16 +94,43 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
   return (
     <Modal
       open={open}
-      title="Add New Customer"
-      subtitle="Fill in the details below to add a new customer to your CRM"
+      title={initialData ? "Edit Customer" : "Add New Customer"}
+      subtitle={initialData ? "Update the customer details below" : "Fill in the details below to add a new customer to your CRM"}
       onClose={closeAndReset}
       maxWidthClassName="max-w-3xl"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        {/* Link to Deal - only when adding */}
+        {!initialData && (
+          <div className="md:col-span-2">
+            <label className="text-sm text-[#111827] font-medium">
+              Link to Deal <span className="text-[#64748B] font-normal">(optional)</span>
+            </label>
+            <select
+              value={form.dealId}
+              onChange={(e) => {
+                const deal = wonDeals.find((d) => d.id === Number(e.target.value));
+                setField("dealId", e.target.value);
+                if (deal) {
+                  setField("companyName", deal.company_name || "");
+                  setField("contactName", deal.contact_name || "");
+                  setField("phone", deal.phone || "");
+                  setField("email", deal.email || "");
+                }
+              }}
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
+            >
+              <option value="">No deal linked</option>
+              {wonDeals.map((d) => (
+                <option key={d.id} value={d.id}>{d.name} — {d.company_name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div>
-          <label className="text-sm text-[#111827] font-medium">
-            Company Name <span className="text-red-500">*</span>
-          </label>
+          <label className="text-sm text-[#111827] font-medium">Company Name <span className="text-red-500">*</span></label>
           <input
             value={form.companyName}
             onChange={(e) => setField("companyName", e.target.value)}
@@ -84,15 +138,11 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
             placeholder="e.g. ABC Solutions"
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100 cursor-text"
           />
-          {touched.companyName && errors.companyName && (
-            <p className="text-xs text-red-600 mt-1">{errors.companyName}</p>
-          )}
+          {touched.companyName && errors.companyName && <p className="text-xs text-red-600 mt-1">{errors.companyName}</p>}
         </div>
 
         <div>
-          <label className="text-sm text-[#111827] font-medium">
-            Contact Name <span className="text-red-500">*</span>
-          </label>
+          <label className="text-sm text-[#111827] font-medium">Contact Name <span className="text-red-500">*</span></label>
           <input
             value={form.contactName}
             onChange={(e) => setField("contactName", e.target.value)}
@@ -100,15 +150,11 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
             placeholder="e.g. John Smith"
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100 cursor-text"
           />
-          {touched.contactName && errors.contactName && (
-            <p className="text-xs text-red-600 mt-1">{errors.contactName}</p>
-          )}
+          {touched.contactName && errors.contactName && <p className="text-xs text-red-600 mt-1">{errors.contactName}</p>}
         </div>
 
         <div>
-          <label className="text-sm text-[#111827] font-medium">
-            Email <span className="text-red-500">*</span>
-          </label>
+          <label className="text-sm text-[#111827] font-medium">Email <span className="text-red-500">*</span></label>
           <input
             value={form.email}
             onChange={(e) => setField("email", e.target.value)}
@@ -120,9 +166,7 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
         </div>
 
         <div>
-          <label className="text-sm text-[#111827] font-medium">
-            Phone <span className="text-red-500">*</span>
-          </label>
+          <label className="text-sm text-[#111827] font-medium">Phone <span className="text-red-500">*</span></label>
           <input
             value={form.phone}
             onChange={(e) => setField("phone", e.target.value)}
@@ -134,9 +178,7 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
         </div>
 
         <div>
-          <label className="text-sm text-[#111827] font-medium">
-            Industry <span className="text-red-500">*</span>
-          </label>
+          <label className="text-sm text-[#111827] font-medium">Industry <span className="text-red-500">*</span></label>
           <select
             value={form.industry}
             onChange={(e) => setField("industry", e.target.value)}
@@ -144,18 +186,14 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
           >
             {defaultIndustries.map((i) => (
-              <option key={i} value={i}>
-                {i}
-              </option>
+              <option key={i} value={i}>{i}</option>
             ))}
           </select>
           {touched.industry && errors.industry && <p className="text-xs text-red-600 mt-1">{errors.industry}</p>}
         </div>
 
         <div>
-          <label className="text-sm text-[#111827] font-medium">
-            Status <span className="text-red-500">*</span>
-          </label>
+          <label className="text-sm text-[#111827] font-medium">Status <span className="text-red-500">*</span></label>
           <select
             value={form.status}
             onChange={(e) => setField("status", e.target.value)}
@@ -163,18 +201,14 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
           >
             {defaultStatuses.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
+              <option key={s} value={s}>{s}</option>
             ))}
           </select>
           {touched.status && errors.status && <p className="text-xs text-red-600 mt-1">{errors.status}</p>}
         </div>
 
         <div className="md:col-span-2">
-          <label className="text-sm text-[#111827] font-medium">
-            Lifetime Value <span className="text-red-500">*</span>
-          </label>
+          <label className="text-sm text-[#111827] font-medium">Lifetime Value <span className="text-red-500">*</span></label>
           <input
             inputMode="decimal"
             value={form.lifetimeValue}
@@ -183,33 +217,19 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
             placeholder="$ 45000.00"
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100 cursor-text"
           />
-          {touched.lifetimeValue && errors.lifetimeValue && (
-            <p className="text-xs text-red-600 mt-1">{errors.lifetimeValue}</p>
-          )}
+          {touched.lifetimeValue && errors.lifetimeValue && <p className="text-xs text-red-600 mt-1">{errors.lifetimeValue}</p>}
         </div>
       </div>
 
       <div className="mt-6 pt-6 border-t border-[#EEF2F7] flex items-center justify-end gap-3">
-        <button
-          type="button"
-          onClick={closeAndReset}
-          disabled={loading}
-          className="h-11 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] disabled:opacity-60 cursor-pointer"
-        >
+        <button type="button" onClick={closeAndReset} disabled={loading} className="h-11 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] disabled:opacity-60 cursor-pointer">
           Cancel
         </button>
-
-        <button
-          type="button"
-          onClick={submit}
-          disabled={loading}
-          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 disabled:opacity-60 cursor-pointer"
-        >
+        <button type="button" onClick={submit} disabled={loading} className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 disabled:opacity-60 cursor-pointer">
           {loading && <Spinner size={16} className="text-white" />}
-          Add Customer
+          {initialData ? "Save Changes" : "Add Customer"}
         </button>
       </div>
     </Modal>
   );
 }
-

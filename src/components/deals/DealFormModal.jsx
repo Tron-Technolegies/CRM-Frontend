@@ -1,10 +1,20 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
 
-const defaultStages = ["Proposal", "Negotiation", "Discussion"];
+const api = axios.create({ baseURL: "http://localhost:8000/api/admin" });
+
+const defaultStages = [
+  "Discussion",
+  "Demo",
+  "Proposal",
+  "Negotiation",
+  "Won",
+  "Lost",
+];
 const defaultPriorities = ["Low", "Medium", "High"];
-const defaultSources = ["Website", "WhatsApp", "Referral", "Google Ads", "Facebook Ads"];
+const defaultSources = ["Website", "Ads", "Referral", "WhatsApp"];
 const defaultAssignees = ["Mark Brown", "Sarah Wilson", "David Lee"];
 
 function validateDeal(form) {
@@ -12,15 +22,22 @@ function validateDeal(form) {
   if (!form.dealName.trim()) errors.dealName = "Deal name is required";
   if (!form.companyName.trim()) errors.companyName = "Company name is required";
   const amount = Number(form.dealAmount);
-  if (!form.dealAmount || Number.isNaN(amount) || amount <= 0) errors.dealAmount = "Valid amount is required";
+  if (!form.dealAmount || Number.isNaN(amount) || amount <= 0)
+    errors.dealAmount = "Valid amount is required";
   if (!form.stage) errors.stage = "Stage is required";
-  if (!form.assignedTo) errors.assignedTo = "Assignee is required";
-  if (!form.expectedCloseDate) errors.expectedCloseDate = "Expected close date is required";
+  if (!form.expectedCloseDate)
+    errors.expectedCloseDate = "Expected close date is required";
   return errors;
 }
 
-export default function DealFormModal({ open, onClose, onSubmit, loading = false }) {
-  const initialForm = useMemo(
+export default function DealFormModal({
+  open,
+  onClose,
+  onSubmit,
+  loading = false,
+  initialData = null,
+}) {
+  const blankForm = useMemo(
     () => ({
       dealName: "",
       companyName: "",
@@ -31,12 +48,41 @@ export default function DealFormModal({ open, onClose, onSubmit, loading = false
       dealSource: "Website",
       priority: "Medium",
       description: "",
+      leadId: "",
     }),
     [],
   );
 
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState(blankForm);
   const [touched, setTouched] = useState({});
+  const [unconvertedLeads, setUnconvertedLeads] = useState([]);
+
+  useEffect(() => {
+    api
+      .get("/leads/unconverted/")
+      .then((res) => setUnconvertedLeads(res.data))
+      .catch((err) => console.error("Failed to fetch leads:", err));
+  }, []);
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        dealName: initialData.name || "",
+        companyName: initialData.company_name || "",
+        dealAmount: initialData.value || "",
+        stage: initialData.stage || "Proposal",
+        assignedTo: "",
+        expectedCloseDate: initialData.expectedCloseDate || "",
+        dealSource: initialData.source || "Website",
+        priority: initialData.priority || "Medium",
+        description: initialData.description || "",
+        leadId: "",
+      });
+    } else {
+      setForm(blankForm);
+    }
+    setTouched({});
+  }, [initialData]);
 
   const errors = validateDeal(form);
   const hasErrors = Object.keys(errors).length > 0;
@@ -47,7 +93,7 @@ export default function DealFormModal({ open, onClose, onSubmit, loading = false
 
   const closeAndReset = () => {
     if (loading) return;
-    setForm(initialForm);
+    setForm(blankForm);
     setTouched({});
     onClose();
   };
@@ -68,12 +114,45 @@ export default function DealFormModal({ open, onClose, onSubmit, loading = false
   return (
     <Modal
       open={open}
-      title="Add New Deal"
-      subtitle="Fill in the details below to add a new deal to your pipeline"
+      title={initialData ? "Edit Deal" : "Add New Deal"}
+      subtitle={
+        initialData
+          ? "Update the deal details below"
+          : "Fill in the details below to add a new deal to your pipeline"
+      }
       onClose={closeAndReset}
       maxWidthClassName="max-w-3xl"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Link to Lead - only show when adding */}
+        {!initialData && (
+          <div className="md:col-span-2">
+            <label className="text-sm text-[#111827] font-medium">
+              Link to Lead{" "}
+              <span className="text-[#64748B] font-normal">(optional)</span>
+            </label>
+            <select
+              value={form.leadId}
+              onChange={(e) => {
+                const lead = unconvertedLeads.find((l) => l.id === Number(e.target.value));
+                setField("leadId", e.target.value);
+                if (lead) {
+                  setField("companyName", lead.company_name || "");
+                  setField("dealSource", lead.source || "Website");  // add this
+                }
+              }}
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
+            >
+              <option value="">No lead linked</option>
+              {unconvertedLeads.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div className="md:col-span-2">
           <label className="text-sm text-[#111827] font-medium">
             Deal Name <span className="text-red-500">*</span>
@@ -85,7 +164,9 @@ export default function DealFormModal({ open, onClose, onSubmit, loading = false
             placeholder="Enter deal name"
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100 cursor-text"
           />
-          {touched.dealName && errors.dealName && <p className="text-xs text-red-600 mt-1">{errors.dealName}</p>}
+          {touched.dealName && errors.dealName && (
+            <p className="text-xs text-red-600 mt-1">{errors.dealName}</p>
+          )}
         </div>
 
         <div>
@@ -137,17 +218,18 @@ export default function DealFormModal({ open, onClose, onSubmit, loading = false
               </option>
             ))}
           </select>
-          {touched.stage && errors.stage && <p className="text-xs text-red-600 mt-1">{errors.stage}</p>}
+          {touched.stage && errors.stage && (
+            <p className="text-xs text-red-600 mt-1">{errors.stage}</p>
+          )}
         </div>
 
         <div>
           <label className="text-sm text-[#111827] font-medium">
-            Assigned To <span className="text-red-500">*</span>
+            Assigned To
           </label>
           <select
             value={form.assignedTo}
             onChange={(e) => setField("assignedTo", e.target.value)}
-            onBlur={() => setTouched((p) => ({ ...p, assignedTo: true }))}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
           >
             <option value="" disabled>
@@ -159,9 +241,6 @@ export default function DealFormModal({ open, onClose, onSubmit, loading = false
               </option>
             ))}
           </select>
-          {touched.assignedTo && errors.assignedTo && (
-            <p className="text-xs text-red-600 mt-1">{errors.assignedTo}</p>
-          )}
         </div>
 
         <div>
@@ -172,16 +251,22 @@ export default function DealFormModal({ open, onClose, onSubmit, loading = false
             type="date"
             value={form.expectedCloseDate}
             onChange={(e) => setField("expectedCloseDate", e.target.value)}
-            onBlur={() => setTouched((p) => ({ ...p, expectedCloseDate: true }))}
+            onBlur={() =>
+              setTouched((p) => ({ ...p, expectedCloseDate: true }))
+            }
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
           />
           {touched.expectedCloseDate && errors.expectedCloseDate && (
-            <p className="text-xs text-red-600 mt-1">{errors.expectedCloseDate}</p>
+            <p className="text-xs text-red-600 mt-1">
+              {errors.expectedCloseDate}
+            </p>
           )}
         </div>
 
         <div>
-          <label className="text-sm text-[#111827] font-medium">Deal Source</label>
+          <label className="text-sm text-[#111827] font-medium">
+            Deal Source
+          </label>
           <select
             value={form.dealSource}
             onChange={(e) => setField("dealSource", e.target.value)}
@@ -211,7 +296,9 @@ export default function DealFormModal({ open, onClose, onSubmit, loading = false
         </div>
 
         <div className="md:col-span-2">
-          <label className="text-sm text-[#111827] font-medium">Deal Description</label>
+          <label className="text-sm text-[#111827] font-medium">
+            Deal Description
+          </label>
           <textarea
             value={form.description}
             onChange={(e) => setField("description", e.target.value)}
@@ -230,7 +317,6 @@ export default function DealFormModal({ open, onClose, onSubmit, loading = false
         >
           Cancel
         </button>
-
         <button
           type="button"
           onClick={submit}
