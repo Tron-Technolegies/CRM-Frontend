@@ -1,14 +1,15 @@
 export default function ReportsDealsByStage({ report }) {
   const stages = report
     ? [
-        { name: "New", count: Math.round(report.total_leads * 0.44), color: "#3B82F6" },
-        { name: "Contacted", count: Math.round(report.total_leads * 0.31), color: "#60A5FA" },
-        { name: "Qualified", count: Math.round(report.total_leads * 0.16), color: "#10B981" },
-        { name: "Proposal", count: Math.round(report.total_deals * 0.25), color: "#F59E0B" },
-        { name: "Won", count: report.total_customers || 0, color: "#EF4444" },
+        { name: "New", count: report.leads_by_status?.new || 0, color: "#3B82F6" },
+        { name: "Contacted", count: report.leads_by_status?.contacted || 0, color: "#60A5FA" },
+        { name: "Qualified", count: (report.deals_by_stage?.Discussion || 0) + (report.deals_by_stage?.Demo || 0), color: "#10B981" },
+        { name: "Proposal", count: (report.deals_by_stage?.Proposal || 0) + (report.deals_by_stage?.Negotiation || 0), color: "#F59E0B" },
+        { name: "Won", count: report.deals_by_stage?.Won || 0, color: "#EF4444" },
       ]
     : [];
 
+  const total = stages.reduce((sum, s) => sum + s.count, 0) || 1;
   const maxCount = Math.max(...stages.map((s) => s.count), 1);
 
   return (
@@ -21,11 +22,14 @@ export default function ReportsDealsByStage({ report }) {
             <div className="flex-1 h-3 bg-[#F1F5F9] rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full"
-                style={{ width: `${(stage.count / maxCount) * 100}%`, background: stage.color }}
+                style={{
+                  width: `${Math.max((stage.count / maxCount) * 100, stage.count > 0 ? 4 : 0)}%`,
+                  background: stage.color,
+                }}
               />
             </div>
             <p className="text-sm text-[#64748B] w-24 text-right shrink-0">
-              {stage.count} ({((stage.count / maxCount) * 100).toFixed(1)}%)
+              {stage.count} <span className="text-[#94A3B8]">({((stage.count / total) * 100).toFixed(1)}%)</span>
             </p>
           </div>
         ))}

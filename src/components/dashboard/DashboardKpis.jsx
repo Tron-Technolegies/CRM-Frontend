@@ -14,6 +14,14 @@ function formatCurrency(value) {
   }).format(value || 0);
 }
 
+function getFontSize(value) {
+  const len = String(value).length;
+  if (len > 12) return "1rem";
+  if (len > 9) return "1.25rem";
+  if (len > 6) return "1.5rem";
+  return "1.875rem";
+}
+
 export default function DashboardKpis({ report }) {
   const kpis = [
     {
@@ -72,7 +80,13 @@ export default function DashboardKpis({ report }) {
             </div>
             <div className="min-w-0">
               <p className="text-sm text-[#64748B]">{kpi.label}</p>
-              <p className="text-3xl font-bold text-[#111827] leading-tight">{kpi.value}</p>
+              {/* <p className="text-3xl font-bold text-[#111827] leading-tight">{kpi.value}</p> */}
+              <p
+  className="font-bold text-[#111827] leading-tight truncate"
+  style={{ fontSize: getFontSize(kpi.value) }}
+>
+  {kpi.value}
+</p>
               <p className="text-sm text-[#64748B]">{kpi.subtext}</p>
             </div>
           </div>

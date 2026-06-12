@@ -9,15 +9,7 @@ function formatCurrency(value) {
 }
 
 export default function ReportsRevenueChart({ report }) {
-  const data = report
-    ? [
-        { date: "May 1", revenue: Math.round(report.total_revenue * 0.05) },
-        { date: "May 8", revenue: Math.round(report.total_revenue * 0.15) },
-        { date: "May 15", revenue: Math.round(report.total_revenue * 0.35) },
-        { date: "May 22", revenue: Math.round(report.total_revenue * 0.65) },
-        { date: "May 31", revenue: Math.round(report.total_revenue * 1.0) },
-      ]
-    : [];
+  const data = report?.revenue_over_time?.length ? report.revenue_over_time : [];
 
   return (
     <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6">
@@ -29,21 +21,27 @@ export default function ReportsRevenueChart({ report }) {
         </div>
       </div>
       <div className="h-[240px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-            <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#64748B" }} axisLine={false} tickLine={false} />
-            <YAxis tickFormatter={formatCurrency} tick={{ fontSize: 12, fill: "#64748B" }} axisLine={false} tickLine={false} />
-            <Tooltip formatter={(v) => [formatCurrency(v), "Revenue"]} />
-            <Area type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={2} fill="url(#revenueGrad)" dot={{ fill: "#3B82F6", r: 4 }} />
-          </AreaChart>
-        </ResponsiveContainer>
+        {data.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-sm text-[#64748B]">
+            No revenue data yet.
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+              <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#64748B" }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={formatCurrency} tick={{ fontSize: 12, fill: "#64748B" }} axisLine={false} tickLine={false} />
+              <Tooltip formatter={(v) => [formatCurrency(v), "Revenue"]} />
+              <Area type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={2} fill="url(#revenueGrad)" dot={{ fill: "#3B82F6", r: 4 }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );
