@@ -123,9 +123,9 @@ export default function UsersList({ users, onDelete, onEdit }) {
         <table className="w-full min-w-[900px]">
           <thead className="border-b border-[#EEF2F7]">
             <tr className="text-left">
-              <th className="px-6 py-4 w-10">
+              {/* <th className="px-6 py-4 w-10">
                 <input type="checkbox" aria-label="Select all" className="rounded border-[#E5E7EB]" />
-              </th>
+              </th> */}
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">User</th>
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Role</th>
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Department</th>
@@ -138,9 +138,9 @@ export default function UsersList({ users, onDelete, onEdit }) {
           <tbody className="divide-y divide-[#EEF2F7]">
             {paginated.map((u) => (
               <tr key={u.id} className="hover:bg-[#FAFAFA]">
-                <td className="px-6 py-5">
+                {/* <td className="px-6 py-5">
                   <input type="checkbox" aria-label={`Select ${u.fullName}`} className="rounded border-[#E5E7EB]" />
-                </td>
+                </td> */}
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-[#F1F5F9] border border-[#E5E7EB] flex items-center justify-center text-xs font-semibold text-[#475569]">
