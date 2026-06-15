@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Mail, MoreVertical, Pencil, Search, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Eye, Mail, MoreVertical, Pencil, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { useToast } from "../ui/toastContext.js";
+import StaffViewModal from "./StaffViewModal.jsx";
 
 const PAGE_SIZE = 6;
 
@@ -47,6 +48,8 @@ export default function UsersList({ users, onDelete, onEdit }) {
   const [role, setRole] = useState("All");
   const [status, setStatus] = useState("All");
   const [page, setPage] = useState(1);
+
+  const [viewId, setViewId] = useState(null);
 
   const roleOptions = useMemo(() => {
     const unique = Array.from(new Set(users.map((u) => u.role))).filter(Boolean);
@@ -169,6 +172,7 @@ export default function UsersList({ users, onDelete, onEdit }) {
                 </td>
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-3 text-[#64748B]">
+                    <button type="button" className="hover:text-[#111827]" aria-label="View" onClick={() => setViewId(u.id)}><Eye size={18} /></button>
                     <button type="button" className="hover:text-[#111827]" aria-label="Email" onClick={() => openNotImplemented("Email")}><Mail size={18} /></button>
                     <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={() => onEdit(u)}><Pencil size={18} /></button>
                     <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={() => onDelete(u.id)}><Trash2 size={18} /></button>
@@ -198,6 +202,12 @@ export default function UsersList({ users, onDelete, onEdit }) {
           <button type="button" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || totalPages === 0} className="w-9 h-9 rounded-lg border border-[#E5E7EB] grid place-items-center disabled:opacity-40">›</button>
         </div>
       </div>
+
+      <StaffViewModal 
+      open={!!viewId} 
+      onClose={() => setViewId(null)} 
+      onEdit={onEdit} 
+      staffId={viewId} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Eye, MoreVertical, Pencil, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { useToast } from "../ui/toastContext.js";
+import CustomerViewModal from "./CustomerViewModal.jsx";
 
 const PAGE_SIZE = 8;
 
@@ -39,6 +40,8 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
   const [status, setStatus] = useState("All");
   const [industry, setIndustry] = useState("All");
   const [page, setPage] = useState(1);
+
+  const [viewId, setViewId] = useState(null);
 
   const statusOptions = useMemo(() => {
     const unique = Array.from(new Set(customers.map((c) => c.status))).filter(Boolean);
@@ -134,7 +137,7 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
                 <td className="px-6 py-5"><p className="text-sm text-[#64748B]">{formatDate(c.joinDate)}</p></td>
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-3 text-[#64748B]">
-                    <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="View" onClick={() => openNotImplemented("View")}><Eye size={18} /></button>
+                    <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="View" onClick={() => setViewId(c.id)}><Eye size={18} /></button>
                     <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="Edit" onClick={() => onEdit(c)}><Pencil size={18} /></button>
                     <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="More" onClick={() => openNotImplemented("More")}><MoreVertical size={18} /></button>
                     <button type="button" className="hover:text-red-600 cursor-pointer" aria-label="Delete" onClick={() => onDelete(c.id)}><Trash2 size={18} /></button>
@@ -162,6 +165,12 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
           <button type="button" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || totalPages === 0} className="w-9 h-9 rounded-lg border border-[#E5E7EB] grid place-items-center disabled:opacity-40 cursor-pointer">›</button>
         </div>
       </div>
+
+      <CustomerViewModal
+      open={!!viewId}
+      onClose={() => setViewId(null)} 
+      onEdit={onEdit} 
+      customerId={viewId} />
     </div>
   );
 }
