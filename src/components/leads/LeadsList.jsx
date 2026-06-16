@@ -136,9 +136,9 @@ export default function LeadsList({ leads, onDelete, onEdit }) {
         <table className="w-full min-w-[980px]">
           <thead className="border-b border-[#EEF2F7]">
             <tr className="text-left">
-              <th className="px-6 py-4 w-10">
+              {/* <th className="px-6 py-4 w-10">
                 <input type="checkbox" aria-label="Select all" className="rounded border-[#E5E7EB]" />
-              </th>
+              </th> */}
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Lead Name</th>
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Contact</th>
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Source</th>
@@ -152,9 +152,9 @@ export default function LeadsList({ leads, onDelete, onEdit }) {
           <tbody className="divide-y divide-[#EEF2F7]">
             {paginated.map((lead) => (
               <tr key={lead.id} className="hover:bg-[#FAFAFA]">
-                <td className="px-6 py-5">
+                {/* <td className="px-6 py-5">
                   <input type="checkbox" aria-label={`Select ${lead.name}`} className="rounded border-[#E5E7EB]" />
-                </td>
+                </td> */}
                 <td className="px-6 py-5">
                   <p className="text-sm font-medium text-[#111827]">{lead.name}</p>
                 </td>
@@ -180,7 +180,7 @@ export default function LeadsList({ leads, onDelete, onEdit }) {
                   <div className="flex items-center gap-3 text-[#64748B]">
                     <button type="button" className="hover:text-[#111827]" aria-label="View" onClick={() => setViewId(lead.id)}><Eye size={18} /></button>
                     <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={() => onEdit(lead)}><Pencil size={18} /></button>
-                    <button type="button" className="hover:text-[#111827]" aria-label="More" onClick={() => openNotImplemented("More")}><MoreVertical size={18} /></button>
+                    {/* <button type="button" className="hover:text-[#111827]" aria-label="More" onClick={() => openNotImplemented("More")}><MoreVertical size={18} /></button> */}
                     <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={() => onDelete(lead.id)}><Trash2 size={18} /></button>
                   </div>
                 </td>

@@ -27,7 +27,7 @@ function statusStyles(status) {
   switch (status?.toLowerCase()) {
     case "in_progress": return "bg-blue-50 text-blue-600";
     case "completed": return "bg-emerald-50 text-emerald-600";
-    case "pending": return "bg-slate-100 text-slate-600";
+    case "pending": return "bg-red-100 text-red-600";
     default: return "bg-slate-100 text-slate-600";
   }
 }
@@ -36,7 +36,7 @@ function statusLabel(status) {
   switch (status?.toLowerCase()) {
     case "in_progress": return "In Progress";
     case "completed": return "Completed";
-    case "pending": return "Not Started";
+    case "pending": return "Pending";
     default: return status;
   }
 }
@@ -163,7 +163,7 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
                   <div className="flex items-center gap-3 text-[#64748B]">
                     <button type="button" className="hover:text-[#111827]" aria-label="View" onClick={() => setViewId(task.id)}><Eye size={18} /></button>
                     <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={() => onEdit(task)}><Pencil size={18} /></button>
-                    <button type="button" className="hover:text-[#111827]" aria-label="More" onClick={() => openNotImplemented("More")}><MoreVertical size={18} /></button>
+                    {/* <button type="button" className="hover:text-[#111827]" aria-label="More" onClick={() => openNotImplemented("More")}><MoreVertical size={18} /></button> */}
                     <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={() => onDelete(task.id)}><Trash2 size={18} /></button>
                   </div>
                 </td>

@@ -139,7 +139,7 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
                   <div className="flex items-center gap-3 text-[#64748B]">
                     <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="View" onClick={() => setViewId(c.id)}><Eye size={18} /></button>
                     <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="Edit" onClick={() => onEdit(c)}><Pencil size={18} /></button>
-                    <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="More" onClick={() => openNotImplemented("More")}><MoreVertical size={18} /></button>
+                    {/* <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="More" onClick={() => openNotImplemented("More")}><MoreVertical size={18} /></button> */}
                     <button type="button" className="hover:text-red-600 cursor-pointer" aria-label="Delete" onClick={() => onDelete(c.id)}><Trash2 size={18} /></button>
                   </div>
                 </td>

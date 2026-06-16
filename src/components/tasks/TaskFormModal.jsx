@@ -3,7 +3,8 @@ import axios from "axios";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
 
-const api = axios.create({ baseURL: "http://localhost:8000/api/admin" });
+const BASE_URL = "http://localhost:8000/api/admin";
+const api = axios.create({ baseURL: BASE_URL });
 
 const defaultPriorities = ["High", "Medium", "Low"];
 const defaultStatuses = ["Pending", "In Progress", "Completed"];
@@ -16,6 +17,22 @@ function validateTask(form) {
 }
 
 export default function TaskFormModal({ open, onClose, onSubmit, loading = false, initialData = null }) {
+  const [staff, setStaff] = useState([]);
+  const [deals, setDeals] = useState([]);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/staff/view/`)
+      .then((r) => r.json())
+      .then((data) => setStaff(data))
+      .catch((err) => console.error("Failed to fetch staff:", err));
+  }, []);
+
+  useEffect(() => {
+    api.get("/deal/view/")
+      .then((res) => setDeals(res.data))
+      .catch((err) => console.error("Failed to fetch deals:", err));
+  }, []);
+
   const blankForm = useMemo(() => ({
     title: "",
     description: "",
@@ -28,20 +45,13 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
 
   const [form, setForm] = useState(blankForm);
   const [touched, setTouched] = useState({});
-  const [deals, setDeals] = useState([]);
-
-  useEffect(() => {
-    api.get("/deal/view/")
-      .then((res) => setDeals(res.data))
-      .catch((err) => console.error("Failed to fetch deals:", err));
-  }, []);
 
   useEffect(() => {
     if (initialData) {
       setForm({
         title: initialData.title || "",
         description: initialData.description || "",
-        assignedTo: initialData.assignedTo || "",
+        assignedTo: initialData.assignedToId || "",
         relatedTo: initialData.relatedTo || "",
         priority: initialData.priority?.charAt(0).toUpperCase() + initialData.priority?.slice(1) || "Medium",
         status: initialData.status === "in_progress" ? "In Progress" : initialData.status?.charAt(0).toUpperCase() + initialData.status?.slice(1) || "Pending",
@@ -56,9 +66,7 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
   const errors = validateTask(form);
   const hasErrors = Object.keys(errors).length > 0;
 
-  const setField = (key, value) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
+  const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const closeAndReset = () => {
     if (loading) return;
@@ -104,14 +112,17 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
           />
         </div>
 
+        {/* ← Changed from text input to staff dropdown */}
         <div>
-          <label className="text-sm text-[#111827] font-medium">Assigned To <span className="text-red-500">*</span></label>
-          <input
+          <label className="text-sm text-[#111827] font-medium">Assigned To</label>
+          <select
             value={form.assignedTo}
             onChange={(e) => setField("assignedTo", e.target.value)}
-            placeholder="e.g. Mark Brown"
-            className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
-          />
+            className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+          >
+            <option value="">Select team member</option>
+            {staff.map((s) => <option key={s.id} value={s.id}>{s.fullName}</option>)}
+          </select>
         </div>
 
         <div>
@@ -121,36 +132,30 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
             onChange={(e) => setField("relatedTo", e.target.value)}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
-            <option value="">e.g. Deal: Website Redesign</option>
-            {deals.map((d) => (
-              <option key={d.id} value={`Deal: ${d.name}`}>Deal: {d.name}</option>
-            ))}
+            <option value="">Select a deal</option>
+            {deals.map((d) => <option key={d.id} value={`Deal: ${d.name}`}>Deal: {d.name}</option>)}
           </select>
         </div>
 
         <div>
-          <label className="text-sm text-[#111827] font-medium">Priority <span className="text-red-500">*</span></label>
+          <label className="text-sm text-[#111827] font-medium">Priority</label>
           <select
             value={form.priority}
             onChange={(e) => setField("priority", e.target.value)}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
-            {defaultPriorities.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
+            {defaultPriorities.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
 
         <div>
-          <label className="text-sm text-[#111827] font-medium">Status <span className="text-red-500">*</span></label>
+          <label className="text-sm text-[#111827] font-medium">Status</label>
           <select
             value={form.status}
             onChange={(e) => setField("status", e.target.value)}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
-            {defaultStatuses.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
+            {defaultStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
 
@@ -168,9 +173,7 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
       </div>
 
       <div className="mt-6 flex items-center justify-end gap-3">
-        <button type="button" onClick={closeAndReset} disabled={loading} className="h-11 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] disabled:opacity-60">
-          Cancel
-        </button>
+        <button type="button" onClick={closeAndReset} disabled={loading} className="h-11 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] disabled:opacity-60">Cancel</button>
         <button type="button" onClick={submit} disabled={loading} className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 disabled:opacity-60">
           {loading && <Spinner size={16} className="text-white" />}
           {initialData ? "Save Task" : "Add Task"}
