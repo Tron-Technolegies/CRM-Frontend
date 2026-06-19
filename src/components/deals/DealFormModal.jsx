@@ -2,13 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
+import { usePicklist } from "../../hooks/usePicklist";
 
 const BASE_URL = "http://localhost:8000/api/admin";
 const api = axios.create({ baseURL: BASE_URL });
-
-const defaultStages = ["Discussion", "Demo", "Proposal", "Negotiation", "Won", "Lost"];
-const defaultPriorities = ["Low", "Medium", "High"];
-const defaultSources = ["Website", "Ads", "Referral", "WhatsApp"];
 
 function validateDeal(form) {
   const errors = {};
@@ -24,6 +21,9 @@ function validateDeal(form) {
 export default function DealFormModal({ open, onClose, onSubmit, loading = false, initialData = null }) {
   const [staff, setStaff] = useState([]);
   const [unconvertedLeads, setUnconvertedLeads] = useState([]);
+  const stageOptions = usePicklist("deal_stage");
+  const sourceOptions = usePicklist("deal_source");
+  const priorityOptions = usePicklist("deal_priority");
 
   useEffect(() => {
     fetch(`${BASE_URL}/staff/view/`)
@@ -167,7 +167,7 @@ export default function DealFormModal({ open, onClose, onSubmit, loading = false
             onBlur={() => setTouched((p) => ({ ...p, stage: true }))}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
-            {defaultStages.map((s) => <option key={s} value={s}>{s}</option>)}
+            {stageOptions.map((o) => <option key={o.id} value={o.value}>{o.label}</option>)}
           </select>
           {touched.stage && errors.stage && <p className="text-xs text-red-600 mt-1">{errors.stage}</p>}
         </div>
@@ -203,7 +203,7 @@ export default function DealFormModal({ open, onClose, onSubmit, loading = false
             onChange={(e) => setField("dealSource", e.target.value)}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
-            {defaultSources.map((s) => <option key={s} value={s}>{s}</option>)}
+            {sourceOptions.map((o) => <option key={o.id} value={o.value}>{o.label}</option>)}
           </select>
         </div>
 
@@ -214,7 +214,7 @@ export default function DealFormModal({ open, onClose, onSubmit, loading = false
             onChange={(e) => setField("priority", e.target.value)}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
-            {defaultPriorities.map((p) => <option key={p} value={p}>{p}</option>)}
+            {priorityOptions.map((o) => <option key={o.id} value={o.value}>{o.label}</option>)}
           </select>
         </div>
 

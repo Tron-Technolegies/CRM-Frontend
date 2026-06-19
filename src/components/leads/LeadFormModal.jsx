@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
+import { usePicklist } from "../../hooks/usePicklist";
 
 const BASE_URL = "http://127.0.0.1:8000/api/admin";
 
-const defaultSources = ["Website", "WhatsApp", "Facebook Ads", "Google Ads", "Referral"];
-const defaultPriorities = ["Low", "Medium", "High"];
 const defaultCountryCodes = ["+91", "+1", "+44", "+65", "+971"];
 
 function validateLead(form) {
@@ -20,6 +19,9 @@ function validateLead(form) {
 
 export default function LeadFormModal({ open, onClose, onSubmit, loading = false, initialData = null }) {
   const [staff, setStaff] = useState([]);
+  const sourceOptions = usePicklist("lead_source");
+  const priorityOptions = usePicklist("lead_priority");
+  const statusOptions = usePicklist("lead_status");
 
   useEffect(() => {
     fetch(`${BASE_URL}/staff/view/`)
@@ -156,7 +158,7 @@ export default function LeadFormModal({ open, onClose, onSubmit, loading = false
             onBlur={() => setTouched((p) => ({ ...p, leadSource: true }))}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
-            {defaultSources.map((s) => <option key={s} value={s}>{s}</option>)}
+            {sourceOptions.map((o) => <option key={o.id} value={o.value}>{o.label}</option>)}
           </select>
           {touched.leadSource && errors.leadSource && <p className="text-xs text-red-600 mt-1">{errors.leadSource}</p>}
         </div>
@@ -181,7 +183,7 @@ export default function LeadFormModal({ open, onClose, onSubmit, loading = false
             onBlur={() => setTouched((p) => ({ ...p, priority: true }))}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
-            {defaultPriorities.map((p) => <option key={p} value={p}>{p}</option>)}
+            {priorityOptions.map((o) => <option key={o.id} value={o.value}>{o.label}</option>)}
           </select>
           {touched.priority && errors.priority && <p className="text-xs text-red-600 mt-1">{errors.priority}</p>}
         </div>
@@ -203,10 +205,7 @@ export default function LeadFormModal({ open, onClose, onSubmit, loading = false
             onChange={(e) => setField("status", e.target.value)}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
-            <option value="new">New</option>
-            <option value="contacted">Contacted</option>
-            <option value="converted">Converted</option>
-            <option value="lost">Lost</option>
+            {statusOptions.map((o) => <option key={o.id} value={o.value}>{o.label}</option>)}
           </select>
         </div>
 
@@ -222,20 +221,8 @@ export default function LeadFormModal({ open, onClose, onSubmit, loading = false
       </div>
 
       <div className="mt-6 flex items-center justify-end gap-3">
-        <button
-          type="button"
-          onClick={closeAndReset}
-          disabled={loading}
-          className="h-11 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] disabled:opacity-60"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          onClick={submit}
-          disabled={loading}
-          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 disabled:opacity-60"
-        >
+        <button type="button" onClick={closeAndReset} disabled={loading} className="h-11 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] disabled:opacity-60">Cancel</button>
+        <button type="button" onClick={submit} disabled={loading} className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 disabled:opacity-60">
           {loading && <Spinner size={16} className="text-white" />}
           Save Lead
         </button>

@@ -2,12 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
+import { usePicklist } from "../../hooks/usePicklist";
 
 const BASE_URL = "http://localhost:8000/api/admin";
 const api = axios.create({ baseURL: BASE_URL });
-
-const defaultPriorities = ["High", "Medium", "Low"];
-const defaultStatuses = ["Pending", "In Progress", "Completed"];
 
 function validateTask(form) {
   const errors = {};
@@ -19,6 +17,8 @@ function validateTask(form) {
 export default function TaskFormModal({ open, onClose, onSubmit, loading = false, initialData = null }) {
   const [staff, setStaff] = useState([]);
   const [deals, setDeals] = useState([]);
+  const priorityOptions = usePicklist("task_priority");
+  const statusOptions = usePicklist("task_status");
 
   useEffect(() => {
     fetch(`${BASE_URL}/staff/view/`)
@@ -38,8 +38,8 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
     description: "",
     assignedTo: "",
     relatedTo: "",
-    priority: "Medium",
-    status: "Pending",
+    priority: "medium",
+    status: "pending",
     dueDate: "",
   }), []);
 
@@ -53,8 +53,8 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
         description: initialData.description || "",
         assignedTo: initialData.assignedToId || "",
         relatedTo: initialData.relatedTo || "",
-        priority: initialData.priority?.charAt(0).toUpperCase() + initialData.priority?.slice(1) || "Medium",
-        status: initialData.status === "in_progress" ? "In Progress" : initialData.status?.charAt(0).toUpperCase() + initialData.status?.slice(1) || "Pending",
+        priority: initialData.priority?.toLowerCase() || "medium",
+        status: initialData.status?.toLowerCase() || "pending",
         dueDate: initialData.dueDate || "",
       });
     } else {
@@ -112,7 +112,6 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
           />
         </div>
 
-        {/* ← Changed from text input to staff dropdown */}
         <div>
           <label className="text-sm text-[#111827] font-medium">Assigned To</label>
           <select
@@ -144,7 +143,7 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
             onChange={(e) => setField("priority", e.target.value)}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
-            {defaultPriorities.map((p) => <option key={p} value={p}>{p}</option>)}
+            {priorityOptions.map((o) => <option key={o.id} value={o.value}>{o.label}</option>)}
           </select>
         </div>
 
@@ -155,7 +154,7 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
             onChange={(e) => setField("status", e.target.value)}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
-            {defaultStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+            {statusOptions.map((o) => <option key={o.id} value={o.value}>{o.label}</option>)}
           </select>
         </div>
 

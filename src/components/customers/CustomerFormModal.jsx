@@ -2,11 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
+import { usePicklist } from "../../hooks/usePicklist";
 
 const api = axios.create({ baseURL: "http://localhost:8000/api/admin" });
-
-const defaultIndustries = ["Technology", "Finance", "Software", "Design", "Marketing", "Nonprofit"];
-const defaultStatuses = ["Active", "Inactive"];
 
 function validateCustomer(form) {
   const errors = {};
@@ -22,6 +20,9 @@ function validateCustomer(form) {
 }
 
 export default function CustomerFormModal({ open, onClose, onSubmit, loading = false, initialData = null }) {
+  const industryOptions = usePicklist("customer_industry");
+  const statusOptions = usePicklist("customer_status");
+
   const blankForm = useMemo(() => ({
     companyName: "",
     contactName: "",
@@ -101,7 +102,6 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-        {/* Link to Deal - only when adding */}
         {!initialData && (
           <div className="md:col-span-2">
             <label className="text-sm text-[#111827] font-medium">
@@ -185,9 +185,7 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
             onBlur={() => setTouched((p) => ({ ...p, industry: true }))}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
           >
-            {defaultIndustries.map((i) => (
-              <option key={i} value={i}>{i}</option>
-            ))}
+            {industryOptions.map((o) => <option key={o.id} value={o.value}>{o.label}</option>)}
           </select>
           {touched.industry && errors.industry && <p className="text-xs text-red-600 mt-1">{errors.industry}</p>}
         </div>
@@ -200,9 +198,7 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
             onBlur={() => setTouched((p) => ({ ...p, status: true }))}
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
           >
-            {defaultStatuses.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
+            {statusOptions.map((o) => <option key={o.id} value={o.value}>{o.label}</option>)}
           </select>
           {touched.status && errors.status && <p className="text-xs text-red-600 mt-1">{errors.status}</p>}
         </div>
