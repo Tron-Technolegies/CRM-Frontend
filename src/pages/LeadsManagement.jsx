@@ -73,6 +73,7 @@ export default function LeadsManagement() {
         priority: form.priority,
         expected_closing_date: form.expectedClosingDate || null,
         lead_description: form.description.trim(),
+        assigned_to: form.assignedTo || null,
       });
       fetchLeads();
       pushToast({ title: "Lead created", message: `${form.fullName} added successfully`, variant: "success" });
@@ -86,6 +87,7 @@ export default function LeadsManagement() {
   };
 
   const updateLead = async (form) => {
+    console.log("Form being sent:", form);
     setAddLoading(true);
     try {
       await api.put(`/lead/update/${editLead.id}/`, {
@@ -98,6 +100,7 @@ export default function LeadsManagement() {
         status: form.status.toLowerCase(),
         expected_closing_date: form.expectedClosingDate || null,
         lead_description: form.description.trim(),
+        assigned_to: form.assignedTo || null,
       });
       fetchLeads();
       pushToast({ title: "Lead updated", message: `${form.fullName} updated successfully`, variant: "success" });

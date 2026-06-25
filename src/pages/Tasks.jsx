@@ -66,7 +66,7 @@ export default function Tasks() {
       await api.post("/task/add/", {
         title: form.title.trim(),
         description: form.description.trim(),
-        assigned_to: null,
+        assigned_to: form.assignedTo || null,
         related_to: form.relatedTo.trim(),
         priority: form.priority.toLowerCase(),
         status: form.status.toLowerCase(),
@@ -90,6 +90,7 @@ export default function Tasks() {
         title: form.title.trim(),
         description: form.description.trim(),
         related_to: form.relatedTo.trim(),
+        assigned_to: form.assignedTo || null,
         priority: form.priority.toLowerCase(),
         status: form.status.toLowerCase(),
         due_date: form.dueDate,
