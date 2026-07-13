@@ -1,0 +1,353 @@
+import { useEffect, useMemo, useState } from "react";
+import Modal from "../ui/Modal";
+import Spinner from "../ui/Spinner";
+
+function validateAccount(form) {
+  const errors = {};
+  if (!form.accountName.trim()) errors.accountName = "Account name is required";
+  if (!form.phoneNumber.trim()) errors.phoneNumber = "Phone number is required";
+  return errors;
+}
+
+function isEmptyAddress(address) {
+  return Object.values(address).every((value) => String(value || "").trim() === "");
+}
+
+function AddressFields({ title, value, onChange }) {
+  return (
+    <div className="rounded-2xl border border-[#E5E7EB] p-4">
+      <h3 className="text-sm font-semibold text-[#111827]">{title}</h3>
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="text-sm text-[#111827] font-medium">Country</label>
+          <input
+            value={value.country}
+            onChange={(e) => onChange("country", e.target.value)}
+            placeholder="Country"
+            className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+          />
+        </div>
+        <div>
+          <label className="text-sm text-[#111827] font-medium">Address</label>
+          <input
+            value={value.address}
+            onChange={(e) => onChange("address", e.target.value)}
+            placeholder="Address"
+            className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="text-sm text-[#111827] font-medium">Street Address</label>
+          <input
+            value={value.streetAdd}
+            onChange={(e) => onChange("streetAdd", e.target.value)}
+            placeholder="Street address"
+            className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+          />
+        </div>
+        <div>
+          <label className="text-sm text-[#111827] font-medium">City</label>
+          <input
+            value={value.city}
+            onChange={(e) => onChange("city", e.target.value)}
+            placeholder="City"
+            className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+          />
+        </div>
+        <div>
+          <label className="text-sm text-[#111827] font-medium">State</label>
+          <input
+            value={value.state}
+            onChange={(e) => onChange("state", e.target.value)}
+            placeholder="State"
+            className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+          />
+        </div>
+        <div>
+          <label className="text-sm text-[#111827] font-medium">Zip Code</label>
+          <input
+            value={value.zipCode}
+            onChange={(e) => onChange("zipCode", e.target.value)}
+            placeholder="Zip code"
+            className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function AccountFormModal({
+  open,
+  onClose,
+  onSubmit,
+  loading = false,
+  initialData = null,
+  staff = [],
+  accounts = [],
+}) {
+  const blankForm = useMemo(
+    () => ({
+      accountName: "",
+      assignedTo: "",
+      phoneNumber: "",
+      accountSite: "",
+      parentAccount: "",
+      website: "",
+      accountType: "",
+      industry: "",
+      ownership: "",
+      employees: "",
+      billingAddress: {
+        country: "",
+        address: "",
+        streetAdd: "",
+        city: "",
+        state: "",
+        zipCode: "",
+      },
+      shippingAddress: {
+        country: "",
+        address: "",
+        streetAdd: "",
+        city: "",
+        state: "",
+        zipCode: "",
+      },
+    }),
+    [],
+  );
+
+  const [form, setForm] = useState(blankForm);
+  const [touched, setTouched] = useState({});
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        accountName: initialData.accountName || "",
+        assignedTo: initialData.assignedToId || "",
+        phoneNumber: initialData.phoneNumber || "",
+        accountSite: initialData.accountSite || "",
+        parentAccount: initialData.parentAccountId || "",
+        website: initialData.website || "",
+        accountType: initialData.accountType || "",
+        industry: initialData.industry || "",
+        ownership: initialData.ownership || "",
+        employees: initialData.employees || "",
+        billingAddress: {
+          country: initialData.billingAddress?.country || "",
+          address: initialData.billingAddress?.address || "",
+          streetAdd: initialData.billingAddress?.street_address || "",
+          city: initialData.billingAddress?.city || "",
+          state: initialData.billingAddress?.state || "",
+          zipCode: initialData.billingAddress?.zip_code || "",
+        },
+        shippingAddress: {
+          country: initialData.shippingAddress?.country || "",
+          address: initialData.shippingAddress?.address || "",
+          streetAdd: initialData.shippingAddress?.street_address || "",
+          city: initialData.shippingAddress?.city || "",
+          state: initialData.shippingAddress?.state || "",
+          zipCode: initialData.shippingAddress?.zip_code || "",
+        },
+      });
+    } else {
+      setForm(blankForm);
+    }
+    setTouched({});
+  }, [initialData, blankForm]);
+
+  const errors = validateAccount(form);
+  const hasErrors = Object.keys(errors).length > 0;
+
+  const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+  const setAddressField = (group, key, value) =>
+    setForm((prev) => ({
+      ...prev,
+      [group]: {
+        ...prev[group],
+        [key]: value,
+      },
+    }));
+
+  const closeAndReset = () => {
+    if (loading) return;
+    setForm(blankForm);
+    setTouched({});
+    onClose();
+  };
+
+  const submit = () => {
+    setTouched({
+      accountName: true,
+      phoneNumber: true,
+    });
+    if (hasErrors) return;
+    onSubmit(form);
+  };
+
+  const accountOptions = accounts.filter((account) => String(account.id) !== String(initialData?.id));
+
+  return (
+    <Modal
+      open={open}
+      title={initialData ? "Edit Account" : "Add New Account"}
+      subtitle={initialData ? "Update the account details below" : "Fill in the details below to add a new account to your CRM"}
+      onClose={closeAndReset}
+      maxWidthClassName="max-w-5xl"
+    >
+      <div className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="md:col-span-2">
+            <label className="text-sm text-[#111827] font-medium">Account Name <span className="text-red-500">*</span></label>
+            <input
+              value={form.accountName}
+              onChange={(e) => setField("accountName", e.target.value)}
+              onBlur={() => setTouched((prev) => ({ ...prev, accountName: true }))}
+              placeholder="Enter account name"
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+            />
+            {touched.accountName && errors.accountName && <p className="text-xs text-red-600 mt-1">{errors.accountName}</p>}
+          </div>
+
+          <div>
+            <label className="text-sm text-[#111827] font-medium">Assigned To</label>
+            <select
+              value={form.assignedTo}
+              onChange={(e) => setField("assignedTo", e.target.value)}
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">Select team member</option>
+              {staff.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.fullName || member.name || `Staff #${member.id}`}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-sm text-[#111827] font-medium">Phone Number <span className="text-red-500">*</span></label>
+            <input
+              value={form.phoneNumber}
+              onChange={(e) => setField("phoneNumber", e.target.value)}
+              onBlur={() => setTouched((prev) => ({ ...prev, phoneNumber: true }))}
+              placeholder="Enter phone number"
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+            />
+            {touched.phoneNumber && errors.phoneNumber && <p className="text-xs text-red-600 mt-1">{errors.phoneNumber}</p>}
+          </div>
+
+          <div>
+            <label className="text-sm text-[#111827] font-medium">Account Site</label>
+            <input
+              value={form.accountSite}
+              onChange={(e) => setField("accountSite", e.target.value)}
+              placeholder="Enter account site"
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-[#111827] font-medium">Parent Account</label>
+            <select
+              value={form.parentAccount}
+              onChange={(e) => setField("parentAccount", e.target.value)}
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">No parent account</option>
+              {accountOptions.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.accountName || `Account #${account.id}`}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-sm text-[#111827] font-medium">Website</label>
+            <input
+              value={form.website}
+              onChange={(e) => setField("website", e.target.value)}
+              placeholder="https://example.com"
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-[#111827] font-medium">Account Type</label>
+            <input
+              value={form.accountType}
+              onChange={(e) => setField("accountType", e.target.value)}
+              placeholder="Enter account type"
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-[#111827] font-medium">Industry</label>
+            <input
+              value={form.industry}
+              onChange={(e) => setField("industry", e.target.value)}
+              placeholder="Enter industry"
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-[#111827] font-medium">Ownership</label>
+            <input
+              value={form.ownership}
+              onChange={(e) => setField("ownership", e.target.value)}
+              placeholder="Enter ownership"
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-[#111827] font-medium">Employees</label>
+            <input
+              value={form.employees}
+              onChange={(e) => setField("employees", e.target.value)}
+              placeholder="Enter employee count"
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <AddressFields
+            title="Billing Address"
+            value={form.billingAddress}
+            onChange={(key, value) => setAddressField("billingAddress", key, value)}
+          />
+          <AddressFields
+            title="Shipping Address"
+            value={form.shippingAddress}
+            onChange={(key, value) => setAddressField("shippingAddress", key, value)}
+          />
+        </div>
+      </div>
+
+      <div className="mt-6 flex items-center justify-end gap-3">
+        <button
+          type="button"
+          onClick={closeAndReset}
+          disabled={loading}
+          className="h-11 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] disabled:opacity-60"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={submit}
+          disabled={loading}
+          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 disabled:opacity-60"
+        >
+          {loading && <Spinner size={16} className="text-white" />}
+          {initialData ? "Save Changes" : "Save Account"}
+        </button>
+      </div>
+    </Modal>
+  );
+}

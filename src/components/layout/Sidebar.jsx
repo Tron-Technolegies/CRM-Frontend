@@ -1,4 +1,3 @@
-
 import {
   LayoutDashboard,
   Users,
@@ -10,6 +9,8 @@ import {
   Handshake,
   ClipboardList,
   User,
+  Building2,
+  FileText,
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
@@ -18,6 +19,8 @@ export default function Sidebar({ sidebarOpen }) {
   const menus = [
     { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/" },
     { name: "Leads", icon: <Users size={18} />, path: "/leads" },
+    { name: "Accounts", icon: <Building2 size={18} />, path: "/accounts" },
+    { name: "Quotes", icon: <FileText size={18} />, path: "/quotes" },
     { name: "Deals", icon: <Handshake size={18} />, path: "/deals" },
     { name: "Customers", icon: <UserRound size={18} />, path: "/customers" },
     { name: "Tasks", icon: <ClipboardList size={18} />, path: "/tasks" },

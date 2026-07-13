@@ -4,6 +4,8 @@ import HomeLayout from "./components/layout/HomeLayout";
 
 import Dashboard from "./pages/Dashboard";
 import LeadsManagement from "./pages/LeadsManagement";
+import Accounts from "./pages/Accounts";
+import Quotes from "./pages/Quotes";
 import Deals from "./pages/Deals";
 import Customers from "./pages/Customers";
 import Tasks from "./pages/Tasks";
@@ -25,6 +27,8 @@ function App() {
         <Route index element={<Dashboard />} />
 
         <Route path="leads" element={<LeadsManagement />} />
+        <Route path="accounts" element={<Accounts />} />
+        <Route path="quotes" element={<Quotes />} />
         <Route path="deals" element={<Deals />} />
         <Route path="customers" element={<Customers />} />
         <Route path="tasks" element={<Tasks />} />
@@ -33,12 +37,12 @@ function App() {
         <Route path="settings" element={<Settings />} />
 
         <Route path="settings" element={<Settings />} />
-        <Route path="settings/profile" element={<Profile/>} />
-        <Route path="settings/notifications" element={<Notifications/>} />
-        <Route path="settings/security" element={<Security/>} />
-        <Route path="settings/preferences" element={<Preferences/>} />
-        <Route path="settings/billing" element={<Billing/>} />
-        <Route path="settings/data-privacy" element={<Data_Privacy/>} />
+        <Route path="settings/profile" element={<Profile />} />
+        <Route path="settings/notifications" element={<Notifications />} />
+        <Route path="settings/security" element={<Security />} />
+        <Route path="settings/preferences" element={<Preferences />} />
+        <Route path="settings/billing" element={<Billing />} />
+        <Route path="settings/data-privacy" element={<Data_Privacy />} />
       </Route>
     </Routes>
   );
