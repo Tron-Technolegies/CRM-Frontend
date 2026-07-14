@@ -12,7 +12,10 @@ export default function Header({ setSidebarOpen }) {
     "/customers": "Customers",
     "/tasks": "Tasks",
     "/reports": "Reports",
+    "/meetings": "Meetings",
     "/users": "Users",
+    "/calls": "Calls",
+    "/quotes": "Quotes",
     "/settings": "Settings",
   };
 
