@@ -1,12 +1,13 @@
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
 import QuotesKpis from "../components/quotes/QuotesKpis";
 import QuotesList from "../components/quotes/QuotesList";
 import QuoteFormModal from "../components/quotes/QuoteFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { useToast } from "../components/ui/toastContext.js";
+import QuotesTable from "../components/quotes/QuotesTable.jsx";
+import { Link } from "react-router-dom";
 
 const api = axios.create({
   baseURL: "http://localhost:8000/api/admin",
@@ -127,9 +128,9 @@ export default function Quotes() {
 
   useEffect(() => {
     fetchQuotes();
-    api.get("/staff/view/").then((response) => setStaff(Array.isArray(response.data) ? response.data : [])).catch(() => {});
-    api.get("/deal/view/").then((response) => setDeals(Array.isArray(response.data) ? response.data : [])).catch(() => {});
-    api.get("/account/view/").then((response) => setAccounts(Array.isArray(response.data) ? response.data : [])).catch(() => {});
+    api.get("/staff/view/").then((response) => setStaff(Array.isArray(response.data) ? response.data : [])).catch(() => { });
+    api.get("/deal/view/").then((response) => setDeals(Array.isArray(response.data) ? response.data : [])).catch(() => { });
+    api.get("/account/view/").then((response) => setAccounts(Array.isArray(response.data) ? response.data : [])).catch(() => { });
   }, []);
 
   const requestDelete = (id) => {
@@ -215,26 +216,28 @@ export default function Quotes() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[28px] font-semibold text-[#111827]">Quotes</h1>
-        <button
-          type="button"
-          onClick={() => setAddOpen(true)}
-          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2"
-        >
-          <Plus size={18} />
-          Add Quote
-        </button>
+    <div className="mt-5 ">
+      <div className="flex items-center justify-between mb-15">
+        <h1 className="text-[28px] font-bold text-[#111827]">Quotes</h1>
+        <Link to="/addquote">
+          <button
+            type="button"
+            onClick={() => setAddOpen(true)}
+            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2"
+          >
+            <Plus size={18} />
+            Add Quote
+          </button>
+        </Link>
       </div>
-
-      <QuotesKpis quotes={quotes} />
-      <QuotesList
+      <QuotesTable />
+      {/* <QuotesKpis quotes={quotes} /> */}
+      {/* <QuotesList
         quotes={quotes}
         onDelete={requestDelete}
         onEdit={(quote) => setEditQuote(quote)}
-      />
-
+      /> */}
+      {/* 
       <QuoteFormModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
@@ -243,9 +246,9 @@ export default function Quotes() {
         staff={staff}
         deals={deals}
         accounts={accounts}
-      />
+      /> */}
 
-      <QuoteFormModal
+      {/* <QuoteFormModal
         open={!!editQuote}
         onClose={() => setEditQuote(null)}
         onSubmit={updateQuote}
@@ -254,7 +257,7 @@ export default function Quotes() {
         staff={staff}
         deals={deals}
         accounts={accounts}
-      />
+      /> */}
 
       <ConfirmDialog
         open={confirmDeleteOpen}

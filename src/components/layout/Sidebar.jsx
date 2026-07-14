@@ -11,6 +11,8 @@ import {
   User,
   Building2,
   FileText,
+  CalendarDays,
+  Phone
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
@@ -19,11 +21,13 @@ export default function Sidebar({ sidebarOpen }) {
   const menus = [
     { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/" },
     { name: "Leads", icon: <Users size={18} />, path: "/leads" },
-    { name: "Accounts", icon: <Building2 size={18} />, path: "/accounts" },
-    { name: "Quotes", icon: <FileText size={18} />, path: "/quotes" },
     { name: "Deals", icon: <Handshake size={18} />, path: "/deals" },
     { name: "Customers", icon: <UserRound size={18} />, path: "/customers" },
     { name: "Tasks", icon: <ClipboardList size={18} />, path: "/tasks" },
+    { name: "Meetings", icon: <CalendarDays size={18} />, path: "/meetings" },
+    { name: "Calls", icon: <Phone size={18} />, path: "/calls" },
+    { name: "Accounts", icon: <Building2 size={18} />, path: "/accounts" },
+    { name: "Quotes", icon: <FileText size={18} />, path: "/quotes" },
     { name: "Reports", icon: <BarChart3 size={18} />, path: "/reports" },
     { name: "Users", icon: <User size={18} />, path: "/users" },
     { name: "Settings", icon: <Settings size={18} />, path: "/settings" },
@@ -31,9 +35,8 @@ export default function Sidebar({ sidebarOpen }) {
 
   return (
     <aside
-      className={`${
-        sidebarOpen ? "w-[260px]" : "w-24"
-      } duration-300 bg-[#F8FAFC] border-r border-[#E2E8F0] flex flex-col h-screen`}
+      className={`${sidebarOpen ? "w-[260px]" : "w-24"
+        } duration-300 bg-[#F8FAFC] border-r border-[#E2E8F0] flex flex-col h-screen`}
     >
       {/* LOGO */}
       <div className="h-20 border-b border-[#E2E8F0] flex items-center px-6">
@@ -57,8 +60,7 @@ export default function Sidebar({ sidebarOpen }) {
               to={item.path}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200
-                ${
-                  isActive ? "bg-[#E8F0FF] text-[#2563EB]" : "text-[#0F172A] hover:bg-[#EFF6FF]"
+                ${isActive ? "bg-[#E8F0FF] text-[#2563EB]" : "text-[#0F172A] hover:bg-[#EFF6FF]"
                 }`
               }
             >

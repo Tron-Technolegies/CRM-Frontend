@@ -19,6 +19,9 @@ import Security from "./components/settings/Security";
 import Preferences from "./components/settings/Preferences";
 import Billing from "./components/settings/Billing";
 import Data_Privacy from "./components/settings/Data_Privacy";
+import AddQuotes from "./components/quotes/AddQuotes";
+import Meetings from "./pages/Meetings";
+import Calls from "./pages/Calls";
 
 function App() {
   return (
@@ -29,8 +32,11 @@ function App() {
         <Route path="leads" element={<LeadsManagement />} />
         <Route path="accounts" element={<Accounts />} />
         <Route path="quotes" element={<Quotes />} />
+        <Route path="/addquote" element={<AddQuotes />} />
+        <Route path="meetings" element={<Meetings />} />
         <Route path="deals" element={<Deals />} />
         <Route path="customers" element={<Customers />} />
+        <Route path="calls" element={<Calls />} />
         <Route path="tasks" element={<Tasks />} />
         <Route path="reports" element={<Reports />} />
         <Route path="users" element={<Users />} />
