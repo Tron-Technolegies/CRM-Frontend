@@ -13,7 +13,6 @@ import Reports from "./pages/Reports";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
 
-import Profile from "./components/settings/Profile";
 import Notifications from "./components/settings/Notifications";
 import Security from "./components/settings/Security";
 import Preferences from "./components/settings/Preferences";
@@ -31,6 +30,7 @@ import Addproduct from "./components/Inventory/AddProduct/Addproduct";
 import AddInvoice from "./components/Inventory/Addinvoice/AddInvoice";
 import AddPurchase from "./components/Inventory/Addpurchase/AddPurchase";
 import Addsales from "./components/Inventory/Addsales/Addsales";
+import Profile from "./components/settings/Profile/Profile";
 // import Products from "./pages/Products";
 // import Products from "./pages/Products";
 // import AddProducts from "./components/Inventory/AddProducts";
