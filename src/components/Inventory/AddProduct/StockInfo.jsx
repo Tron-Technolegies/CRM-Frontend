@@ -2,13 +2,12 @@ import React from "react";
 
 const StockInfo = () => {
     return (
-        <div className="border border-gray-300 shadow-lg rounded-lg p-7 my-6">
-
-            <h1 className="text-[#2C62FF] font-semibold mb-5">
+        <div className="border border-gray-300 shadow-lg rounded-lg p-9 my-6">
+            <h1 className="font-bold text-xl mb-5">
                 Stock Information
             </h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mx-9">
 
                 <div>
                     <label className="block text-xs font-medium text-[#64748B] mb-2">

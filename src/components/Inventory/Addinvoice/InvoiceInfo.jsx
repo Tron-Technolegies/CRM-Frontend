@@ -1,18 +1,18 @@
 import React from "react";
 
-const SalesInfo = () => {
+const InvoiceInfo = () => {
     return (
         <div className="border border-gray-300 shadow-lg rounded-lg p-9">
 
             <h1 className="font-bold mb-7 text-xl">
-                Sales Order Information
+                Invoice Information
             </h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mx-9">
 
                 <div>
                     <label className="block text-xs font-medium text-[#64748B] mb-2">
-                        Sales Order Owner
+                        Invoice Owner
                     </label>
 
                     <input
@@ -21,7 +21,7 @@ const SalesInfo = () => {
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-[#64748B] mb-2">
-                        Deal Name
+                        Sales Order
                     </label>
 
                     <input
@@ -57,19 +57,7 @@ const SalesInfo = () => {
 
                 <div>
                     <label className="block text-xs font-medium text-[#64748B] mb-2">
-                        Customer Number
-                    </label>
-
-                    <div className="relative">
-                        <input
-                            type="text"
-                            className="h-11 w-full rounded-xl border-2 border-[#E5E7EB] pl-10 pr-4 text-sm outline-none"
-                        />
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-xs font-medium text-[#64748B] mb-2">
-                        Due Date
+                        Invoice Date
                     </label>
 
                     <div className="relative">
@@ -79,10 +67,22 @@ const SalesInfo = () => {
                         />
                     </div>
                 </div>
+                <div>
+                    <label className="block text-xs font-medium text-[#64748B] mb-2">
+                        Account Name
+                    </label>
+
+                    <div className="relative">
+                        <input
+                            type="number"
+                            className="h-11 w-full rounded-xl border-2 border-[#E5E7EB] pl-10 pr-4 text-sm outline-none"
+                        />
+                    </div>
+                </div>
 
                 <div>
                     <label className="block text-xs font-medium text-[#64748B] mb-2">
-                        Quote Name
+                        Contact Name
                     </label>
                     <select className="h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none">
                         <option value="">None</option>
@@ -94,10 +94,10 @@ const SalesInfo = () => {
 
                 <div>
                     <label className="block text-xs font-medium text-[#64748B] mb-2">
-                        Contact Name
+                        Deal Name
                     </label>
                     <input
-                        type="text"
+                        type="date"
                         className="h-11 w-full rounded-xl border-2 border-[#E5E7EB] px-4 text-sm outline-none"
                     />
                 </div>
@@ -105,11 +105,11 @@ const SalesInfo = () => {
 
                 <div>
                     <label className="block text-xs font-medium text-[#64748B] mb-2 mt-2">
-                        Pending
+                        Due Date
                     </label>
 
                     <input
-                        type="text"
+                        type="date"
                         className="h-11 w-full rounded-xl border-2 border-[#E5E7EB] px-4 text-sm outline-none"
                     />
                 </div>
@@ -126,12 +126,11 @@ const SalesInfo = () => {
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-[#64748B] mb-2">
-                        Carrier
+                        Sales Commission
                     </label>
 
                     <input
-                        type="date"
-                        placeholder="FedEx, UPS, etc."
+                        type="text"
                         className="h-11 w-full rounded-xl border-2 border-[#E5E7EB] px-4 text-sm outline-none"
                     />
                 </div>
@@ -146,32 +145,11 @@ const SalesInfo = () => {
                         className="h-11 w-full rounded-xl border-2 border-[#E5E7EB] px-4 text-sm outline-none"
                     />
                 </div>
-                <div>
-                    <label className="block text-xs font-medium text-[#64748B] mb-2">
-                        Sales Commission
-                    </label>
 
-                    <input
-                        type="text"
-                        placeholder="Rs."
-                        className="h-11 w-full rounded-xl border-2 border-[#E5E7EB] px-4 text-sm outline-none"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-xs font-medium text-[#64748B] mb-2">
-                        Account Name
-                    </label>
-
-                    <input
-                        type="text"
-                        className="h-11 w-full rounded-xl border-2 border-[#E5E7EB] px-4 text-sm outline-none"
-                    />
-                </div>
 
             </div>
         </div>
     );
 };
 
-export default SalesInfo;
+export default InvoiceInfo;
