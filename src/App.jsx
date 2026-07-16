@@ -16,7 +16,6 @@ import Settings from "./pages/Settings";
 import Notifications from "./components/settings/Notifications";
 import Security from "./components/settings/Security";
 import Preferences from "./components/settings/Preferences";
-import Billing from "./components/settings/Billing";
 import Data_Privacy from "./components/settings/Data_Privacy";
 import AddQuotes from "./components/quotes/AddQuotes";
 import Meetings from "./pages/Meetings";
@@ -31,6 +30,8 @@ import AddInvoice from "./components/Inventory/Addinvoice/AddInvoice";
 import AddPurchase from "./components/Inventory/Addpurchase/AddPurchase";
 import Addsales from "./components/Inventory/Addsales/Addsales";
 import Profile from "./components/settings/Profile/Profile";
+import Billing from "./components/settings/Billing/Billing";
+import BillingContact from "./components/settings/Billing/Billingcontact";
 // import Products from "./pages/Products";
 // import Products from "./pages/Products";
 // import AddProducts from "./components/Inventory/AddProducts";
@@ -79,6 +80,7 @@ function App() {
         <Route path="settings/security" element={<Security />} />
         <Route path="settings/preferences" element={<Preferences />} />
         <Route path="settings/billing" element={<Billing />} />
+        <Route path="/settings/billing-contact" element={<BillingContact />} />
         <Route path="settings/data-privacy" element={<Data_Privacy />} />
 
       </Route>
