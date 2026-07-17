@@ -19,11 +19,12 @@ import {
   Phone,
   ChevronDown
 } from "lucide-react";
-
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
+
 export default function Sidebar({ sidebarOpen }) {
+  const navigate = useNavigate();
 
   const [inventoryOpen, setInventoryOpen] = useState(false);
 
@@ -81,6 +82,16 @@ export default function Sidebar({ sidebarOpen }) {
 
     { name: "Settings", icon: <Settings size={18} />, path: "/settings" },
   ];
+
+  const handleLogout = () => {
+
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
+
+    navigate("/login");
+
+  };
 
 
   return (
@@ -235,6 +246,7 @@ export default function Sidebar({ sidebarOpen }) {
       <div className="border-t border-[#E2E8F0] p-4">
 
         <button
+          onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-3 rounded-xl
           text-[#0F172A] hover:bg-[#EFF6FF] transition"
         >

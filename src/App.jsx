@@ -42,13 +42,29 @@ import BillingHistory from "./components/settings/Billing/BillingHistory";
 import BillingPlanUsage from "./components/settings/Billing/BillingPlanUsage";
 import BillingPaymentContact from "./components/settings/Billing/BillingPaymentContact";
 import DataSecurity from "./components/settings/DataPrivacy/DataSecurity";
+import Login from "./components/auth/Login";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Signup from "./components/auth/Signup";
 
 const router = createBrowserRouter([
   {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/signup",
+    element: <Signup />
+  },
+
+  {
     path: "/",
-    element: <HomeLayout />,
+    element: (
+      <ProtectedRoute>
+        <HomeLayout />
+      </ProtectedRoute>
+    ),
     children: [
-      // Dashboard
+
       {
         index: true,
         element: <Dashboard />,
@@ -58,7 +74,6 @@ const router = createBrowserRouter([
         element: <Dashboard />,
       },
 
-      // CRM
       {
         path: "leads",
         element: <LeadsManagement />,
@@ -110,7 +125,7 @@ const router = createBrowserRouter([
         element: <Products />,
       },
       {
-        path: "inventory/products/add",
+        path: "inventory/products/addproduct",
         element: <Addproduct />,
       },
       {
@@ -118,7 +133,7 @@ const router = createBrowserRouter([
         element: <SalesOrders />,
       },
       {
-        path: "inventory/sales/add",
+        path: "inventory/sales/addsales",
         element: <Addsales />,
       },
       {
@@ -126,7 +141,7 @@ const router = createBrowserRouter([
         element: <PurchaseOrders />,
       },
       {
-        path: "inventory/purchase/add",
+        path: "inventory/purchase/addpurchase",
         element: <AddPurchase />,
       },
       {
@@ -134,7 +149,7 @@ const router = createBrowserRouter([
         element: <Invoices />,
       },
       {
-        path: "inventory/invoices/add",
+        path: "inventory/invoices/addinvoice",
         element: <AddInvoice />,
       },
 
