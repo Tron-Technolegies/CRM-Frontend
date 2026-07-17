@@ -1,21 +1,18 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 
 import DashboardKpis from "../components/dashboard/DashboardKpis";
 import DashboardGrowth from "../components/dashboard/DashboardGrowth";
 import DashboardLeadsBySource from "../components/dashboard/DashboardLeadsBySource";
 import DashboardRecentActivities from "../components/dashboard/DashboardRecentActivities";
 import DashboardTasksDueToday from "../components/dashboard/DashboardTasksDueToday";
-
-const api = axios.create({
-  baseURL: "http://localhost:8000/api/admin",
-});
+import api from "../api/Api";
 
 export default function Dashboard() {
   const [report, setReport] = useState(null);
 
   useEffect(() => {
-    api.get("/report/dashboard/")
+    api
+      .get("report/dashboard/")
       .then((res) => setReport(res.data))
       .catch((err) => console.error("Failed to fetch report:", err));
   }, []);
