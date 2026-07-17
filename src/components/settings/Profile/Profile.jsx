@@ -3,10 +3,18 @@ import { Mail, Phone, ChevronDown, Pencil, Globe, SlidersHorizontal } from "luci
 import ProfileDetails from "./ProfileDetails";
 import { useState } from "react";
 import AddGroupModal from "./AddGroupModal";
+import LocalInfoModal from "./LocalInfoModal";
+import AccountInfoModal from "./AccountInfoModal";
 
 const Profile = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [openGroupModal, setOpenGroupModal] = useState(false);
+  const [openLocalModal, setOpenLocalModal] = useState(false);
+  const [openAccountModal, setOpenAccountModal] = useState(false);
+
+
+
+
   return (
     <div className="min-h-screen p-6">
 
@@ -32,7 +40,11 @@ const Profile = () => {
               <span className="px-5 py-1 rounded-full bg-red-100 text-red-600 text-sm font-medium">
                 Administration
               </span>
-              <Pencil size={18} />
+              <button
+                onClick={() => setOpenAccountModal(true)}
+                className="text-black hover:text-[#2B61FF] transition">
+                <Pencil size={18} />
+              </button>
             </div>
 
 
@@ -90,8 +102,8 @@ const Profile = () => {
       <div className="bg-white rounded-2xl shadow-lg p-12 mb-5">
         <h1 className="text-2xl font-semibold text-gray-900 pb-5">Teamspace Information</h1>
         <div className="ml-5">
-          <h1 className="font-semibold text-2xl text-gray-400 flex items-center gap-3">
-            Associated To<span className="p-2 rounded-lg bg-orange-400 text-white text-md">
+          <h1 className="font-semibold text-2xl text-gray-400 flex items-center gap-3 py-5">
+            Associated To<span className="p-2 rounded-lg bg-orange-300 text-white text-md mx-5">
               C T
             </span><span className="text-gray-800">CRM Teamspace</span>
           </h1>
@@ -110,7 +122,9 @@ const Profile = () => {
             </h2>
           </div>
 
-          <button className="text-black hover:text-[#2B61FF] transition">
+          <button
+            onClick={() => setOpenLocalModal(true)}
+            className="text-black hover:text-[#2B61FF] transition">
             <Pencil className="w-5 h-5" />
           </button>
         </div>
@@ -238,7 +252,14 @@ const Profile = () => {
         isOpen={openGroupModal}
         onClose={() => setOpenGroupModal(false)}
       />
-
+      <LocalInfoModal
+        isOpen={openLocalModal}
+        onClose={() => setOpenLocalModal(false)}
+      />
+      <AccountInfoModal
+        isOpen={openAccountModal}
+        onClose={() => setOpenAccountModal(false)}
+      />
 
     </div>
   );

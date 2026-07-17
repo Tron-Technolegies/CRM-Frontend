@@ -13,11 +13,8 @@ import Reports from "./pages/Reports";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
 
-import Notifications from "./components/settings/Notifications";
-import Security from "./components/settings/Security";
 import Preferences from "./components/settings/Preferences";
 import Billing from "./components/settings/Billing";
-import Data_Privacy from "./components/settings/Data_Privacy";
 import AddQuotes from "./components/quotes/AddQuotes";
 import Meetings from "./pages/Meetings";
 import Calls from "./pages/Calls";
@@ -31,6 +28,10 @@ import AddInvoice from "./components/Inventory/Addinvoice/AddInvoice";
 import AddPurchase from "./components/Inventory/Addpurchase/AddPurchase";
 import Addsales from "./components/Inventory/Addsales/Addsales";
 import Profile from "./components/settings/Profile/Profile";
+import Notification from "./components/settings/Notification/Notification";
+import DataSecurity from "./components/settings/DataPrivacy/DataSecurity";
+import Security from "./components/settings/Security/Security";
+
 // import Products from "./pages/Products";
 // import Products from "./pages/Products";
 // import AddProducts from "./components/Inventory/AddProducts";
@@ -71,15 +72,14 @@ function App() {
         <Route path="/inventory/purchase/addpurchase" element={<AddPurchase />} />
         <Route path="/inventory/invoices/addinvoice" element={<AddInvoice />} />
 
-
-
         <Route path="settings" element={<Settings />} />
         <Route path="settings/profile" element={<Profile />} />
-        <Route path="settings/notifications" element={<Notifications />} />
-        <Route path="settings/security" element={<Security />} />
+        <Route path="settings/notifications" element={<Notification />} />
+        {/* <Route path="settings/security" element={<Security />} /> */}
         <Route path="settings/preferences" element={<Preferences />} />
+        <Route path="settings/security" element={<Security />} />
         <Route path="settings/billing" element={<Billing />} />
-        <Route path="settings/data-privacy" element={<Data_Privacy />} />
+        <Route path="settings/data-privacy" element={<DataSecurity />} />
 
       </Route>
 
