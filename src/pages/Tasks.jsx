@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import axios from "axios";
+
+import api from "../api/Api";
 
 import TasksKpis from "../components/tasks/TasksKpis";
 import TasksList from "../components/tasks/TasksList";
@@ -8,9 +9,6 @@ import TaskFormModal from "../components/tasks/TaskFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog.jsx";
 import { useToast } from "../components/ui/toastContext.js";
 
-const api = axios.create({
-  baseURL: "http://localhost:8000/api/admin",
-});
 
 export default function Tasks() {
   const { pushToast } = useToast();
@@ -24,14 +22,20 @@ export default function Tasks() {
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const fetchTasks = () => {
-    api.get("/task/view/")
-      .then((res) => setTasks(res.data))
-      .catch((err) => {
-        console.error("Failed to fetch tasks:", err);
-        pushToast({ title: "Failed to load tasks", variant: "error" });
-      })
-      .finally(() => setLoading(false));
+  const fetchTasks = async () => {
+    try {
+      const { data } = await api.get("/task/view/");
+      setTasks(data);
+    } catch (err) {
+      console.error("Failed to fetch tasks:", err.response?.data || err);
+
+      pushToast({
+        title: "Failed to load tasks",
+        variant: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -45,64 +49,102 @@ export default function Tasks() {
 
   const confirmDelete = async () => {
     if (!deleteTargetId) return;
+
     setDeleteLoading(true);
+
     try {
       await api.delete(`/task/delete/${deleteTargetId}/`);
-      setTasks((prev) => prev.filter((t) => t.id !== deleteTargetId));
-      pushToast({ title: "Task deleted", variant: "success" });
-    } catch (err) {
-      console.error("Delete failed:", err);
-      pushToast({ title: "Failed to delete task", variant: "error" });
-    } finally {
-      setDeleteLoading(false);
+
+      await fetchTasks();
+
+      pushToast({
+        title: "Task deleted",
+        variant: "success",
+      });
+
       setConfirmDeleteOpen(false);
       setDeleteTargetId(null);
+    } catch (err) {
+      console.error("Delete failed:", err.response?.data || err);
+
+      pushToast({
+        title: "Failed to delete task",
+        variant: "error",
+      });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
   const addTask = async (form) => {
     setAddLoading(true);
+
     try {
       await api.post("/task/add/", {
         title: form.title.trim(),
         description: form.description.trim(),
         assigned_to: form.assignedTo || null,
-        related_to: form.relatedTo.trim(),
+        related_to: form.relatedTo || null,
         priority: form.priority.toLowerCase(),
         status: form.status.toLowerCase(),
         due_date: form.dueDate,
       });
-      fetchTasks();
-      pushToast({ title: "Task created", message: `${form.title} added successfully`, variant: "success" });
+
+      await fetchTasks();
+
+      pushToast({
+        title: "Task created",
+        message: `${form.title} added successfully`,
+        variant: "success",
+      });
+
+      setAddOpen(false);
     } catch (err) {
-      console.error("Add task failed:", err);
-      pushToast({ title: "Failed to add task", variant: "error" });
+      console.error("Add task failed:", err.response?.data || err);
+
+      pushToast({
+        title: "Failed to add task",
+        variant: "error",
+      });
     } finally {
       setAddLoading(false);
-      setAddOpen(false);
     }
   };
 
   const updateTask = async (form) => {
+    if (!editTask) return;
+
     setAddLoading(true);
+
     try {
       await api.put(`/task/update/${editTask.id}/`, {
         title: form.title.trim(),
         description: form.description.trim(),
-        related_to: form.relatedTo.trim(),
         assigned_to: form.assignedTo || null,
+        related_to: form.relatedTo || null,
         priority: form.priority.toLowerCase(),
         status: form.status.toLowerCase(),
         due_date: form.dueDate,
       });
-      fetchTasks();
-      pushToast({ title: "Task updated", message: `${form.title} updated successfully`, variant: "success" });
+
+      await fetchTasks();
+
+      pushToast({
+        title: "Task updated",
+        message: `${form.title} updated successfully`,
+        variant: "success",
+      });
+
+      setEditTask(null);
     } catch (err) {
-      console.error("Update task failed:", err);
-      pushToast({ title: "Failed to update task", variant: "error" });
+      console.error("Update task failed:", err.response?.data || err);
+
+      pushToast({
+        title: "Failed to update task",
+        variant: "error",
+      });
     } finally {
       setAddLoading(false);
-      setEditTask(null);
     }
   };
 
