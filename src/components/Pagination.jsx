@@ -35,8 +35,8 @@ const Pagination = ({
                             key={index}
                             onClick={() => onPageChange(index + 1)}
                             className={`h-9 w-9 rounded-md text-sm font-medium transition ${currentPage === index + 1
-                                    ? "bg-blue-600 text-white"
-                                    : "border border-gray-300 hover:bg-gray-100"
+                                ? "bg-blue-600 text-white"
+                                : "border border-gray-300 hover:bg-gray-100"
                                 }`}
                         >
                             {index + 1}

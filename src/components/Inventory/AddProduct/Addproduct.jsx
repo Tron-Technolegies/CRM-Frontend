@@ -1,18 +1,60 @@
-import React from 'react'
-import ProductHeader from './ProductHeader'
-import ProductInfo from './ProductInfo'
-import PriceInfo from './PriceInfo'
-import StockInfo from './StockInfo'
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 
-const Addproduct = () => {
+import useProducts from "../../hooks/useProducts";
+import ProductInfo from "./ProductInfo";
+import PriceInfo from "./PriceInfo";
+import StockInfo from "./StockInfo";
+import ProductHeader from "./ProductHeader";
+
+
+const AddProduct = () => {
+
+    const {
+        formData,
+        handleChange,
+        saveProduct,
+        loadProduct,
+        editId
+    } = useProducts();
+
+
+    const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+
+        const id = searchParams.get("id");
+
+        if (id) {
+            loadProduct(id);
+        }
+
+    }, [searchParams]);
+
+
     return (
         <>
-            <ProductHeader />
-            <ProductInfo />
-            <PriceInfo />
-            <StockInfo />
-        </>
-    )
-}
+            <ProductHeader
+                saveProduct={saveProduct}
+                editId={editId}
+            />
 
-export default Addproduct
+            <ProductInfo
+                formData={formData}
+                handleChange={handleChange}
+            />
+
+            <PriceInfo
+                formData={formData}
+                handleChange={handleChange}
+            />
+
+            <StockInfo
+                formData={formData}
+                handleChange={handleChange}
+            />
+        </>
+    );
+};
+
+export default AddProduct;

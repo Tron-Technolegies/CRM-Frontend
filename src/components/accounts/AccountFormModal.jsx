@@ -124,31 +124,33 @@ export default function AccountFormModal({
   useEffect(() => {
     if (initialData) {
       setForm({
-        accountName: initialData.accountName || "",
-        assignedTo: initialData.assignedToId || "",
-        phoneNumber: initialData.phoneNumber || "",
-        accountSite: initialData.accountSite || "",
-        parentAccount: initialData.parentAccountId || "",
+        accountName: initialData.account_name || "",
+        assignedTo: initialData.assigned_to || "",
+        phoneNumber: initialData.phone_number || "",
+        accountSite: initialData.account_site || "",
+        parentAccount: initialData.parent_account || "",
         website: initialData.website || "",
-        accountType: initialData.accountType || "",
+        accountType: initialData.account_type || "",
         industry: initialData.industry || "",
         ownership: initialData.ownership || "",
         employees: initialData.employees || "",
+
         billingAddress: {
-          country: initialData.billingAddress?.country || "",
-          address: initialData.billingAddress?.address || "",
-          streetAdd: initialData.billingAddress?.street_address || "",
-          city: initialData.billingAddress?.city || "",
-          state: initialData.billingAddress?.state || "",
-          zipCode: initialData.billingAddress?.zip_code || "",
+          country: initialData.billing_address?.country || "",
+          address: initialData.billing_address?.address || "",
+          streetAdd: initialData.billing_address?.street_address || "",
+          city: initialData.billing_address?.city || "",
+          state: initialData.billing_address?.state || "",
+          zipCode: initialData.billing_address?.zip_code || "",
         },
+
         shippingAddress: {
-          country: initialData.shippingAddress?.country || "",
-          address: initialData.shippingAddress?.address || "",
-          streetAdd: initialData.shippingAddress?.street_address || "",
-          city: initialData.shippingAddress?.city || "",
-          state: initialData.shippingAddress?.state || "",
-          zipCode: initialData.shippingAddress?.zip_code || "",
+          country: initialData.shipping_address?.country || "",
+          address: initialData.shipping_address?.address || "",
+          streetAdd: initialData.shipping_address?.street_address || "",
+          city: initialData.shipping_address?.city || "",
+          state: initialData.shipping_address?.state || "",
+          zipCode: initialData.shipping_address?.zip_code || "",
         },
       });
     } else {
@@ -182,8 +184,45 @@ export default function AccountFormModal({
       accountName: true,
       phoneNumber: true,
     });
+
     if (hasErrors) return;
-    onSubmit(form);
+
+    const payload = {
+      acc_name: form.accountName,
+      assigned_to: form.assignedTo || null,
+      phone: form.phoneNumber,
+      acc_site: form.accountSite,
+      parent_acc: form.parentAccount || null,
+      website: form.website,
+      acc_type: form.accountType,
+      industry: form.industry,
+      ownership: form.ownership,
+      employees: form.employees,
+
+      billing_add: {
+        country: form.billingAddress.country,
+        address: form.billingAddress.address,
+        street_add: form.billingAddress.streetAdd,
+        city: form.billingAddress.city,
+        state: form.billingAddress.state,
+        zip_code: form.billingAddress.zipCode,
+      },
+
+      shipping_add: {
+        country: form.shippingAddress.country,
+        address: form.shippingAddress.address,
+        street_add: form.shippingAddress.streetAdd,
+        city: form.shippingAddress.city,
+        state: form.shippingAddress.state,
+        zip_code: form.shippingAddress.zipCode,
+      },
+    };
+
+    if (initialData) {
+      onSubmit(initialData.id, payload);
+    } else {
+      onSubmit(payload);
+    }
   };
 
   const accountOptions = accounts.filter((account) => String(account.id) !== String(initialData?.id));
@@ -258,7 +297,7 @@ export default function AccountFormModal({
               <option value="">No parent account</option>
               {accountOptions.map((account) => (
                 <option key={account.id} value={account.id}>
-                  {account.accountName || `Account #${account.id}`}
+                  {account.account_name || `Account #${account.id}`}
                 </option>
               ))}
             </select>

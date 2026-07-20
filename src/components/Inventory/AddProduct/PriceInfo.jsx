@@ -1,6 +1,6 @@
 import React from "react";
 
-const PriceInfo = () => {
+const PriceInfo = ({ formData, handleChange }) => {
     return (
         <div className="border border-gray-300 shadow-lg rounded-lg p-9 my-6">
 
@@ -10,59 +10,55 @@ const PriceInfo = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mx-9">
 
+                {/* Unit Price */}
                 <div>
                     <label className="block text-xs font-medium text-[#64748B] mb-2">
                         Unit Price
                     </label>
 
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="text"
-                            className="h-11 w-full rounded-xl border-2 border-[#E5E7EB] px-4 text-sm outline-none"
-                        />
-                    </div>
+                    <input
+                        type="number"
+                        name="unit_price"
+                        value={formData?.unit_price || ""}
+                        onChange={handleChange}
+                        className="h-11 w-full rounded-xl border-2 border-[#E5E7EB] px-4 text-sm outline-none"
+                    />
                 </div>
 
+
+                {/* Cost Price */}
                 <div>
                     <label className="block text-xs font-medium text-[#64748B] mb-2">
-                        Commission Rate
+                        Cost Price
                     </label>
-
-                    <div className="relative">
-                        <input
-                            type="text"
-                            className="h-11 w-full rounded-xl border-2 border-[#E5E7EB] pl-10 pr-4 text-sm outline-none"
-                        />
-                    </div>
+                    <input
+                        type="number"
+                        name="cost_price"
+                        value={formData?.cost_price || ""}
+                        onChange={handleChange}
+                        className="h-11 w-full rounded-xl border-2 border-[#E5E7EB] px-4 text-sm outline-none"
+                    />
                 </div>
 
+
+                {/* Tax Percentage */}
                 <div>
                     <label className="block text-xs font-medium text-[#64748B] mb-2">
-                        Tax
+                        Tax Percentage
                     </label>
 
-                    <select className="h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none">
-                        <option value="">None</option>
-                        <option value="website">Website</option>
-                        <option value="referral">Referral</option>
-                        <option value="social">Social Media</option>
-                    </select>
+                    <input
+                        type="number"
+                        name="tax_percentage"
+                        value={formData?.tax_percentage || ""}
+                        onChange={handleChange}
+                        className="h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none"
+                    />
                 </div>
-                <div>
-                    <label className="block text-xs font-medium text-[#64748B] mb-2">
-                        Taxable
-                    </label>
 
-                    <label className="flex items-center h-11 gap-3">
-                        <input
-                            type="checkbox"
-                            className="h-5 w-5 accent-[#2B61FF]" />
-                        <span className="text-sm text-[#374151]">
-                            Taxable
-                        </span>
-                    </label>
-                </div>
+
             </div>
+
         </div>
     );
 };

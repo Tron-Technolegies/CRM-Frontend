@@ -18,7 +18,6 @@ import Users from "./pages/Users";
 import Settings from "./pages/Settings";
 
 // Quotes
-import AddQuotes from "./components/quotes/AddQuotes";
 
 // Inventory
 import Products from "./components/Inventory/Product";
@@ -45,6 +44,7 @@ import DataSecurity from "./components/settings/DataPrivacy/DataSecurity";
 import Login from "./components/auth/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Signup from "./components/auth/Signup";
+import AddQuotes from "./components/quotes/AddQuotes";
 
 const router = createBrowserRouter([
   {
@@ -87,7 +87,7 @@ const router = createBrowserRouter([
         element: <Quotes />,
       },
       {
-        path: "quotes/add",
+        path: "/addquote",
         element: <AddQuotes />,
       },
       {

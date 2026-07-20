@@ -31,23 +31,23 @@ export default function AccountViewModal({ open, onClose, account }) {
   return (
     <Modal
       open={open}
-      title={account.accountName || "Account Details"}
+      title={account.account_name || "Account Details"}
       subtitle="A quick overview of the account record"
       onClose={onClose}
-      maxWidthClassName="max-w-4xl"
-    >
+      maxWidthClassName="max-w-4xl">
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-[#E5E7EB] p-4">
           <p className="text-xs uppercase tracking-wide text-[#64748B]">Account Name</p>
-          <p className="mt-1 text-sm font-medium text-[#111827]">{formatValue(account.accountName)}</p>
+          <p className="mt-1 text-sm font-medium text-[#111827]">{formatValue(account.account_name)}</p>
         </div>
         <div className="rounded-2xl border border-[#E5E7EB] p-4">
           <p className="text-xs uppercase tracking-wide text-[#64748B]">Assigned To</p>
-          <p className="mt-1 text-sm font-medium text-[#111827]">{formatValue(account.assignedTo)}</p>
+          <p className="mt-1 text-sm font-medium text-[#111827]">{formatValue(account.assigned_to_name)}</p>
         </div>
         <div className="rounded-2xl border border-[#E5E7EB] p-4">
           <p className="text-xs uppercase tracking-wide text-[#64748B]">Phone</p>
-          <p className="mt-1 text-sm font-medium text-[#111827]">{formatValue(account.phoneNumber)}</p>
+          <p className="mt-1 text-sm font-medium text-[#111827]">{formatValue(account.phone_number)}</p>
         </div>
         <div className="rounded-2xl border border-[#E5E7EB] p-4">
           <p className="text-xs uppercase tracking-wide text-[#64748B]">Website</p>
@@ -55,7 +55,7 @@ export default function AccountViewModal({ open, onClose, account }) {
         </div>
         <div className="rounded-2xl border border-[#E5E7EB] p-4">
           <p className="text-xs uppercase tracking-wide text-[#64748B]">Account Type</p>
-          <p className="mt-1 text-sm font-medium text-[#111827]">{formatValue(account.accountType)}</p>
+          <p className="mt-1 text-sm font-medium text-[#111827]">{formatValue(account.account_type)}</p>
         </div>
         <div className="rounded-2xl border border-[#E5E7EB] p-4">
           <p className="text-xs uppercase tracking-wide text-[#64748B]">Industry</p>
@@ -71,17 +71,17 @@ export default function AccountViewModal({ open, onClose, account }) {
         </div>
         <div className="rounded-2xl border border-[#E5E7EB] p-4">
           <p className="text-xs uppercase tracking-wide text-[#64748B]">Parent Account</p>
-          <p className="mt-1 text-sm font-medium text-[#111827]">{formatValue(account.parentAccount)}</p>
+          <p className="mt-1 text-sm font-medium text-[#111827]">{formatValue(account.parent_account)}</p>
         </div>
         <div className="rounded-2xl border border-[#E5E7EB] p-4">
           <p className="text-xs uppercase tracking-wide text-[#64748B]">Account Site</p>
-          <p className="mt-1 text-sm font-medium text-[#111827]">{formatValue(account.accountSite)}</p>
+          <p className="mt-1 text-sm font-medium text-[#111827]">{formatValue(account.account_site)}</p>
         </div>
       </div>
 
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <AddressBlock title="Billing Address" address={account.billingAddress} />
-        <AddressBlock title="Shipping Address" address={account.shippingAddress} />
+        <AddressBlock title="Billing Address" address={account.billing_address} />
+        <AddressBlock title="Shipping Address" address={account.shipping_address} />
       </div>
     </Modal>
   );
