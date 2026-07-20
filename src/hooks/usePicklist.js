@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-
-const api = axios.create({ baseURL: "http://localhost:8000/api/admin" });
+import api from "../api/Api";
 
 export function usePicklist(field) {
   const [options, setOptions] = useState([]);

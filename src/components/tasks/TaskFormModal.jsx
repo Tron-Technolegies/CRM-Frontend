@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api from "../../api/Api";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
 import { usePicklist } from "../../hooks/usePicklist";
 
-const BASE_URL = "http://localhost:8000/api/admin";
-const api = axios.create({ baseURL: BASE_URL });
 
 function validateTask(form) {
   const errors = {};
@@ -21,16 +19,32 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
   const statusOptions = usePicklist("task_status");
 
   useEffect(() => {
-    fetch(`${BASE_URL}/staff/view/`)
-      .then((r) => r.json())
-      .then((data) => setStaff(data))
-      .catch((err) => console.error("Failed to fetch staff:", err));
+    const fetchStaff = async () => {
+      try {
+        const { data } = await api.get("/staff/view/");
+
+        setStaff(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch staff:", err);
+        setStaff([]);
+      }
+    };
+
+    fetchStaff();
   }, []);
 
   useEffect(() => {
-    api.get("/deal/view/")
-      .then((res) => setDeals(res.data))
-      .catch((err) => console.error("Failed to fetch deals:", err));
+    const fetchDeals = async () => {
+      try {
+        const { data } = await api.get("/deal/view/");
+        setDeals(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch deals:", err);
+        setDeals([]);
+      }
+    };
+
+    fetchDeals();
   }, []);
 
   const blankForm = useMemo(() => ({
@@ -120,7 +134,7 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
             <option value="">Select team member</option>
-            {staff.map((s) => <option key={s.id} value={s.id}>{s.fullName}</option>)}
+            {staff.map((s) => (<option key={s.id} value={s.id}>{s.full_name || s.fullName || s.name}</option>))}
           </select>
         </div>
 
@@ -132,7 +146,7 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
             className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
           >
             <option value="">Select a deal</option>
-            {deals.map((d) => <option key={d.id} value={`Deal: ${d.name}`}>Deal: {d.name}</option>)}
+            {deals.map((d) => (<option key={d.id} value={d.id}>{d.deal_name || d.name}</option>))}
           </select>
         </div>
 
