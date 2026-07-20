@@ -1,19 +1,25 @@
 import { Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import api from "../api/Api";
+import useTask from "../hooks/useTask";
 
 import TasksKpis from "../components/tasks/TasksKpis";
 import TasksList from "../components/tasks/TasksList";
 import TaskFormModal from "../components/tasks/TaskFormModal";
-import ConfirmDialog from "../components/ui/ConfirmDialog.jsx";
-import { useToast } from "../components/ui/toastContext.js";
-
+import ConfirmDialog from "../components/ui/ConfirmDialog";
+import { useToast } from "../components/ui/toastContext";
 
 export default function Tasks() {
   const { pushToast } = useToast();
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  const {
+    tasks,
+    loading,
+    addTask: createTaskApi,
+    editTask: updateTaskApi,
+    removeTask,
+  } = useTask();
+
   const [addOpen, setAddOpen] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
   const [editTask, setEditTask] = useState(null);
@@ -21,26 +27,6 @@ export default function Tasks() {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-
-  const fetchTasks = async () => {
-    try {
-      const { data } = await api.get("/task/view/");
-      setTasks(data);
-    } catch (err) {
-      console.error("Failed to fetch tasks:", err.response?.data || err);
-
-      pushToast({
-        title: "Failed to load tasks",
-        variant: "error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTasks();
-  }, []);
 
   const requestDelete = (id) => {
     setDeleteTargetId(id);
@@ -53,9 +39,7 @@ export default function Tasks() {
     setDeleteLoading(true);
 
     try {
-      await api.delete(`/task/delete/${deleteTargetId}/`);
-
-      await fetchTasks();
+      await removeTask(deleteTargetId);
 
       pushToast({
         title: "Task deleted",
@@ -80,7 +64,7 @@ export default function Tasks() {
     setAddLoading(true);
 
     try {
-      await api.post("/task/add/", {
+      await createTaskApi({
         title: form.title.trim(),
         description: form.description.trim(),
         assigned_to: form.assignedTo || null,
@@ -89,8 +73,6 @@ export default function Tasks() {
         status: form.status.toLowerCase(),
         due_date: form.dueDate,
       });
-
-      await fetchTasks();
 
       pushToast({
         title: "Task created",
@@ -117,7 +99,7 @@ export default function Tasks() {
     setAddLoading(true);
 
     try {
-      await api.put(`/task/update/${editTask.id}/`, {
+      await updateTaskApi(editTask.id, {
         title: form.title.trim(),
         description: form.description.trim(),
         assigned_to: form.assignedTo || null,
@@ -126,8 +108,6 @@ export default function Tasks() {
         status: form.status.toLowerCase(),
         due_date: form.dueDate,
       });
-
-      await fetchTasks();
 
       pushToast({
         title: "Task updated",
@@ -151,7 +131,9 @@ export default function Tasks() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-sm text-[#64748B]">Loading tasks...</p>
+        <p className="text-sm text-[#64748B]">
+          Loading tasks...
+        </p>
       </div>
     );
   }
@@ -159,21 +141,28 @@ export default function Tasks() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-[28px] font-semibold text-[#111827]">Tasks</h1>
+        <h1 className="text-[28px] font-semibold text-[#111827]">
+          Tasks
+        </h1>
+
         <button
           type="button"
           onClick={() => setAddOpen(true)}
           className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 cursor-pointer"
         >
           <Plus size={18} />
-          Add Tasks
+          Add Task
         </button>
       </div>
 
       <TasksKpis tasks={tasks} />
-      <TasksList tasks={tasks} onDelete={requestDelete} onEdit={(t) => setEditTask(t)} />
 
-      {/* Add modal */}
+      <TasksList
+        tasks={tasks}
+        onDelete={requestDelete}
+        onEdit={setEditTask}
+      />
+
       <TaskFormModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
@@ -181,7 +170,6 @@ export default function Tasks() {
         loading={addLoading}
       />
 
-      {/* Edit modal */}
       <TaskFormModal
         open={!!editTask}
         onClose={() => setEditTask(null)}
@@ -197,7 +185,9 @@ export default function Tasks() {
         confirmText="Delete"
         danger
         loading={deleteLoading}
-        onCancel={() => (deleteLoading ? null : setConfirmDeleteOpen(false))}
+        onCancel={() =>
+          deleteLoading ? null : setConfirmDeleteOpen(false)
+        }
         onConfirm={confirmDelete}
       />
     </div>

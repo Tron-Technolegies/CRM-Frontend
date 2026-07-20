@@ -5,6 +5,10 @@ export const getLeads = async () => {
   return data;
 };
 
+export const getLead = (id) => {
+  return api.get(`/lead/single/view/${id}/`);
+};
+
 export const addLead = async (payload) => {
   return await api.post("/lead/add/", payload);
 };

@@ -1,19 +1,25 @@
 import { Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import api from "../api/Api";
+import useCustomers from "../hooks/useCustomers";
 
 import CustomersKpis from "../components/customers/CustomersKpis";
 import CustomersList from "../components/customers/CustomersList";
 import CustomerFormModal from "../components/customers/CustomerFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
-import { useToast } from "../components/ui/toastContext.js";
-
+import { useToast } from "../components/ui/toastContext";
 
 export default function Customers() {
   const { pushToast } = useToast();
-  const [customers, setCustomers] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  const {
+    customers,
+    loading,
+    addCustomer: createCustomer,
+    editCustomer: updateCustomerApi,
+    removeCustomer,
+  } = useCustomers();
+
   const [addOpen, setAddOpen] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
   const [editCustomer, setEditCustomer] = useState(null);
@@ -21,26 +27,6 @@ export default function Customers() {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-
-  const fetchCustomers = async () => {
-    try {
-      const { data } = await api.get("/customer/view/");
-      setCustomers(data);
-    } catch (err) {
-      console.error("Failed to fetch customers:", err);
-
-      pushToast({
-        title: "Failed to load customers",
-        variant: "error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
 
   const requestDelete = (id) => {
     setDeleteTargetId(id);
@@ -53,9 +39,7 @@ export default function Customers() {
     setDeleteLoading(true);
 
     try {
-      await api.delete(`/customer/delete/${deleteTargetId}/`);
-
-      await fetchCustomers();
+      await removeCustomer(deleteTargetId);
 
       pushToast({
         title: "Customer deleted",
@@ -80,7 +64,7 @@ export default function Customers() {
     setAddLoading(true);
 
     try {
-      await api.post("/customer/add/", {
+      await createCustomer({
         company_name: form.companyName.trim(),
         contact_name: form.contactName.trim(),
         phone_number: form.phone.trim(),
@@ -90,8 +74,6 @@ export default function Customers() {
         lifetime_value: Number(form.lifetimeValue || 0),
         deal_id: form.dealId || null,
       });
-
-      await fetchCustomers();
 
       pushToast({
         title: "Customer created",
@@ -118,7 +100,7 @@ export default function Customers() {
     setAddLoading(true);
 
     try {
-      await api.put(`/customer/update/${editCustomer.id}/`, {
+      await updateCustomerApi(editCustomer.id, {
         company_name: form.companyName.trim(),
         contact_name: form.contactName.trim(),
         phone_number: form.phone.trim(),
@@ -128,8 +110,6 @@ export default function Customers() {
         lifetime_value: Number(form.lifetimeValue || 0),
       });
 
-      await fetchCustomers();
-
       pushToast({
         title: "Customer updated",
         message: `${form.companyName} updated successfully`,
@@ -138,7 +118,7 @@ export default function Customers() {
 
       setEditCustomer(null);
     } catch (err) {
-      console.error("Update customer failed:", err.response?.data || err);
+      console.error("Update customer failed:", err);
 
       pushToast({
         title: "Failed to update customer",
@@ -152,7 +132,9 @@ export default function Customers() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-sm text-[#64748B]">Loading customers...</p>
+        <p className="text-sm text-[#64748B]">
+          Loading customers...
+        </p>
       </div>
     );
   }
@@ -160,7 +142,10 @@ export default function Customers() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-[28px] font-semibold text-[#111827]">Customers</h1>
+        <h1 className="text-[28px] font-semibold text-[#111827]">
+          Customers
+        </h1>
+
         <button
           type="button"
           onClick={() => setAddOpen(true)}
@@ -172,9 +157,13 @@ export default function Customers() {
       </div>
 
       <CustomersKpis customers={customers} />
-      <CustomersList customers={customers} onDelete={requestDelete} onEdit={(c) => setEditCustomer(c)} />
 
-      {/* Add modal */}
+      <CustomersList
+        customers={customers}
+        onDelete={requestDelete}
+        onEdit={setEditCustomer}
+      />
+
       <CustomerFormModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
@@ -182,7 +171,6 @@ export default function Customers() {
         loading={addLoading}
       />
 
-      {/* Edit modal */}
       <CustomerFormModal
         open={!!editCustomer}
         onClose={() => setEditCustomer(null)}
@@ -198,7 +186,9 @@ export default function Customers() {
         confirmText="Delete"
         danger
         loading={deleteLoading}
-        onCancel={() => (deleteLoading ? null : setConfirmDeleteOpen(false))}
+        onCancel={() =>
+          deleteLoading ? null : setConfirmDeleteOpen(false)
+        }
         onConfirm={confirmDelete}
       />
     </div>

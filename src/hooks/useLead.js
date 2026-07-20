@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { getLeads, getStaff } from "../api/lead";
+import {
+  getLeads,
+  getLead,
+  addLead,
+  updateLead,
+  deleteLead,
+  getStaff,
+} from "../api/lead";
 
 export default function useLead() {
   const [leads, setLeads] = useState([]);
@@ -24,6 +31,25 @@ export default function useLead() {
     }
   };
 
+  const fetchLead = async (id) => {
+    return await getLead(id);
+  };
+
+  const addLead = async (leadData) => {
+    await createLead(leadData);
+    await fetchLeads();
+  };
+
+  const editLead = async (id, leadData) => {
+    await updateLead(id, leadData);
+    await fetchLeads();
+  };
+
+  const removeLead = async (id) => {
+    await deleteLead(id);
+    await fetchLeads();
+  };
+
   const refresh = async () => {
     await Promise.all([
       fetchLeads(),
@@ -40,8 +66,12 @@ export default function useLead() {
     staff,
     loading,
     fetchLeads,
+    fetchLead,
     fetchStaff,
     refresh,
+    addLead,
+    editLead,
+    removeLead,
     setLeads,
   };
 }

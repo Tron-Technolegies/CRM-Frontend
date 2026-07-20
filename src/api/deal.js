@@ -5,6 +5,10 @@ export const getDeals = async () => {
   return data;
 };
 
+export const getDeal = (id) => {
+  return api.get(`/deal/single/view/${id}/`);
+};
+
 export const addDeal = async (payload) => {
   return await api.post("/deal/add/", payload);
 };
