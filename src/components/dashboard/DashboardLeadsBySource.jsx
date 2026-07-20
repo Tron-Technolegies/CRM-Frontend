@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
-const api = axios.create({ baseURL: "http://localhost:8000/api/admin" });
+import api from "../../api/Api";
 
 export default function DashboardLeadsBySource() {
   const [data, setData] = useState([]);

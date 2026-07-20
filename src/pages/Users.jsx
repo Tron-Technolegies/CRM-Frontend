@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import axios from "axios";
+
+import api from "../api/Api";
 
 import UsersKpis from "../components/users/UsersKpis";
 import UsersList from "../components/users/UsersList";
@@ -8,9 +9,6 @@ import UserFormModal from "../components/users/UserFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { useToast } from "../components/ui/toastContext.js";
 
-const api = axios.create({
-  baseURL: "http://localhost:8000/api/admin",
-});
 
 export default function Users() {
   const { pushToast } = useToast();
@@ -24,14 +22,20 @@ export default function Users() {
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const fetchUsers = () => {
-    api.get("/staff/view/")
-      .then((res) => setUsers(res.data))
-      .catch((err) => {
-        console.error("Failed to fetch users:", err);
-        pushToast({ title: "Failed to load users", variant: "error" });
-      })
-      .finally(() => setLoading(false));
+  const fetchUsers = async () => {
+    try {
+      const { data } = await api.get("/staff/view/");
+      setUsers(data);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+
+      pushToast({
+        title: "Failed to load users",
+        variant: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -45,23 +49,36 @@ export default function Users() {
 
   const confirmDelete = async () => {
     if (!deleteTargetId) return;
+
     setDeleteLoading(true);
+
     try {
       await api.delete(`/staff/delete/${deleteTargetId}/`);
-      setUsers((prev) => prev.filter((u) => u.id !== deleteTargetId));
-      pushToast({ title: "User deleted", variant: "success" });
-    } catch (err) {
-      console.error("Delete failed:", err);
-      pushToast({ title: "Failed to delete user", variant: "error" });
-    } finally {
-      setDeleteLoading(false);
+
+      await fetchUsers();
+
+      pushToast({
+        title: "User deleted",
+        variant: "success",
+      });
+
       setConfirmDeleteOpen(false);
       setDeleteTargetId(null);
+    } catch (err) {
+      console.error("Delete failed:", err.response?.data || err);
+
+      pushToast({
+        title: "Failed to delete user",
+        variant: "error",
+      });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
   const addUser = async (form) => {
     setAddLoading(true);
+
     try {
       await api.post("/staff/add/", {
         full_name: form.fullName.trim(),
@@ -69,32 +86,57 @@ export default function Users() {
         role: form.role.toLowerCase(),
         department: form.department.trim(),
       });
-      fetchUsers();
-      pushToast({ title: "Invitation sent", message: `${form.fullName} invited successfully`, variant: "success" });
+
+      await fetchUsers();
+
+      pushToast({
+        title: "Invitation sent",
+        message: `${form.fullName} invited successfully`,
+        variant: "success",
+      });
+
+      setAddOpen(false);
     } catch (err) {
-      console.error("Invite user failed:", err);
-      pushToast({ title: "Failed to invite user", variant: "error" });
+      console.error("Invite user failed:", err.response?.data || err);
+
+      pushToast({
+        title: "Failed to invite user",
+        variant: "error",
+      });
     } finally {
       setAddLoading(false);
-      setAddOpen(false);
     }
   };
 
   const updateUser = async (form) => {
+    if (!editUser) return;
+
     setAddLoading(true);
+
     try {
       await api.put(`/staff/update/${editUser.id}/`, {
         full_name: form.fullName.trim(),
         email: form.email.trim(),
       });
-      fetchUsers();
-      pushToast({ title: "User updated", message: `${form.fullName} updated successfully`, variant: "success" });
+
+      await fetchUsers();
+
+      pushToast({
+        title: "User updated",
+        message: `${form.fullName} updated successfully`,
+        variant: "success",
+      });
+
+      setEditUser(null);
     } catch (err) {
-      console.error("Update user failed:", err);
-      pushToast({ title: "Failed to update user", variant: "error" });
+      console.error("Update user failed:", err.response?.data || err);
+
+      pushToast({
+        title: "Failed to update user",
+        variant: "error",
+      });
     } finally {
       setAddLoading(false);
-      setEditUser(null);
     }
   };
 

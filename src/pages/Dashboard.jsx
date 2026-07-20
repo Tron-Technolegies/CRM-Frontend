@@ -1,21 +1,23 @@
-import { useEffect, useState } from "react";
-
 import DashboardKpis from "../components/dashboard/DashboardKpis";
 import DashboardGrowth from "../components/dashboard/DashboardGrowth";
 import DashboardLeadsBySource from "../components/dashboard/DashboardLeadsBySource";
 import DashboardRecentActivities from "../components/dashboard/DashboardRecentActivities";
 import DashboardTasksDueToday from "../components/dashboard/DashboardTasksDueToday";
-import api from "../api/Api";
+
+import useDashboard from "../hooks/useDashboard";
 
 export default function Dashboard() {
-  const [report, setReport] = useState(null);
+  const { report, loading } = useDashboard();
 
-  useEffect(() => {
-    api
-      .get("report/dashboard/")
-      .then((res) => setReport(res.data))
-      .catch((err) => console.error("Failed to fetch report:", err));
-  }, []);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm text-[#64748B]">
+          Loading dashboard...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -25,6 +27,7 @@ export default function Dashboard() {
         <div className="xl:col-span-2">
           <DashboardGrowth report={report} />
         </div>
+
         <div className="xl:col-span-1">
           <DashboardLeadsBySource />
         </div>

@@ -22,32 +22,32 @@ export default function LeadFormModal({
   onSubmit,
   loading = false,
   initialData = null,
+  staff = [],
 }) {
-  const [staff, setStaff] = useState([]);
   const sourceOptions = usePicklist("lead_source");
   const priorityOptions = usePicklist("lead_priority");
   const statusOptions = usePicklist("lead_status");
 
-  useEffect(() => {
-    let mounted = true;
+  // useEffect(() => {
+  //   let mounted = true;
 
-    const fetchStaff = async () => {
-      try {
-        const { data } = await api.get("/admin/staff/view/");
-        if (mounted) {
-          setStaff(Array.isArray(data) ? data : []);
-        }
-      } catch (error) {
-        console.error("Failed to fetch staff:", error);
-      }
-    };
+  //   const fetchStaff = async () => {
+  //     try {
+  //       const { data } = await api.get("/staff/view/");
+  //       if (mounted) {
+  //         setStaff(Array.isArray(data) ? data : []);
+  //       }
+  //     } catch (error) {
+  //       console.error("Failed to fetch staff:", error);
+  //     }
+  //   };
 
-    fetchStaff();
+  //   fetchStaff();
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  //   return () => {
+  //     mounted = false;
+  //   };
+  // }, []);
 
   const blankForm = useMemo(
     () => ({

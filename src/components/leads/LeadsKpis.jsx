@@ -11,18 +11,47 @@ export default function LeadsKpis({ leads = [] }) {
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
-  const thisMonth = leads.filter((l) => {
-    if (!l.createdAt) return false;
-    const date = new Date(l.createdAt);
-    return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+  const thisMonth = leads.filter((lead) => {
+    const created = lead.created_at || lead.createdAt;
+
+    if (!created) return false;
+
+    const date = new Date(created);
+
+    return (
+      date.getMonth() === currentMonth &&
+      date.getFullYear() === currentYear
+    );
   });
 
   const total = leads.length;
-  const newLeads = thisMonth.filter((l) => l.status?.toLowerCase() === "new").length;
-  const contacted = thisMonth.filter((l) => l.status?.toLowerCase() === "contacted").length;
-  const converted = thisMonth.filter((l) => l.status?.toLowerCase() === "converted").length;
-  const lost = thisMonth.filter((l) => l.status?.toLowerCase() === "lost").length;
+  let newLeads = 0;
+  let contacted = 0;
+  let converted = 0;
+  let lost = 0;
 
+  thisMonth.forEach((lead) => {
+    switch (lead.status?.toLowerCase()) {
+      case "new":
+        newLeads++;
+        break;
+
+      case "contacted":
+        contacted++;
+        break;
+
+      case "converted":
+        converted++;
+        break;
+
+      case "lost":
+        lost++;
+        break;
+
+      default:
+        break;
+    }
+  });
   const kpis = [
     {
       label: "Total Leads",

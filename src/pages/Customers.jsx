@@ -1,21 +1,25 @@
 import { Plus } from "lucide-react";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useState } from "react";
+
+import useCustomers from "../hooks/useCustomers";
 
 import CustomersKpis from "../components/customers/CustomersKpis";
 import CustomersList from "../components/customers/CustomersList";
 import CustomerFormModal from "../components/customers/CustomerFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
-import { useToast } from "../components/ui/toastContext.js";
-
-const api = axios.create({
-  baseURL: "http://localhost:8000/api/admin",
-});
+import { useToast } from "../components/ui/toastContext";
 
 export default function Customers() {
   const { pushToast } = useToast();
-  const [customers, setCustomers] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  const {
+    customers,
+    loading,
+    addCustomer: createCustomer,
+    editCustomer: updateCustomerApi,
+    removeCustomer,
+  } = useCustomers();
+
   const [addOpen, setAddOpen] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
   const [editCustomer, setEditCustomer] = useState(null);
@@ -24,20 +28,6 @@ export default function Customers() {
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const fetchCustomers = () => {
-    api.get("/customer/view/")
-      .then((res) => setCustomers(res.data))
-      .catch((err) => {
-        console.error("Failed to fetch customers:", err);
-        pushToast({ title: "Failed to load customers", variant: "error" });
-      })
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
-
   const requestDelete = (id) => {
     setDeleteTargetId(id);
     setConfirmDeleteOpen(true);
@@ -45,25 +35,36 @@ export default function Customers() {
 
   const confirmDelete = async () => {
     if (!deleteTargetId) return;
+
     setDeleteLoading(true);
+
     try {
-      await api.delete(`/customer/delete/${deleteTargetId}/`);
-      setCustomers((prev) => prev.filter((c) => c.id !== deleteTargetId));
-      pushToast({ title: "Customer deleted", variant: "success" });
-    } catch (err) {
-      console.error("Delete failed:", err);
-      pushToast({ title: "Failed to delete customer", variant: "error" });
-    } finally {
-      setDeleteLoading(false);
+      await removeCustomer(deleteTargetId);
+
+      pushToast({
+        title: "Customer deleted",
+        variant: "success",
+      });
+
       setConfirmDeleteOpen(false);
       setDeleteTargetId(null);
+    } catch (err) {
+      console.error("Delete failed:", err);
+
+      pushToast({
+        title: "Failed to delete customer",
+        variant: "error",
+      });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
   const addCustomer = async (form) => {
     setAddLoading(true);
+
     try {
-      await api.post("/customer/add/", {
+      await createCustomer({
         company_name: form.companyName.trim(),
         contact_name: form.contactName.trim(),
         phone_number: form.phone.trim(),
@@ -73,21 +74,33 @@ export default function Customers() {
         lifetime_value: Number(form.lifetimeValue || 0),
         deal_id: form.dealId || null,
       });
-      fetchCustomers();
-      pushToast({ title: "Customer created", message: `${form.companyName} added successfully`, variant: "success" });
+
+      pushToast({
+        title: "Customer created",
+        message: `${form.companyName} added successfully`,
+        variant: "success",
+      });
+
+      setAddOpen(false);
     } catch (err) {
       console.error("Add customer failed:", err);
-      pushToast({ title: "Failed to add customer", variant: "error" });
+
+      pushToast({
+        title: "Failed to add customer",
+        variant: "error",
+      });
     } finally {
       setAddLoading(false);
-      setAddOpen(false);
     }
   };
 
   const updateCustomer = async (form) => {
+    if (!editCustomer) return;
+
     setAddLoading(true);
+
     try {
-      await api.put(`/customer/update/${editCustomer.id}/`, {
+      await updateCustomerApi(editCustomer.id, {
         company_name: form.companyName.trim(),
         contact_name: form.contactName.trim(),
         phone_number: form.phone.trim(),
@@ -96,21 +109,32 @@ export default function Customers() {
         status: form.status.toLowerCase(),
         lifetime_value: Number(form.lifetimeValue || 0),
       });
-      fetchCustomers();
-      pushToast({ title: "Customer updated", message: `${form.companyName} updated successfully`, variant: "success" });
+
+      pushToast({
+        title: "Customer updated",
+        message: `${form.companyName} updated successfully`,
+        variant: "success",
+      });
+
+      setEditCustomer(null);
     } catch (err) {
       console.error("Update customer failed:", err);
-      pushToast({ title: "Failed to update customer", variant: "error" });
+
+      pushToast({
+        title: "Failed to update customer",
+        variant: "error",
+      });
     } finally {
       setAddLoading(false);
-      setEditCustomer(null);
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-sm text-[#64748B]">Loading customers...</p>
+        <p className="text-sm text-[#64748B]">
+          Loading customers...
+        </p>
       </div>
     );
   }
@@ -118,7 +142,10 @@ export default function Customers() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-[28px] font-semibold text-[#111827]">Customers</h1>
+        <h1 className="text-[28px] font-semibold text-[#111827]">
+          Customers
+        </h1>
+
         <button
           type="button"
           onClick={() => setAddOpen(true)}
@@ -130,9 +157,13 @@ export default function Customers() {
       </div>
 
       <CustomersKpis customers={customers} />
-      <CustomersList customers={customers} onDelete={requestDelete} onEdit={(c) => setEditCustomer(c)} />
 
-      {/* Add modal */}
+      <CustomersList
+        customers={customers}
+        onDelete={requestDelete}
+        onEdit={setEditCustomer}
+      />
+
       <CustomerFormModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
@@ -140,7 +171,6 @@ export default function Customers() {
         loading={addLoading}
       />
 
-      {/* Edit modal */}
       <CustomerFormModal
         open={!!editCustomer}
         onClose={() => setEditCustomer(null)}
@@ -156,7 +186,9 @@ export default function Customers() {
         confirmText="Delete"
         danger
         loading={deleteLoading}
-        onCancel={() => (deleteLoading ? null : setConfirmDeleteOpen(false))}
+        onCancel={() =>
+          deleteLoading ? null : setConfirmDeleteOpen(false)
+        }
         onConfirm={confirmDelete}
       />
     </div>
