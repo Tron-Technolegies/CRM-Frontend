@@ -1,22 +1,41 @@
 import { useEffect, useMemo, useState } from "react";
-import { Eye, MoreVertical, Pencil, Search, Trash2 } from "lucide-react";
-import { useToast } from "../ui/toastContext.js";
+import { Eye, Pencil, Search, Trash2 } from "lucide-react";
 import LeadViewModal from "./LeadViewModal";
 
 const PAGE_SIZE = 8;
 
+// Normalize so status comparisons don't depend on backend casing.
+function normalize(value) {
+  return (value || "").toString().trim().toLowerCase();
+}
+
+const STATUS_LABELS = {
+  new: "New",
+  contacted: "Contacted",
+  converted: "Converted",
+  lost: "Lost",
+};
+
 function statusStyles(status) {
-  switch (status) {
-    case "New": return "bg-blue-50 text-blue-600";
-    case "Contacted": return "bg-amber-50 text-amber-600";
-    case "Qualified": return "bg-violet-50 text-violet-600";
-    case "Converted": return "bg-emerald-50 text-emerald-600";
+  switch (normalize(status)) {
+    case "new": return "bg-blue-50 text-blue-600";
+    case "contacted": return "bg-amber-50 text-amber-600";
+    case "converted": return "bg-emerald-50 text-emerald-600";
+    case "lost": return "bg-slate-100 text-slate-600";
     default: return "bg-slate-100 text-slate-700";
   }
 }
 
-export default function LeadsList({ leads, onDelete, onEdit }) {
-  const { pushToast } = useToast();
+function statusLabel(status) {
+  return STATUS_LABELS[normalize(status)] || status;
+}
+
+export default function LeadsList({
+  leads,
+  onDelete,
+  onEdit,
+  onConvert
+}) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [source, setSource] = useState("All");
@@ -57,11 +76,15 @@ export default function LeadsList({ leads, onDelete, onEdit }) {
   }, [query, status, source, assignedTo]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const openNotImplemented = (label) => {
-    pushToast({ title: `${label} not implemented`, message: "Wire this to your backend later.", variant: "info" });
-  };
+  // Keep page in range if the result set shrinks (e.g. after a delete).
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [totalPages, page]);
+
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden">
@@ -80,7 +103,7 @@ export default function LeadsList({ leads, onDelete, onEdit }) {
 
         <div className="flex flex-wrap items-center gap-3">
           <select value={status} onChange={(e) => setStatus(e.target.value)} className="h-11 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] bg-white">
-            {statusOptions.map((o) => <option key={o} value={o}>Status: {o}</option>)}
+            {statusOptions.map((o) => <option key={o} value={o}>Status: {o === "All" ? "All" : statusLabel(o)}</option>)}
           </select>
           <select value={source} onChange={(e) => setSource(e.target.value)} className="h-11 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] bg-white">
             {sourceOptions.map((o) => <option key={o} value={o}>Source: {o}</option>)}
@@ -102,7 +125,7 @@ export default function LeadsList({ leads, onDelete, onEdit }) {
                 <p className="text-sm text-[#64748B] truncate">{lead.phone || "—"}</p>
               </div>
               <span className={`shrink-0 inline-flex px-3 py-1 rounded-full text-sm ${statusStyles(lead.status)}`}>
-                {lead.status}
+                {statusLabel(lead.status)}
               </span>
             </div>
 
@@ -136,9 +159,6 @@ export default function LeadsList({ leads, onDelete, onEdit }) {
         <table className="w-full min-w-[980px]">
           <thead className="border-b border-[#EEF2F7]">
             <tr className="text-left">
-              {/* <th className="px-6 py-4 w-10">
-                <input type="checkbox" aria-label="Select all" className="rounded border-[#E5E7EB]" />
-              </th> */}
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Lead Name</th>
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Contact</th>
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Source</th>
@@ -152,9 +172,6 @@ export default function LeadsList({ leads, onDelete, onEdit }) {
           <tbody className="divide-y divide-[#EEF2F7]">
             {paginated.map((lead) => (
               <tr key={lead.id} className="hover:bg-[#FAFAFA]">
-                {/* <td className="px-6 py-5">
-                  <input type="checkbox" aria-label={`Select ${lead.name}`} className="rounded border-[#E5E7EB]" />
-                </td> */}
                 <td className="px-6 py-5">
                   <p className="text-sm font-medium text-[#111827]">{lead.name}</p>
                 </td>
@@ -167,7 +184,7 @@ export default function LeadsList({ leads, onDelete, onEdit }) {
                 </td>
                 <td className="px-6 py-5">
                   <span className={`inline-flex px-3 py-1 rounded-full text-sm ${statusStyles(lead.status)}`}>
-                    {lead.status}
+                    {statusLabel(lead.status)}
                   </span>
                 </td>
                 <td className="px-6 py-5">
@@ -180,7 +197,6 @@ export default function LeadsList({ leads, onDelete, onEdit }) {
                   <div className="flex items-center gap-3 text-[#64748B]">
                     <button type="button" className="hover:text-[#111827]" aria-label="View" onClick={() => setViewId(lead.id)}><Eye size={18} /></button>
                     <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={() => onEdit(lead)}><Pencil size={18} /></button>
-                    {/* <button type="button" className="hover:text-[#111827]" aria-label="More" onClick={() => openNotImplemented("More")}><MoreVertical size={18} /></button> */}
                     <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={() => onDelete(lead.id)}><Trash2 size={18} /></button>
                   </div>
                 </td>
@@ -188,7 +204,7 @@ export default function LeadsList({ leads, onDelete, onEdit }) {
             ))}
             {paginated.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-6 py-10 text-sm text-[#64748B]">No leads found.</td>
+                <td colSpan={7} className="px-6 py-10 text-sm text-[#64748B]">No leads found.</td>
               </tr>
             )}
           </tbody>
@@ -214,8 +230,14 @@ export default function LeadsList({ leads, onDelete, onEdit }) {
         open={!!viewId}
         onClose={() => setViewId(null)}
         leadId={viewId}
-        onEdit={(lead) => { setViewId(null); onEdit(lead); }}
-        onConvertSuccess={() => window.location.reload()}
+        onEdit={(lead) => {
+          setViewId(null);
+          onEdit(lead);
+        }}
+        onConvert={(id, type) => {
+          setViewId(null);
+          onConvert(id, type);
+        }}
       />
     </div>
   );

@@ -14,8 +14,11 @@ export default function useCustomers() {
 
   const fetchCustomers = async () => {
     try {
-      const { data } = await getCustomers();
-      setCustomers(data);
+      const data = await getCustomers();
+      setCustomers(data || []);
+    } catch (err) {
+      console.error(err);
+      setCustomers([]);
     } finally {
       setLoading(false);
     }
@@ -26,8 +29,7 @@ export default function useCustomers() {
   }, []);
 
   const fetchCustomer = async (id) => {
-    const { data } = await getCustomer(id);
-    return data;
+    return await getCustomer(id);
   };
 
   const addCustomer = async (customerData) => {

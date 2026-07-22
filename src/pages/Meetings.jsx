@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 
 import useMeeting from "../hooks/useMeeting";
 
 import MeetingsTable from "../components/Meeting/MeetingsTable";
 import AddMeeting from "../components/Meeting/AddMeeting";
+
+import { getLeads, getStaff } from "../api/lead";
+import { getCustomers } from "../api/customer";
+
 
 export default function Meetings() {
   const {
@@ -18,6 +22,38 @@ export default function Meetings() {
 
   const [showModal, setShowModal] = useState(false);
   const [editData, setEditData] = useState(null);
+
+
+  const [staff, setStaff] = useState([]);
+  const [leads, setLeads] = useState([]);
+  const [customers, setCustomers] = useState([]);
+
+  useEffect(() => {
+      loadStaff();
+      loadLeads();
+      loadCustomers();
+  }, []);
+
+  const loadStaff = async () => {
+    const data = await getStaff();
+      setStaff(data);
+  };
+
+  const loadLeads = async () => {
+    const data = await getLeads();
+    console.log("Leads Response:", data);
+    setLeads(data);
+  };
+
+  const loadCustomers = async () => {
+    const res = await getCustomers();
+    setCustomers(res.data);
+  };
+
+
+
+  
+
 
   const openAddModal = () => {
     setEditData(null);
@@ -98,6 +134,9 @@ export default function Meetings() {
           <div className="w-full max-w-5xl">
             <AddMeeting
               initialData={editData}
+              staff={staff}
+              leads={leads}
+              customers={customers}
               onSubmit={handleSubmit}
               onClose={() => {
                 setShowModal(false);
