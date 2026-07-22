@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useToast } from "../ui/toastContext";
+import { useToast } from "../components/ui/toastContext"
 
 import {
     getAccounts,
@@ -7,7 +7,7 @@ import {
     deleteAccount as removeAccount,
     createAccount,
     updateAccount,
-} from "../../api/account";
+} from "../api/account"
 
 
 const useAccount = () => {

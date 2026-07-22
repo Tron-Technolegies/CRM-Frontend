@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-
-import useProducts from "../../hooks/useProducts";
+import useProducts from "../../../hooks/useProducts";
 import ProductInfo from "./ProductInfo";
 import PriceInfo from "./PriceInfo";
 import StockInfo from "./StockInfo";

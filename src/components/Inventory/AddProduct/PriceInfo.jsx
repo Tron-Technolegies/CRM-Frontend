@@ -43,17 +43,18 @@ const PriceInfo = ({ formData, handleChange }) => {
 
                 {/* Tax Percentage */}
                 <div>
-                    <label className="block text-xs font-medium text-[#64748B] mb-2">
-                        Tax Percentage
-                    </label>
-
-                    <input
-                        type="number"
+                    <label className="block text-xs font-medium text-[#64748B] mb-2">Tax</label>
+                    <select
                         name="tax_percentage"
-                        value={formData?.tax_percentage || ""}
+                        value={formData.tax_percentage}
                         onChange={handleChange}
-                        className="h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none"
-                    />
+                        className="h-11 w-full rounded-xl border-2 border-[#E5E7EB] px-4 text-sm outline-none">
+                        <option value="0">None</option>
+                        <option value="5">GST 5%</option>
+                        <option value="12">GST 12%</option>
+                        <option value="18">GST 18%</option>
+                        <option value="28">GST 28%</option>
+                    </select>
                 </div>
 
 

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, Pencil, Search, Trash2 } from "lucide-react";
-import useProducts from "../hooks/useProducts";
 import Pagination from "../Pagination"
 import usePagination from "../../api/usePagination"
 import { useNavigate } from "react-router-dom";
+import useProducts from "../../hooks/useProducts";
 
 
 const Product = () => {

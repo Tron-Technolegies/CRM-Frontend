@@ -5,7 +5,7 @@ import {
     deleteProduct,
     updateProduct,
     getSingleProduct
-} from "../../api/products";
+} from "../api/products"
 import { useNavigate } from "react-router-dom";
 
 const initialState = {
@@ -46,6 +46,7 @@ const useProducts = () => {
             setLoading(true);
 
             const res = await getProducts();
+            console.log(res.data);
 
             if (Array.isArray(res.data)) {
                 setProducts(res.data);

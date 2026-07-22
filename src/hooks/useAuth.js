@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { signup, login } from "../../api/auth";
+import { signup, login } from "../api/auth"
 
 const useAuth = () => {
 

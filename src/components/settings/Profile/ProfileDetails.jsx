@@ -1,6 +1,14 @@
-import React from "react";
+import { React, useEffect } from "react";
+import useProfile from "../../../hooks/useProfile";
 
 const ProfileDetails = () => {
+
+    const { profile, fetchProfile, } = useProfile();
+
+    useEffect(() => {
+        fetchProfile();
+    }, []);
+
     return (
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-5">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -14,7 +22,7 @@ const ProfileDetails = () => {
 
                     <div className="space-y-7">
                         <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Name</span>
+                            <span className="text-gray-500">{profile?.first_name}/</span>
                             <span className="font-semibold text-gray-800 text-right">
                                 Admin Name
                             </span>

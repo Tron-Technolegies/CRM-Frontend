@@ -4,7 +4,7 @@ import AccountsKpis from "../components/accounts/AccountsKpis";
 import AccountsList from "../components/accounts/AccountsList";
 import AccountFormModal from "../components/accounts/AccountFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
-import useAccount from "../components/hooks/useAccount";
+import useAccount from "../hooks/useAccount";
 
 const Accounts = () => {
 

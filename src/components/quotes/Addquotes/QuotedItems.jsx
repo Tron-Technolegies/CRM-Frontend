@@ -1,167 +1,241 @@
 import React from "react";
 
-const QuotedItems = () => {
-    return (
-        <div className="border border-gray-300 shadow-lg rounded-lg mx-6 overflow-hidden">
+const QuotedItems = ({
+    formData,
+    handleChange,
+    productsList
+}) => {
 
+
+    const products = formData.products || [];
+    const addLineItem = () => {
+        const updatedProducts = [
+            ...products,
+            {
+                product: "",
+                quantity: 1,
+                discount: 0
+            }
+        ];
+
+        handleChange({
+            target: {
+                name: "products",
+                value: updatedProducts
+            }
+        });
+
+    };
+
+
+
+    const updateProduct = (index, field, value) => {
+        const updatedProducts = [...products];
+        updatedProducts[index][field] = value;
+
+        handleChange({
+            target: {
+                name: "products",
+                value: updatedProducts
+            }
+        });
+
+    };
+
+    // const calculateTotal = (item) => {
+    //     const price = Number(item.list_price || 0);
+    //     const quantity = Number(item.quantity || 0);
+    //     const discount = Number(item.discount || 0);
+    //     const tax = Number(item.tax || 0);
+
+    //     const amount = quantity * price;
+    //     const discountedAmount = amount - discount;
+    //     const total = discountedAmount + (discountedAmount * tax / 100);
+
+    //     return total; // remove toFixed()
+    // };
+
+    // const subtotal = products.reduce(
+    //     (sum, item) => sum + calculateTotal(item),
+    //     0
+    // );
+
+
+    return (
+
+        <div className="border border-gray-300 shadow-lg rounded-lg mx-6 overflow-hidden">
             <div className="flex justify-between p-6 bg-[#EFF6FF]">
+
                 <h1 className="text-[#004EDC] font-semibold">
                     Quoted Items
                 </h1>
-
-                <button className="text-[#004EDC] font-semibold">
+                <button
+                    onClick={addLineItem}
+                    className="text-[#004EDC] font-semibold">
                     + Add Line Item
                 </button>
-
             </div>
-
             <div className="overflow-x-auto bg-white">
                 <table className="w-full text-sm">
                     <thead>
-                        <tr className="text-left text-slate-400 text-xs uppercase tracking-wide border-b border-slate-300">
-                            <th className="px-6 py-3 font-medium w-10">#</th>
-                            <th className="px-2 py-3 font-medium">Product Name</th>
-                            <th className="px-2 py-3 font-medium w-24">Quantity</th>
-                            <th className="px-2 py-3 font-medium w-28">List Price</th>
-                            <th className="px-2 py-3 font-medium w-24">Discount</th>
-                            <th className="px-2 py-3 font-medium w-20">Tax (%)</th>
-                            <th className="px-6 py-3 font-medium text-right">Total</th>
+
+                        <tr className="text-left text-slate-400 text-xs uppercase tracking-wide border-b">
+
+                            <th className="px-6 py-3">
+                                #
+                            </th>
+
+                            <th className="px-2 py-3">
+                                Product Name
+                            </th>
+                            <th className="px-2 py-3">
+                                Quantity
+                            </th>
+                            <th className="px-2 py-3">
+                                Discount
+                            </th>
+                            {/* <th className="px-6 py-3 text-right">
+                                Total
+                            </th> */}
                         </tr>
                     </thead>
-
                     <tbody>
 
-                        {/* Row 1 */}
-                        <tr className="border-b border-slate-300">
-                            <td className="px-6 py-4 text-slate-400">1</td>
 
-                            <td className="px-2 py-4 font-medium text-slate-800">
-                                Enterprise Cloud License
-                            </td>
+                        {
+                            products.map((item, index) => (
 
-                            <td className="px-2 py-4">
-                                <input
-                                    type="number"
-                                    defaultValue={12}
-                                    className="w-16 border border-slate-300 rounded-md px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
-                                />
-                            </td>
+                                <tr
+                                    key={index}
+                                >
+                                    <td className="px-6 py-4">
+                                        {index + 1}
+                                    </td>
+                                    <td className="px-2 py-4">
+                                        <select
+                                            value={item.product}
+                                            onChange={(e) => {
 
-                            <td className="px-2 py-4 text-slate-700">
-                                $ 1,200.00
-                            </td>
+                                                const productId = Number(e.target.value);
 
-                            <td className="px-2 py-4">
-                                <div className="flex items-center gap-1">
-                                    <input
-                                        type="number"
-                                        defaultValue={10}
-                                        className="w-14 border border-slate-300 rounded-md px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
-                                    />
-                                    <span className="text-slate-500">%</span>
-                                </div>
-                            </td>
+                                                const selected = productsList.find(
+                                                    p => p.id === productId
+                                                );
 
-                            <td className="px-2 py-4">
-                                <input
-                                    type="number"
-                                    defaultValue={8.5}
-                                    className="w-14 border border-slate-300 rounded-md px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
-                                />
-                            </td>
+                                                const updatedProducts = [...products];
 
-                            <td className="px-6 py-4 text-right font-semibold text-slate-800">
-                                $14,040.00
-                            </td>
-                        </tr>
+                                                updatedProducts[index] = {
+                                                    ...updatedProducts[index],
+                                                    product: productId,
+                                                    list_price: selected?.unit_price || 0,
+                                                    tax: selected?.tax_percentage || 0
+                                                };
 
-                        {/* Row 2 */}
-                        <tr className="border-b border-slate-300 last:border-b-0">
-                            <td className="px-6 py-4 text-slate-400">2</td>
+                                                handleChange({
+                                                    target: {
+                                                        name: "products",
+                                                        value: updatedProducts
+                                                    }
+                                                });
 
-                            <td className="px-2 py-4 font-medium text-slate-800">
-                                Implementation Support (Per Hour)
-                            </td>
+                                            }}
+                                            className="border rounded-md px-3 py-2 w-full"
+                                        >
 
-                            <td className="px-2 py-4">
-                                <input
-                                    type="number"
-                                    defaultValue={40}
-                                    className="w-16 border border-slate-400 rounded-md px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
-                                />
-                            </td>
+                                            <option value="">
+                                                Select Product
+                                            </option>
 
-                            <td className="px-2 py-4 text-slate-700">
-                                $ 150.00
-                            </td>
+                                            {productsList.map(product => (
 
-                            <td className="px-2 py-4">
-                                <div className="flex items-center gap-1">
-                                    <input
-                                        type="number"
-                                        defaultValue={0}
-                                        className="w-14 border border-slate-400 rounded-md px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
-                                    />
-                                    <span className="text-slate-500">%</span>
-                                </div>
-                            </td>
+                                                <option
+                                                    key={product.id}
+                                                    value={product.id}
+                                                >
+                                                    {product.name}
+                                                </option>
 
-                            <td className="px-2 py-4">
-                                <input
-                                    type="number"
-                                    defaultValue={8.5}
-                                    className="w-14 border border-slate-400 rounded-md px-2 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
-                                />
-                            </td>
+                                            ))}
 
-                            <td className="px-6 py-4 text-right font-semibold text-slate-800">
-                                $6,510.00
-                            </td>
-                        </tr>
+                                        </select>
+                                    </td>
+                                    <td className="px-2 py-4">
 
+                                        <input
+                                            type="number"
+                                            value={item.quantity}
+                                            onChange={(e) =>
+                                                updateProduct(
+                                                    index,
+                                                    "quantity",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="w-20 border rounded-md px-2 py-2"
+                                        />
+                                    </td>
+                                    <td className="px-2 py-4">
+
+                                        <input
+                                            type="number"
+                                            value={item.discount}
+                                            onChange={(e) =>
+                                                updateProduct(
+                                                    index,
+                                                    "discount",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="w-20 border rounded-md px-2 py-2"
+                                        />
+                                    </td>
+                                    {/* <td className="px-6 py-4 text-right font-semibold">
+                                        {calculateTotal(item).toFixed(2)}
+                                    </td> */}
+                                </tr>
+
+                            ))
+                        }
                     </tbody>
                 </table>
-            </div>
-
+            </div >
             <div className="flex justify-end px-6 py-6">
-                <div className="w-full max-w-xs space-y-2">
+                <div className="w-full max-w-xs space-y-3">
+                    {/* <div className="flex justify-between text-sm">
 
-                    <div className="flex justify-between text-slate-500 text-sm">
-                        <span>Subtotal</span>
-                        <span className="font-semibold text-slate-800">
-                            $19,100.00
+                        <span>
+                            Subtotal
                         </span>
-                    </div>
-
-                    <div className="flex justify-between text-slate-500 text-sm">
-                        <span>Tax (8.5%)</span>
-                        <span className="font-semibold text-slate-800">
-                            $1,623.50
+                        <span className="font-semibold">
+                            {subtotal.toFixed(2)}
                         </span>
-                    </div>
 
-                    <div className="flex justify-between text-slate-500 text-sm">
-                        <span>Discount</span>
-                        <span className="font-semibold text-red-500">
-                            -$1,200.00
-                        </span>
-                    </div>
+                    </div> */}
+                    {/* <div className="border-t pt-3 flex justify-between">
 
-                    <div className="border-t border-slate-200 pt-3 flex justify-between items-center">
-                        <span className="font-semibold text-slate-800">
+                        <span className="font-semibold">
                             Grand Total
                         </span>
-
                         <span className="text-blue-600 font-bold text-xl">
-                            $19,523.50
+
+                            {subtotal.toFixed(2)}
+
                         </span>
-                    </div>
+
+
+                    </div> */}
+
 
                 </div>
+
+
             </div>
 
-        </div>
+
+        </div >
+
     );
 };
+
 
 export default QuotedItems;
