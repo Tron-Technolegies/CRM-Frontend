@@ -1,84 +1,105 @@
-import React from "react";
+import { Pencil, Trash2 } from "lucide-react";
 
-const CallsTable = () => {
-    return (
-        <div className="overflow-x-auto border rounded-lg border-slate-300">
-            <table className="min-w-full border-collapse">
-                <thead>
-                    <tr className="bg-[#E5EEFF] border border-gray-300">
-                        <th className="px-5 py-9 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                            SUBJECT
-                        </th>
-                        <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                            CALL TYPE
-                        </th>
-                        <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                            CALL START TIME
-                        </th>
-                        <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                            CALL DURATION
-                        </th>
-                        <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                            RELATED TO
-                        </th>
-                        <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                            CALL OWNER
-                        </th>
-                        <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                            CONTACT NAME
-                        </th>
-                    </tr>
-                </thead>
+function statusStyles(status) {
+  switch (status) {
+    case "completed": return "bg-emerald-50 text-emerald-600";
+    case "missed": return "bg-rose-50 text-rose-600";
+    case "scheduled": return "bg-blue-50 text-blue-600";
+    case "cancelled": return "bg-slate-100 text-slate-600";
+    default: return "bg-slate-100 text-slate-600";
+  }
+}
 
-                <tbody>
-                    <tr className="hover:bg-gray-50">
-                        <td className="border-b border-gray-200 px-5 py-5 text-sm font-medium text-gray-700">
-                            Text
-                        </td>
-                        <td className="border-b border-gray-200 px-5 py-5 text-sm font-medium">
-                            Inbound
-                        </td>
-                        <td className="border-b border-gray-200 px-5 py-5 text-sm font-medium">
-                            30/06/26 03:47PM
-                        </td>
-                        <td className="border-b border-gray-200 px-5 py-5 text-sm font-medium">
-                            00:15
-                        </td>
-                        <td className="border-b border-gray-200 px-5 py-5 text-sm font-medium">
-                            Text
-                        </td>
-                        <td className="border-b border-gray-200 px-5 py-5 text-sm font-medium">
-                            Mathew Thomas
-                        </td>
-                        <td className="border-b border-gray-200 px-5 py-5 text-sm font-medium">
-                            Text
-                        </td>
-                    </tr>
+function formatDateTime(value) {
+  if (!value) return "—";
+  const d = new Date(value);
+  return d.toLocaleString("en-US", { month: "short", day: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
 
-                    <tr className="hover:bg-gray-50">
-                        <td className="border-b border-gray-200 px-5 py-5 text-sm font-medium text-gray-700">
-                            Text
-                        </td>
-                        <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">
-                            Text
-                        </td>
-                        <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">
-                            Text
-                        </td>
-                        <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">
-                            Text
-                        </td>
-                        <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">
-                            Text
-                        </td>
-                        <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">
-                            Text
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    );
-};
+export default function CallsTable({calls = [], loading, onDelete, onEdit,}) {
 
-export default CallsTable;
+    
+  if (loading) {
+    return <p className="text-sm text-[#64748B] py-8 text-center">Loading calls...</p>;
+  }
+
+  return (
+    <div className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[900px]">
+          <thead className="border-b border-[#EEF2F7]">
+            <tr className="text-left">
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Subject</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Type</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Related To</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Assigned To</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Start Time</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Duration</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Status</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#EEF2F7]">
+            {calls.map((call) => (
+              <tr key={call.id} className="hover:bg-[#FAFAFA]">
+                <td className="px-6 py-5">
+                  <p className="text-sm font-medium text-[#111827]">{call.subject}</p>
+                </td>
+                <td className="px-6 py-5">
+                  <p className="text-sm text-[#111827] capitalize">{call.call_type}</p>
+                </td>
+                <td className="px-6 py-5">
+                  <p className="text-sm text-[#111827]">
+                    {call.related_lead?.full_name ||
+                    call.related_contact?.company_name ||
+                    call.related_deal?.deal_name ||
+                    "—"}
+                  </p>
+                </td>
+                <td className="px-6 py-5">
+                  <p className="text-sm text-[#111827]">{call.assigned_to?.full_name || "—"}</p>
+                </td>
+                <td className="px-6 py-5">
+                  <p className="text-sm text-[#64748B]">{formatDateTime(call.start_time)}</p>
+                </td>
+                <td className="px-6 py-5">
+                  <p className="text-sm text-[#111827]">{call.duration} min</p>
+                </td>
+                <td className="px-6 py-5">
+                  <span className={`inline-flex px-3 py-1 rounded-full text-sm capitalize ${statusStyles(call.status)}`}>
+                    {call.status}
+                  </span>
+                </td>
+                <td className="px-6 py-5">
+                  <div className="flex items-center gap-3 text-[#64748B]">
+                    <button
+                        type="button"
+                        onClick={() => onEdit(call)}
+                        className="hover:text-[#111827]"
+                        >
+                        <Pencil size={18} />
+                    </button>
+
+                    <button
+                        type="button"
+                        className="hover:text-red-600"
+                        onClick={() => onDelete(call.id)}
+                        >
+                        <Trash2 size={18} />
+                    </button>
+
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {calls.length === 0 && (
+              <tr>
+                <td colSpan={8} className="px-6 py-10 text-sm text-[#64748B] text-center">No calls found.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

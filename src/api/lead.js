@@ -5,8 +5,9 @@ export const getLeads = async () => {
   return data;
 };
 
-export const getLead = (id) => {
-  return api.get(`/lead/single/view/${id}/`);
+export const getLead = async (id) => {
+  const { data } = await api.get(`/lead/single/view/${id}/`);
+  return data;
 };
 
 export const addLead = async (payload) => {
@@ -23,5 +24,15 @@ export const deleteLead = async (id) => {
 
 export const getStaff = async () => {
   const { data } = await api.get("/staff/view/");
+  return data;
+};
+
+export const getLeadToCustomerPrefill = async (id) => {
+  const { data } = await api.get(`/lead/customer/prefill/${id}/`);
+  return data;
+};
+
+export const convertLead = async (id, payload) => {
+  const { data } = await api.post(`/lead/convert/${id}/`, payload);
   return data;
 };
