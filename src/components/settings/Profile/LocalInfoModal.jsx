@@ -26,15 +26,19 @@ const LocalInfoModal = ({ isOpen, onClose }) => {
                 <div className="flex-1 overflow-y-auto p-8">
 
                     <div className="space-y-6">
-
                         <div>
                             <label className="mb-2 block text-sm font-medium text-gray-700">
                                 Language
                             </label>
-                            <input
-                                type="text"
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
-                            />
+                            <select
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500">
+                                <option value="">Select Language</option>
+                                <option value="english">English</option>
+                                <option value="malayalam">Malayalam</option>
+                                <option value="hindi">Hindi</option>
+                                <option value="tamil">Tamil</option>
+                                <option value="kannada">Kannada</option>
+                            </select>
                         </div>
 
                         <div>
