@@ -55,6 +55,7 @@ export default function Customers() {
         title: "Failed to delete customer",
         variant: "error",
       });
+      // Leave the dialog open on failure so the user can retry.
     } finally {
       setDeleteLoading(false);
     }
@@ -72,7 +73,7 @@ export default function Customers() {
         industry: form.industry,
         status: form.status.toLowerCase(),
         lifetime_value: Number(form.lifetimeValue || 0),
-        deal_id: form.dealId || null,
+        lead_id: form.leadId || null,
       });
 
       pushToast({
@@ -89,6 +90,7 @@ export default function Customers() {
         title: "Failed to add customer",
         variant: "error",
       });
+      // Keep the modal open on failure so the user's entries aren't lost.
     } finally {
       setAddLoading(false);
     }
@@ -124,6 +126,7 @@ export default function Customers() {
         title: "Failed to update customer",
         variant: "error",
       });
+      // Keep the modal open on failure so the user's edits aren't lost.
     } finally {
       setAddLoading(false);
     }
@@ -132,9 +135,7 @@ export default function Customers() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-sm text-[#64748B]">
-          Loading customers...
-        </p>
+        <p className="text-sm text-[#64748B]">Loading customers...</p>
       </div>
     );
   }
@@ -165,16 +166,12 @@ export default function Customers() {
       />
 
       <CustomerFormModal
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-        onSubmit={addCustomer}
-        loading={addLoading}
-      />
-
-      <CustomerFormModal
-        open={!!editCustomer}
-        onClose={() => setEditCustomer(null)}
-        onSubmit={updateCustomer}
+        open={addOpen || !!editCustomer}
+        onClose={() => {
+          setAddOpen(false);
+          setEditCustomer(null);
+        }}
+        onSubmit={editCustomer ? updateCustomer : addCustomer}
         loading={addLoading}
         initialData={editCustomer}
       />
@@ -186,9 +183,12 @@ export default function Customers() {
         confirmText="Delete"
         danger
         loading={deleteLoading}
-        onCancel={() =>
-          deleteLoading ? null : setConfirmDeleteOpen(false)
-        }
+        onCancel={() => {
+          if (!deleteLoading) {
+            setConfirmDeleteOpen(false);
+            setDeleteTargetId(null);
+          }
+        }}
         onConfirm={confirmDelete}
       />
     </div>

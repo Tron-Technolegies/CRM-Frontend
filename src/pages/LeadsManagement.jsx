@@ -4,39 +4,116 @@ import { useState } from "react";
 import LeadsKpis from "../components/leads/LeadsKpis";
 import LeadsList from "../components/leads/LeadsList";
 import LeadFormModal from "../components/leads/LeadFormModal";
+import CustomerFormModal from "../components/customers/CustomerFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
+
 import { useToast } from "../components/ui/toastContext";
 
 import useLead from "../hooks/useLead";
-import {
-  addLead,
-  updateLead,
-  deleteLead,
-} from "../api/lead";
+
+import { addLead, updateLead, deleteLead, convertLead } from "../api/lead";
+
 
 export default function LeadsManagement() {
   const { pushToast } = useToast();
 
-  const {
-    leads,
-    staff,
-    loading,
-    fetchLeads,
-    setLeads,
-  } = useLead();
+  const { leads, staff, loading, fetchLeads, setLeads } = useLead();
 
+  // Add / edit lead
   const [addOpen, setAddOpen] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
   const [editLead, setEditLead] = useState(null);
 
+  // Conversion
+  const [convertLeadId, setConvertLeadId] = useState(null);
+  const [convertType, setConvertType] = useState(null); // "customer" | "account" | null
+  const [isDealFlow, setIsDealFlow] = useState(false); // true only when converting via "Convert Deal"
+  const [showConvertChoice, setShowConvertChoice] = useState(false);
+  const [customerLoading, setCustomerLoading] = useState(false);
+
+  // Delete
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const requestDelete = (id) => {
+
+  /* Start conversion */
+  const handleConvert = (leadId, type) => {
+    setConvertLeadId(leadId);
+
+    if (type === "deal") {
+      // Deal conversion needs a Customer or Account underneath it —
+      // ask which one before opening the data-collection form.
+      setIsDealFlow(true);
+      setShowConvertChoice(true);
+      return;
+    }
+
+    // Plain Customer-only or Account-only conversion — no deal created.
+    setIsDealFlow(false);
+    setConvertType(type);
+  };
+
+
+  /* After choosing Customer / Account for a deal conversion */
+  const continueDealConversion = type => {
+    setConvertType(type);
+    setShowConvertChoice(false);
+  };
+
+
+  /* Submit conversion form */
+  const handleConvertSubmit = async form => {
+    setCustomerLoading(true);
+
+    try {
+      const payload = {
+        create_customer: convertType === "customer",
+        create_account: convertType === "account",
+        create_deal: isDealFlow,
+        customer_data: convertType === "customer" ? form : null,
+        account_data: convertType === "account" ? form : null,
+      };
+
+      // Deal-specific fields only apply when we're actually creating a deal.
+      if (isDealFlow) {
+        payload.deal_name = `${form.companyName || form.accountName || "Untitled"} Deal`;
+        payload.deal_amount = 0;
+        payload.stage = "Discussion";
+      }
+
+      await convertLead(convertLeadId, payload);
+
+      pushToast({
+        title: "Lead converted",
+        message: isDealFlow ? "Deal created successfully" : "Conversion successful",
+        variant: "success",
+      });
+
+      setConvertType(null);
+      setConvertLeadId(null);
+      setIsDealFlow(false);
+
+      await fetchLeads();
+    } catch (error) {
+      console.error(error);
+
+      pushToast({
+        title: "Conversion failed",
+        variant: "error",
+      });
+      // Keep the modal open on failure so the user doesn't lose their input.
+    } finally {
+      setCustomerLoading(false);
+    }
+  };
+
+
+  const requestDelete = id => {
     setDeleteTargetId(id);
     setConfirmDeleteOpen(true);
   };
+
 
   const confirmDelete = async () => {
     if (!deleteTargetId) return;
@@ -46,29 +123,30 @@ export default function LeadsManagement() {
     try {
       await deleteLead(deleteTargetId);
 
-      setLeads((prev) =>
-        prev.filter((lead) => lead.id !== deleteTargetId)
-      );
+      setLeads(prev => prev.filter(lead => lead.id !== deleteTargetId));
 
       pushToast({
         title: "Lead deleted",
         variant: "success",
       });
-    } catch (err) {
-      console.error(err);
+
+      setConfirmDeleteOpen(false);
+      setDeleteTargetId(null);
+    } catch (error) {
+      console.error(error);
 
       pushToast({
         title: "Failed to delete lead",
         variant: "error",
       });
+      // Leave the confirm dialog open on failure so the user can retry.
     } finally {
       setDeleteLoading(false);
-      setConfirmDeleteOpen(false);
-      setDeleteTargetId(null);
     }
   };
 
-  const handleAddLead = async (form) => {
+
+  const handleAddLead = async form => {
     setAddLoading(true);
 
     try {
@@ -88,23 +166,25 @@ export default function LeadsManagement() {
 
       pushToast({
         title: "Lead created",
-        message: `${form.fullName} added successfully`,
         variant: "success",
       });
-    } catch (err) {
-      console.error(err);
+
+      setAddOpen(false);
+    } catch (error) {
+      console.error(error);
 
       pushToast({
         title: "Failed to add lead",
         variant: "error",
       });
+      // Keep the modal open on failure so the user's entries aren't lost.
     } finally {
       setAddLoading(false);
-      setAddOpen(false);
     }
   };
 
-  const handleUpdateLead = async (form) => {
+
+  const handleUpdateLead = async form => {
     if (!editLead) return;
 
     setAddLoading(true);
@@ -112,7 +192,9 @@ export default function LeadsManagement() {
     try {
       await updateLead(editLead.id, {
         full_name: form.fullName.trim(),
-        phone_number: form.phoneNumber.trim(),
+        phone_number: form.countryCode
+          ? `${form.countryCode} ${form.phoneNumber.trim()}`
+          : form.phoneNumber.trim(),
         email: form.email.trim(),
         company_name: form.companyName.trim(),
         lead_source: form.leadSource,
@@ -127,42 +209,45 @@ export default function LeadsManagement() {
 
       pushToast({
         title: "Lead updated",
-        message: `${form.fullName} updated successfully`,
         variant: "success",
       });
-    } catch (err) {
-      console.error(err);
+
+      setEditLead(null);
+    } catch (error) {
+      console.error(error);
 
       pushToast({
-        title: "Failed to update lead",
+        title: "Update failed",
         variant: "error",
       });
+      // Keep the modal open on failure so the user's edits aren't lost.
     } finally {
       setAddLoading(false);
-      setEditLead(null);
     }
   };
 
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-sm text-[#64748B]">
-          Loading leads...
-        </p>
+      <div className="flex justify-center h-64 items-center">
+        Loading leads...
       </div>
     );
   }
 
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[28px] font-semibold text-[#111827]">
-          Leads
-        </h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-[28px] font-semibold">Leads</h1>
 
         <button
           onClick={() => setAddOpen(true)}
-          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2"
+          className="
+            h-11 px-5 rounded-xl
+            bg-blue-600 text-white
+            flex items-center gap-2
+          "
         >
           <Plus size={18} />
           Add Lead
@@ -175,6 +260,7 @@ export default function LeadsManagement() {
         leads={leads}
         onDelete={requestDelete}
         onEdit={setEditLead}
+        onConvert={handleConvert}
       />
 
       <LeadFormModal
@@ -189,6 +275,69 @@ export default function LeadsManagement() {
         staff={staff}
       />
 
+      {/* Choose Customer / Account (deal conversion only) */}
+      {showConvertChoice && (
+        <div
+          className="
+            fixed inset-0
+            bg-black/40
+            flex items-center justify-center
+            z-50
+          "
+        >
+          <div
+            className="
+              bg-white
+              rounded-2xl
+              p-6
+              w-[350px]
+              space-y-4
+            "
+          >
+            <h2 className="font-bold text-lg">Create Deal With</h2>
+
+            <button
+              onClick={() => continueDealConversion("customer")}
+              className="w-full bg-blue-600 text-white py-3 rounded-xl"
+            >
+              Customer
+            </button>
+
+            <button
+              onClick={() => continueDealConversion("account")}
+              className="w-full bg-purple-600 text-white py-3 rounded-xl"
+            >
+              Account
+            </button>
+
+            <button
+              onClick={() => {
+                setShowConvertChoice(false);
+                setConvertLeadId(null);
+                setIsDealFlow(false);
+              }}
+              className="w-full border py-3 rounded-xl"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      <CustomerFormModal
+        open={!!convertType}
+        onClose={() => {
+          setConvertType(null);
+          setConvertLeadId(null);
+          setIsDealFlow(false);
+        }}
+        convertMode={true}
+        leadId={convertLeadId}
+        conversionType={convertType}
+        onContinue={handleConvertSubmit}
+        loading={customerLoading}
+      />
+
       <ConfirmDialog
         open={confirmDeleteOpen}
         title="Delete lead?"
@@ -197,7 +346,10 @@ export default function LeadsManagement() {
         danger
         loading={deleteLoading}
         onCancel={() => {
-          if (!deleteLoading) setConfirmDeleteOpen(false);
+          if (!deleteLoading) {
+            setConfirmDeleteOpen(false);
+            setDeleteTargetId(null);
+          }
         }}
         onConfirm={confirmDelete}
       />

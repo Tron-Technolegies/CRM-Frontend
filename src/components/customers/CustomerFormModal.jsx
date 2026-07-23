@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
 import { usePicklist } from "../../hooks/usePicklist";
+import { getLeads, getLeadToCustomerPrefill } from "../../api/lead";
 
-const api = axios.create({ baseURL: "http://localhost:8000/api/admin" });
 
 function validateCustomer(form) {
   const errors = {};
@@ -19,7 +18,17 @@ function validateCustomer(form) {
   return errors;
 }
 
-export default function CustomerFormModal({ open, onClose, onSubmit, loading = false, initialData = null }) {
+export default function CustomerFormModal({
+    open,
+    onClose,
+    onSubmit,
+    loading = false,
+    initialData = null,
+
+    leadId = null,
+    convertMode = false,
+    onContinue = null,
+  }){
   const industryOptions = usePicklist("customer_industry");
   const statusOptions = usePicklist("customer_status");
 
@@ -32,19 +41,21 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
     status: "Active",
     lifetimeValue: "",
     dealId: "",
+    leadId: "",
   }), []);
 
   const [form, setForm] = useState(blankForm);
   const [touched, setTouched] = useState({});
-  const [wonDeals, setWonDeals] = useState([]);
+  const [leads, setLeads] = useState([]);
 
   useEffect(() => {
-    if (open && !initialData) {
-      api.get("/deals/linkable/")
-        .then((res) => setWonDeals(res.data))
-        .catch((err) => console.error("Failed to fetch deals:", err));
-    }
-  }, [open]);
+    if (!open || convertMode || initialData) return;
+
+    getLeads()
+      .then(setLeads)
+      .catch(console.error);
+  }, [open, convertMode, initialData]);
+
 
   useEffect(() => {
     if (initialData) {
@@ -57,12 +68,40 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
         status: initialData.status || "Active",
         lifetimeValue: initialData.lifetimeValue || "",
         dealId: "",
+        leadId: "",
       });
     } else {
       setForm(blankForm);
     }
     setTouched({});
-  }, [initialData]);
+  }, [initialData, blankForm]);
+
+  useEffect(() => {
+    if (!open || !convertMode || !leadId) return;
+
+    const loadLead = async () => {
+      try {
+        const data = await getLeadToCustomerPrefill(leadId);
+
+        setForm({
+          companyName: data.company_name || "",
+          contactName: data.contact_name || "",
+          email: data.email || "",
+          phone: data.phone_number || "",
+          industry: data.industry || "Technology",
+          status: "Active",
+          lifetimeValue: "",
+          dealId: "",
+          leadId: "",
+        });
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadLead();
+  }, [open, convertMode, leadId]);
 
   const errors = validateCustomer(form);
   const hasErrors = Object.keys(errors).length > 0;
@@ -88,43 +127,68 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
       status: true,
       lifetimeValue: true,
     });
+
     if (hasErrors) return;
-    onSubmit(form);
+
+    if (convertMode) {
+      onContinue(form);
+    } else {
+      onSubmit(form);
+    }
   };
 
   return (
     <Modal
       open={open}
-      title={initialData ? "Edit Customer" : "Add New Customer"}
-      subtitle={initialData ? "Update the customer details below" : "Fill in the details below to add a new customer to your CRM"}
+      title={
+          convertMode
+              ? "Convert Lead to Customer"
+              : initialData
+              ? "Edit Customer"
+              : "Add New Customer"
+      }
+      subtitle={
+          convertMode
+              ? "Review the customer information before continuing."
+              : initialData
+              ? "Update the customer details below"
+              : "Fill in the details below to add a new customer to your CRM"
+      }
       onClose={closeAndReset}
       maxWidthClassName="max-w-3xl"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-        {!initialData && (
+        {!initialData && !convertMode && (
           <div className="md:col-span-2">
             <label className="text-sm text-[#111827] font-medium">
-              Link to Deal <span className="text-[#64748B] font-normal">(optional)</span>
+              Link to Lead <span className="text-[#64748B] font-normal">(optional)</span>
             </label>
             <select
-              value={form.dealId}
-              onChange={(e) => {
-                const deal = wonDeals.find((d) => d.id === Number(e.target.value));
-                setField("dealId", e.target.value);
-                if (deal) {
-                  setField("companyName", deal.company_name || "");
-                  setField("contactName", deal.contact_name || "");
-                  setField("phone", deal.phone || "");
-                  setField("email", deal.email || "");
-                }
-              }}
-              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
+                value={form.leadId}
+                onChange={(e)=>{
+                    const lead = leads.find(
+                        l => l.id === Number(e.target.value)
+                    );
+
+                    setField("leadId", e.target.value);
+
+                    if(lead){
+                        setField("companyName", lead.companyName || "");
+                        setField("contactName", lead.name || "");
+                        setField("phone", lead.phone || "");
+                        setField("email", lead.email || "");
+                    }
+                }}
+                className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
             >
-              <option value="">No deal linked</option>
-              {wonDeals.map((d) => (
-                <option key={d.id} value={d.id}>{d.name} — {d.company_name}</option>
-              ))}
+                <option value="">No Lead</option>
+
+                {leads.map(lead=>(
+                    <option key={lead.id} value={lead.id}>
+                        {lead.name} — {lead.companyName}
+                    </option>
+                ))}
             </select>
           </div>
         )}
@@ -223,7 +287,11 @@ export default function CustomerFormModal({ open, onClose, onSubmit, loading = f
         </button>
         <button type="button" onClick={submit} disabled={loading} className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 disabled:opacity-60 cursor-pointer">
           {loading && <Spinner size={16} className="text-white" />}
-          {initialData ? "Save Changes" : "Add Customer"}
+          {convertMode
+            ? "Save & Continue"
+            : initialData
+            ? "Save Changes"
+            : "Add Customer"}
         </button>
       </div>
     </Modal>
