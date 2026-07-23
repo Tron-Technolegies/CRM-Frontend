@@ -12,9 +12,6 @@ const ProfileDetails = () => {
     return (
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-5">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-
-                {/* User Information */}
-
                 <div className="flex-1 lg:pr-8  border-gray-200">
                     <h2 className="text-xl font-semibold text-gray-800 mb-8">
                         User Information

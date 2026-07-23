@@ -33,9 +33,9 @@ export default function Sidebar({ sidebarOpen }) {
 
     { name: "Leads", icon: <Users size={18} />, path: "/leads" },
 
-    { name: "Deals", icon: <Handshake size={18} />, path: "/deals" },
-
     { name: "Customers", icon: <UserRound size={18} />, path: "/customers" },
+
+    { name: "Deals", icon: <Handshake size={18} />, path: "/deals" },
 
     { name: "Tasks", icon: <ClipboardList size={18} />, path: "/tasks" },
 

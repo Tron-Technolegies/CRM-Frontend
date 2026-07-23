@@ -1,6 +1,7 @@
 
 import { useLocation } from "react-router-dom";
 import { Bell, Menu } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Header({ setSidebarOpen }) {
   const location = useLocation();
@@ -38,29 +39,31 @@ export default function Header({ setSidebarOpen }) {
       </div>
 
       {/* Right */}
-      <div className="flex items-center gap-4">
-        {/* Notification */}
-        <button className="relative w-11 h-11 rounded-xl border border-[#dddddd] flex items-center justify-center text-black hover:bg-blue-50 transition">
-          <Bell size={20} />
+      <Link to="/settings/profile">
+        <div className="flex items-center gap-4">
+          {/* Notification */}
+          <button className="relative w-11 h-11 rounded-xl border border-[#dddddd] flex items-center justify-center text-black hover:bg-blue-50 transition">
+            <Bell size={20} />
 
-          <span className="absolute top-2 right-2 w-5 h-5 text-[11px] font-semibold bg-red-500 text-white rounded-full flex items-center justify-center">
-            3
-          </span>
-        </button>
+            <span className="absolute top-2 right-2 w-5 h-5 text-[11px] font-semibold bg-red-500 text-white rounded-full flex items-center justify-center">
+              3
+            </span>
+          </button>
 
-        {/* Profile */}
-        <div className="flex items-center gap-3 cursor-pointer">
-          <img
-            src="https://i.pravatar.cc/100?img=12"
-            alt="profile"
-            className="w-10 h-10 rounded-full object-cover border border-[#e5e7eb]"
-          />
+          {/* Profile */}
+          <div className="flex items-center gap-3 cursor-pointer">
+            <img
+              src="https://i.pravatar.cc/100?img=12"
+              alt="profile"
+              className="w-10 h-10 rounded-full object-cover border border-[#e5e7eb]"
+            />
 
-          <div className="hidden sm:block">
-            <p className="text-sm font-semibold text-[#111827]">Admin</p>
+            <div className="hidden sm:block">
+              <p className="text-sm font-semibold text-[#111827]">Admin</p>
+            </div>
           </div>
         </div>
-      </div>
+      </Link>
     </header>
   );
 }

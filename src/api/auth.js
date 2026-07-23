@@ -7,3 +7,7 @@ export const signup = (data) => {
 export const login = (data) => {
     return api.post("staff/login/", data);
 };
+
+export const changePassword = (data) =>
+    api.post("password/change/", data);
+

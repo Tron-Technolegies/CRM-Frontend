@@ -21,10 +21,12 @@ const useAccount = () => {
 
     const fetchAccounts = async () => {
         try {
+            // getAccounts() already unwraps the axios response (`const { data } = await api.get(...)`),
+            // so it resolves directly to the array — not { data: [...] }.
             const res = await getAccounts();
             setAccounts(
-                Array.isArray(res.data)
-                    ? res.data
+                Array.isArray(res)
+                    ? res
                     : []
             );
 
@@ -46,10 +48,11 @@ const useAccount = () => {
     const fetchStaff = async () => {
         try {
 
+            // Same as above: getStaff() already returns the unwrapped array.
             const res = await getStaff();
             setStaff(
-                Array.isArray(res.data)
-                    ? res.data
+                Array.isArray(res)
+                    ? res
                     : []
             );
         }

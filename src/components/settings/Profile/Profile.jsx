@@ -1,10 +1,11 @@
 import React from "react";
 import { Mail, Phone, ChevronDown, Pencil, Globe, SlidersHorizontal } from "lucide-react";
 import ProfileDetails from "./ProfileDetails";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AddGroupModal from "./AddGroupModal";
 import LocalInfoModal from "./LocalInfoModal";
 import AccountInfoModal from "./AccountInfoModal";
+import useProfile from "../../../hooks/useProfile";
 
 const Profile = () => {
   const [showDetails, setShowDetails] = useState(false);
@@ -12,7 +13,14 @@ const Profile = () => {
   const [openLocalModal, setOpenLocalModal] = useState(false);
   const [openAccountModal, setOpenAccountModal] = useState(false);
 
+  const {
+    profile,
+    fetchProfile,
+  } = useProfile();
 
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
 
   return (
@@ -34,7 +42,7 @@ const Profile = () => {
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-2xl font-semibold text-gray-800">
-                Admin Name
+                {profile?.name || "Admin Name"}
               </h2>
 
               <span className="px-5 py-1 rounded-full bg-red-100 text-red-600 text-sm font-medium">
@@ -49,15 +57,13 @@ const Profile = () => {
 
 
             <p className="mt-3 text-gray-600">
-              CEO at Company Name
+              {profile?.role || "Administration"}
             </p>
 
             <div className="flex flex-wrap gap-8 mt-5">
               <div className="flex items-center gap-2 text-gray-600">
                 <Mail size={18} className="text-[#2B61FF]" />
-                <span>
-                  admin@gmail.com
-                </span>
+                <span>{profile?.email || "-"}</span>
               </div>
 
 

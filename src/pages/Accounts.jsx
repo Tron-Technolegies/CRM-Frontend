@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import AccountsKpis from "../components/accounts/AccountsKpis";
 import AccountsList from "../components/accounts/AccountsList";
 import AccountFormModal from "../components/accounts/AccountFormModal";
+import AccountViewModal from "../components/accounts/AccountViewModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import useAccount from "../hooks/useAccount";
 
@@ -10,6 +11,7 @@ const Accounts = () => {
 
   const [addOpen, setAddOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [viewAccount, setViewAccount] = useState(null);
 
   const {
     accounts,
@@ -61,8 +63,16 @@ const Accounts = () => {
       {/* Accounts Table */}
       <AccountsList
         accounts={accounts}
+        onView={setViewAccount}
         onEdit={setEditAccount}
         onDelete={(id) => setDeleteId(id)}
+      />
+
+      {/* View Account */}
+      <AccountViewModal
+        open={!!viewAccount}
+        account={viewAccount}
+        onClose={() => setViewAccount(null)}
       />
 
       {/* Add Account */}

@@ -201,29 +201,33 @@ export default function AccountFormModal({
 
     if (hasErrors) return;
 
+    // NOTE: field names below match what the backend serializer returns
+    // (and what AccountViewModal / the prefill effect above read back):
+    // account_name, phone_number, account_site, parent_account, account_type,
+    // billing_address / shipping_address with street_address + zip_code.
     const payload = {
-      acc_name: form.accountName,
+      account_name: form.accountName,
       assigned_to: form.assignedTo || null,
-      phone: form.phoneNumber,
-      acc_site: form.accountSite,
-      parent_acc: form.parentAccount || null,
+      phone_number: form.phoneNumber,
+      account_site: form.accountSite,
+      parent_account: form.parentAccount || null,
       website: form.website,
-      acc_type: form.accountType,
+      account_type: form.accountType,
       industry: form.industry,
       ownership: form.ownership,
       employees: form.employees,
-      billing_add: {
+      billing_address: {
         country: form.billingAddress.country,
         address: form.billingAddress.address,
-        street_add: form.billingAddress.streetAdd,
+        street_address: form.billingAddress.streetAdd,
         city: form.billingAddress.city,
         state: form.billingAddress.state,
         zip_code: form.billingAddress.zipCode,
       },
-      shipping_add: {
+      shipping_address: {
         country: form.shippingAddress.country,
         address: form.shippingAddress.address,
-        street_add: form.shippingAddress.streetAdd,
+        street_address: form.shippingAddress.streetAdd,
         city: form.shippingAddress.city,
         state: form.shippingAddress.state,
         zip_code: form.shippingAddress.zipCode,
