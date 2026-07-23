@@ -1,22 +1,28 @@
 import api from "./Api";
 
-export const getAccounts = () => {
-    return api.get("/account/view/");
+export const getAccounts = async () => {
+  const { data } = await api.get("/account/view/");
+  return data;
 };
 
-
-export const getStaff = () => {
-    return api.get("/staff/view/");
+export const getStaff = async () => {
+  const { data } = await api.get("/staff/view/");
+  return data;
 };
 
-export const deleteAccount = (id) => {
-    return api.delete(`/account/delete/${id}/`);
+export const deleteAccount = async (id) => {
+  const { data } = await api.delete(`/account/delete/${id}/`);
+  return data;
 };
 
-export const createAccount = (data) => {
-    return api.post("/account/add/", data);
+export const createAccount = async (payload) => {
+  const { data } = await api.post("/account/add/", payload);
+  return data;
 };
 
-export const updateAccount = (id, data) => {
-    return api.post(`/account/update/${id}/`, data);
+// NOTE: switched to PUT for consistency with updateLead/updateDeal.
+// Revert to POST if your backend route specifically expects it.
+export const updateAccount = async (id, payload) => {
+  const { data } = await api.put(`/account/update/${id}/`, payload);
+  return data;
 };

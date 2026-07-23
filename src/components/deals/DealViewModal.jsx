@@ -1,9 +1,7 @@
-import { Calendar, DollarSign, Flag, Tag, Users, Pencil, Briefcase, ArrowRightLeft } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Calendar, DollarSign, Flag, Tag, Users, Pencil, Briefcase } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import Modal from "../ui/Modal";
-import CustomerFormModal from "../customers/CustomerFormModal";
-
-const BASE_URL = "http://127.0.0.1:8000/api/admin";
+import { getDeal } from "../../api/deal";
 
 const priorityConfig = {
   High:   { style: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",    dot: "bg-rose-500",  label: "High Priority" },
@@ -86,173 +84,104 @@ function ErrorState({ onClose }) {
   );
 }
 
-export default function DealViewModal({ open, onClose, onEdit, dealId = null, onConvertSuccess }) {
+export default function DealViewModal({ open, onClose, onEdit, dealId = null }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [convertOpen, setConvertOpen] = useState(false);
-  const [convertLoading, setConvertLoading] = useState(false);
+
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
     if (!open || !dealId) return;
+
+    const thisRequestId = ++requestIdRef.current;
+
     setLoading(true);
     setData(null);
     setError(false);
-    fetch(`${BASE_URL}/deal/single/view/${dealId}/`)
-      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
-      .then((d) => setData(d))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+
+    getDeal(dealId)
+      .then((d) => {
+        if (thisRequestId !== requestIdRef.current) return;
+        setData(d);
+      })
+      .catch((err) => {
+        if (thisRequestId !== requestIdRef.current) return;
+        console.error("Failed to load deal:", err);
+        setError(true);
+      })
+      .finally(() => {
+        if (thisRequestId === requestIdRef.current) setLoading(false);
+      });
   }, [open, dealId]);
 
   const formattedValue = data?.value
     ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(data.value)
     : "—";
 
-  // Prefill customer form from deal data
-  const customerInitialData = data ? {
-    companyName: data.company_name || "",
-    contactName: data.assignedTo !== "—" ? "" : "",
-    email: "",
-    phone: "",
-    industry: "Technology",
-    status: "Active",
-    lifetimeValue: data.value || "",
-    dealId: data.id,
-  } : null;
-
-  const handleConvertSubmit = async (form) => {
-    setConvertLoading(true);
-    try {
-      const res = await fetch(`${BASE_URL}/customer/add/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          company_name: form.companyName.trim(),
-          contact_name: form.contactName.trim(),
-          phone_number: form.phone.trim(),
-          email: form.email.trim(),
-          industry: form.industry,
-          status: form.status.toLowerCase(),
-          lifetime_value: Number(form.lifetimeValue || 0),
-          deal_id: data.id,
-        }),
-      });
-      if (!res.ok) throw new Error();
-      setConvertOpen(false);
-      onClose();
-      if (onConvertSuccess) onConvertSuccess();
-    } catch {
-      console.error("Convert to customer failed");
-    } finally {
-      setConvertLoading(false);
-    }
-  };
-
-  const isWon = data?.stage === "Won";
-
   return (
-    <>
-      <Modal open={open} title="Deal Details" subtitle="Full profile for this deal" onClose={onClose} maxWidthClassName="max-w-2xl">
-        {loading && <Skeleton />}
-        {error && <ErrorState onClose={onClose} />}
-        {!loading && !error && data && (
-          <>
-            <div className="space-y-3">
-              {/* Header card */}
-              <div className="flex items-start gap-4 p-5 rounded-2xl bg-gradient-to-br from-[#F5F0FF] to-white border border-[#E5D9FF]">
-                <Avatar name={data.name} />
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <h3 className="text-xl font-bold text-[#0F172A] truncate">{data.name || "Unknown Deal"}</h3>
-                  <p className="text-sm text-[#6B7280] truncate mt-0.5 font-medium">{data.company_name || "No company"}</p>
-                  <div className="flex flex-wrap items-center gap-2 mt-3">
-                    <Badge value={data.stage} config={stageConfig} />
-                    <Badge value={data.priority} config={priorityConfig} />
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
-                      <DollarSign size={11} />{formattedValue}
-                    </span>
-                  </div>
+    <Modal open={open} title="Deal Details" subtitle="Full profile for this deal" onClose={onClose} maxWidthClassName="max-w-2xl">
+      {loading && <Skeleton />}
+      {error && <ErrorState onClose={onClose} />}
+      {!loading && !error && data && (
+        <>
+          <div className="space-y-3">
+            <div className="flex items-start gap-4 p-5 rounded-2xl bg-gradient-to-br from-[#F5F0FF] to-white border border-[#E5D9FF]">
+              <Avatar name={data.name} />
+              <div className="flex-1 min-w-0 pt-0.5">
+                <h3 className="text-xl font-bold text-[#0F172A] truncate">{data.name || "Unknown Deal"}</h3>
+                <p className="text-sm text-[#6B7280] truncate mt-0.5 font-medium">{data.company_name || "No company"}</p>
+                <div className="flex flex-wrap items-center gap-2 mt-3">
+                  <Badge value={data.stage} config={stageConfig} />
+                  <Badge value={data.priority} config={priorityConfig} />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+                    <DollarSign size={11} />{formattedValue}
+                  </span>
                 </div>
               </div>
-
-              <Section title="Deal Details">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-                  <Field label="Stage" icon={Briefcase} value={data.stage} />
-                  <Field label="Deal Value" icon={DollarSign} value={formattedValue} />
-                  <Field label="Priority" icon={Flag} value={data.priority} />
-                  <Field label="Source" icon={Tag} value={data.source} />
-                  <Field label="Assigned To" icon={Users} value={data.assignedTo} />
-                  <Field label="Expected Close" icon={Calendar} value={data.expectedCloseDate} />
-                </div>
-              </Section>
-
-              {data.description && (
-                <Section title="Notes">
-                  <p className="text-sm text-[#374151] leading-relaxed">{data.description}</p>
-                </Section>
-              )}
-
-              {/* Convert to Customer banner */}
-              {!isWon && (
-                <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-100">
-                  <div>
-                    <p className="text-sm font-semibold text-violet-800">Ready to close this deal?</p>
-                    <p className="text-xs text-violet-600 mt-0.5">Convert this deal to a customer and mark it as Won.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setConvertOpen(true)}
-                    className="shrink-0 h-9 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 transition text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm"
-                  >
-                    <ArrowRightLeft size={13} />
-                    Convert to Customer
-                  </button>
-                </div>
-              )}
-
-              {isWon && (
-                <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <p className="text-sm font-medium text-emerald-700">This deal has been won and converted to a customer.</p>
-                </div>
-              )}
             </div>
 
-            <div className="mt-5 pt-4 border-t border-[#F0F2F5] flex items-center justify-between">
-              <p className="text-xs text-[#9CA3AF]">Expected close {data.expectedCloseDate || "—"}</p>
-              <div className="flex items-center gap-2.5">
+            <Section title="Deal Details">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                <Field label="Stage" icon={Briefcase} value={data.stage} />
+                <Field label="Deal Value" icon={DollarSign} value={formattedValue} />
+                <Field label="Priority" icon={Flag} value={data.priority} />
+                <Field label="Source" icon={Tag} value={data.source} />
+                <Field label="Assigned To" icon={Users} value={data.assignedTo} />
+                <Field label="Expected Close" icon={Calendar} value={data.expectedCloseDate} />
+              </div>
+            </Section>
+
+            {data.description && (
+              <Section title="Notes">
+                <p className="text-sm text-[#374151] leading-relaxed">{data.description}</p>
+              </Section>
+            )}
+          </div>
+
+          <div className="mt-5 pt-4 border-t border-[#F0F2F5] flex items-center justify-between">
+            <p className="text-xs text-[#9CA3AF]">Expected close {data.expectedCloseDate || "—"}</p>
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={onClose}
+                className="h-10 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#374151] font-medium hover:bg-[#F9FAFB] transition"
+              >
+                Close
+              </button>
+              {onEdit && (
                 <button
                   type="button"
-                  onClick={onClose}
-                  className="h-10 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#374151] font-medium hover:bg-[#F9FAFB] transition"
+                  onClick={() => { onClose(); onEdit(data); }}
+                  className="h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 active:scale-[0.98] transition text-white text-sm font-semibold flex items-center gap-2 shadow-sm"
                 >
-                  Close
+                  <Pencil size={13} />Edit Deal
                 </button>
-                {onEdit && (
-                  <button
-                    type="button"
-                    onClick={() => { onClose(); onEdit(data); }}
-                    className="h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 active:scale-[0.98] transition text-white text-sm font-semibold flex items-center gap-2 shadow-sm"
-                  >
-                    <Pencil size={13} />Edit Deal
-                  </button>
-                )}
-              </div>
+              )}
             </div>
-          </>
-        )}
-      </Modal>
-
-      {/* Convert to Customer Modal */}
-      {convertOpen && (
-        <CustomerFormModal
-          open={convertOpen}
-          onClose={() => setConvertOpen(false)}
-          onSubmit={handleConvertSubmit}
-          loading={convertLoading}
-          initialData={customerInitialData}
-        />
+          </div>
+        </>
       )}
-    </>
+    </Modal>
   );
 }

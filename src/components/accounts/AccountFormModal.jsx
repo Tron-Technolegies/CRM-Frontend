@@ -1,16 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
+import { getLead } from "../../api/lead";
 
 function validateAccount(form) {
   const errors = {};
   if (!form.accountName.trim()) errors.accountName = "Account name is required";
   if (!form.phoneNumber.trim()) errors.phoneNumber = "Phone number is required";
   return errors;
-}
-
-function isEmptyAddress(address) {
-  return Object.values(address).every((value) => String(value || "").trim() === "");
 }
 
 function AddressFields({ title, value, onChange }) {
@@ -85,6 +82,11 @@ export default function AccountFormModal({
   initialData = null,
   staff = [],
   accounts = [],
+
+  // Conversion-mode props (mirrors CustomerFormModal)
+  leadId = null,
+  convertMode = false,
+  onContinue = null,
 }) {
   const blankForm = useMemo(
     () => ({
@@ -99,20 +101,10 @@ export default function AccountFormModal({
       ownership: "",
       employees: "",
       billingAddress: {
-        country: "",
-        address: "",
-        streetAdd: "",
-        city: "",
-        state: "",
-        zipCode: "",
+        country: "", address: "", streetAdd: "", city: "", state: "", zipCode: "",
       },
       shippingAddress: {
-        country: "",
-        address: "",
-        streetAdd: "",
-        city: "",
-        state: "",
-        zipCode: "",
+        country: "", address: "", streetAdd: "", city: "", state: "", zipCode: "",
       },
     }),
     [],
@@ -120,8 +112,11 @@ export default function AccountFormModal({
 
   const [form, setForm] = useState(blankForm);
   const [touched, setTouched] = useState({});
+  const [prefillError, setPrefillError] = useState(null);
 
   useEffect(() => {
+    if (convertMode) return; // convert-mode prefill is handled separately below
+
     if (initialData) {
       setForm({
         accountName: initialData.account_name || "",
@@ -134,7 +129,6 @@ export default function AccountFormModal({
         industry: initialData.industry || "",
         ownership: initialData.ownership || "",
         employees: initialData.employees || "",
-
         billingAddress: {
           country: initialData.billing_address?.country || "",
           address: initialData.billing_address?.address || "",
@@ -143,7 +137,6 @@ export default function AccountFormModal({
           state: initialData.billing_address?.state || "",
           zipCode: initialData.billing_address?.zip_code || "",
         },
-
         shippingAddress: {
           country: initialData.shipping_address?.country || "",
           address: initialData.shipping_address?.address || "",
@@ -157,7 +150,34 @@ export default function AccountFormModal({
       setForm(blankForm);
     }
     setTouched({});
-  }, [initialData, blankForm]);
+  }, [initialData, blankForm, convertMode]);
+
+  // Prefill from the lead when converting. There's no dedicated
+  // lead->account prefill endpoint on the backend, so this reuses
+  // getLead (same one LeadViewModal uses) and maps what overlaps —
+  // a Lead record has no industry/website, so those stay blank.
+  useEffect(() => {
+    if (!open || !convertMode || !leadId) return;
+
+    setPrefillError(null);
+
+    const loadLead = async () => {
+      try {
+        const lead = await getLead(leadId);
+
+        setForm({
+          ...blankForm,
+          accountName: lead.companyName || "",
+          phoneNumber: lead.phone || "",
+        });
+      } catch (err) {
+        console.error(err);
+        setPrefillError("Couldn't load lead details to prefill this form.");
+      }
+    };
+
+    loadLead();
+  }, [open, convertMode, leadId, blankForm]);
 
   const errors = validateAccount(form);
   const hasErrors = Object.keys(errors).length > 0;
@@ -166,10 +186,7 @@ export default function AccountFormModal({
   const setAddressField = (group, key, value) =>
     setForm((prev) => ({
       ...prev,
-      [group]: {
-        ...prev[group],
-        [key]: value,
-      },
+      [group]: { ...prev[group], [key]: value },
     }));
 
   const closeAndReset = () => {
@@ -180,43 +197,47 @@ export default function AccountFormModal({
   };
 
   const submit = () => {
-    setTouched({
-      accountName: true,
-      phoneNumber: true,
-    });
+    setTouched({ accountName: true, phoneNumber: true });
 
     if (hasErrors) return;
 
+    // NOTE: field names below match what the backend serializer returns
+    // (and what AccountViewModal / the prefill effect above read back):
+    // account_name, phone_number, account_site, parent_account, account_type,
+    // billing_address / shipping_address with street_address + zip_code.
     const payload = {
-      acc_name: form.accountName,
+      account_name: form.accountName,
       assigned_to: form.assignedTo || null,
-      phone: form.phoneNumber,
-      acc_site: form.accountSite,
-      parent_acc: form.parentAccount || null,
+      phone_number: form.phoneNumber,
+      account_site: form.accountSite,
+      parent_account: form.parentAccount || null,
       website: form.website,
-      acc_type: form.accountType,
+      account_type: form.accountType,
       industry: form.industry,
       ownership: form.ownership,
       employees: form.employees,
-
-      billing_add: {
+      billing_address: {
         country: form.billingAddress.country,
         address: form.billingAddress.address,
-        street_add: form.billingAddress.streetAdd,
+        street_address: form.billingAddress.streetAdd,
         city: form.billingAddress.city,
         state: form.billingAddress.state,
         zip_code: form.billingAddress.zipCode,
       },
-
-      shipping_add: {
+      shipping_address: {
         country: form.shippingAddress.country,
         address: form.shippingAddress.address,
-        street_add: form.shippingAddress.streetAdd,
+        street_address: form.shippingAddress.streetAdd,
         city: form.shippingAddress.city,
         state: form.shippingAddress.state,
         zip_code: form.shippingAddress.zipCode,
       },
     };
+
+    if (convertMode) {
+      onContinue(payload);
+      return;
+    }
 
     if (initialData) {
       onSubmit(initialData.id, payload);
@@ -225,20 +246,42 @@ export default function AccountFormModal({
     }
   };
 
-  const accountOptions = accounts.filter((account) => String(account.id) !== String(initialData?.id));
+  const accountOptions = accounts.filter(
+    (account) => String(account.id) !== String(initialData?.id),
+  );
 
   return (
     <Modal
       open={open}
-      title={initialData ? "Edit Account" : "Add New Account"}
-      subtitle={initialData ? "Update the account details below" : "Fill in the details below to add a new account to your CRM"}
+      title={
+        convertMode
+          ? "Convert Lead to Account"
+          : initialData
+          ? "Edit Account"
+          : "Add New Account"
+      }
+      subtitle={
+        convertMode
+          ? "Review the account information before continuing."
+          : initialData
+          ? "Update the account details below"
+          : "Fill in the details below to add a new account to your CRM"
+      }
       onClose={closeAndReset}
       maxWidthClassName="max-w-5xl"
     >
       <div className="space-y-5">
+        {convertMode && prefillError && (
+          <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-sm">
+            {prefillError}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="md:col-span-2">
-            <label className="text-sm text-[#111827] font-medium">Account Name <span className="text-red-500">*</span></label>
+            <label className="text-sm text-[#111827] font-medium">
+              Account Name <span className="text-red-500">*</span>
+            </label>
             <input
               value={form.accountName}
               onChange={(e) => setField("accountName", e.target.value)}
@@ -246,27 +289,33 @@ export default function AccountFormModal({
               placeholder="Enter account name"
               className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
             />
-            {touched.accountName && errors.accountName && <p className="text-xs text-red-600 mt-1">{errors.accountName}</p>}
+            {touched.accountName && errors.accountName && (
+              <p className="text-xs text-red-600 mt-1">{errors.accountName}</p>
+            )}
           </div>
 
-          <div>
-            <label className="text-sm text-[#111827] font-medium">Assigned To</label>
-            <select
-              value={form.assignedTo}
-              onChange={(e) => setField("assignedTo", e.target.value)}
-              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
-            >
-              <option value="">Select team member</option>
-              {staff.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.fullName || member.name || `Staff #${member.id}`}
-                </option>
-              ))}
-            </select>
-          </div>
+          {!convertMode && (
+            <div>
+              <label className="text-sm text-[#111827] font-medium">Assigned To</label>
+              <select
+                value={form.assignedTo}
+                onChange={(e) => setField("assignedTo", e.target.value)}
+                className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="">Select team member</option>
+                {staff.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.fullName || member.name || `Staff #${member.id}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
-            <label className="text-sm text-[#111827] font-medium">Phone Number <span className="text-red-500">*</span></label>
+            <label className="text-sm text-[#111827] font-medium">
+              Phone Number <span className="text-red-500">*</span>
+            </label>
             <input
               value={form.phoneNumber}
               onChange={(e) => setField("phoneNumber", e.target.value)}
@@ -274,7 +323,9 @@ export default function AccountFormModal({
               placeholder="Enter phone number"
               className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
             />
-            {touched.phoneNumber && errors.phoneNumber && <p className="text-xs text-red-600 mt-1">{errors.phoneNumber}</p>}
+            {touched.phoneNumber && errors.phoneNumber && (
+              <p className="text-xs text-red-600 mt-1">{errors.phoneNumber}</p>
+            )}
           </div>
 
           <div>
@@ -287,21 +338,23 @@ export default function AccountFormModal({
             />
           </div>
 
-          <div>
-            <label className="text-sm text-[#111827] font-medium">Parent Account</label>
-            <select
-              value={form.parentAccount}
-              onChange={(e) => setField("parentAccount", e.target.value)}
-              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
-            >
-              <option value="">No parent account</option>
-              {accountOptions.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.account_name || `Account #${account.id}`}
-                </option>
-              ))}
-            </select>
-          </div>
+          {!convertMode && (
+            <div>
+              <label className="text-sm text-[#111827] font-medium">Parent Account</label>
+              <select
+                value={form.parentAccount}
+                onChange={(e) => setField("parentAccount", e.target.value)}
+                className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="">No parent account</option>
+                {accountOptions.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.account_name || `Account #${account.id}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="text-sm text-[#111827] font-medium">Website</label>
@@ -384,7 +437,7 @@ export default function AccountFormModal({
           className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 disabled:opacity-60"
         >
           {loading && <Spinner size={16} className="text-white" />}
-          {initialData ? "Save Changes" : "Save Account"}
+          {convertMode ? "Save & Continue" : initialData ? "Save Changes" : "Save Account"}
         </button>
       </div>
     </Modal>

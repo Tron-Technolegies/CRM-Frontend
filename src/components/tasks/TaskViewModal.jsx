@@ -1,8 +1,7 @@
 import { Calendar, Flag, Link, Tag, Users, Pencil, CheckCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Modal from "../ui/Modal";
-
-const BASE_URL = "http://127.0.0.1:8000/api/admin";
+import { getTask } from "../../api/task";
 
 const priorityConfig = {
   High:   { style: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",    dot: "bg-rose-500",  label: "High Priority" },
@@ -76,16 +75,30 @@ export default function TaskViewModal({ open, onClose, onEdit, taskId = null }) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
+  const requestIdRef = useRef(0);
+
   useEffect(() => {
     if (!open || !taskId) return;
+
+    const thisRequestId = ++requestIdRef.current;
+
     setLoading(true);
     setData(null);
     setError(false);
-    fetch(`${BASE_URL}/task/single/view/${taskId}/`)
-      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
-      .then((d) => setData(d))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+
+    getTask(taskId)
+      .then((d) => {
+        if (thisRequestId !== requestIdRef.current) return;
+        setData(d);
+      })
+      .catch((err) => {
+        if (thisRequestId !== requestIdRef.current) return;
+        console.error("Failed to load task:", err);
+        setError(true);
+      })
+      .finally(() => {
+        if (thisRequestId === requestIdRef.current) setLoading(false);
+      });
   }, [open, taskId]);
 
   return (

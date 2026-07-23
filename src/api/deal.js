@@ -5,18 +5,22 @@ export const getDeals = async () => {
   return data;
 };
 
-export const getDeal = (id) => {
-  return api.get(`/deal/single/view/${id}/`);
+export const getDeal = async (id) => {
+  const { data } = await api.get(`/deal/single/view/${id}/`);
+  return data;
 };
 
 export const addDeal = async (payload) => {
-  return await api.post("/deal/add/", payload);
+  const { data } = await api.post("/deal/add/", payload);
+  return data;
 };
 
 export const updateDeal = async (id, payload) => {
-  return await api.put(`/deal/update/${id}/`, payload);
+  const { data } = await api.put(`/deal/update/${id}/`, payload);
+  return data;
 };
 
 export const deleteDeal = async (id) => {
-  return await api.delete(`/deal/delete/${id}/`);
+  const { data } = await api.delete(`/deal/delete/${id}/`);
+  return data;
 };
