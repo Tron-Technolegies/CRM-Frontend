@@ -1,8 +1,10 @@
-import { Building2, Calendar, Mail, Phone, Tag, TrendingUp, User, Pencil } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Building2, Calendar, Mail, Phone, Tag, TrendingUp, User, Pencil, ArrowRightLeft } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import Modal from "../ui/Modal";
-
-const BASE_URL = "http://127.0.0.1:8000/api/admin";
+import { getCustomer } from "../../api/customer";
+import { addDeal } from "../../api/deal";
+import DealFormModal from "../deals/DealFormModal";
+import { useToast } from "../ui/toastContext";
 
 const statusConfig = {
   Active:   { style: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200", dot: "bg-emerald-500" },
@@ -75,84 +77,177 @@ function ErrorState({ onClose }) {
   );
 }
 
-export default function CustomerViewModal({ open, onClose, onEdit, customerId = null }) {
+export default function CustomerViewModal({ open, onClose, onEdit, customerId = null, onConvertSuccess }) {
+  const { pushToast } = useToast();
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [convertOpen, setConvertOpen] = useState(false);
+  const [convertLoading, setConvertLoading] = useState(false);
+
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
     if (!open || !customerId) return;
+
+    const thisRequestId = ++requestIdRef.current;
+
     setLoading(true);
     setData(null);
     setError(false);
-    fetch(`${BASE_URL}/customer/single/view/${customerId}/`)
-      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
-      .then((d) => {console.log("API Response:", d); setData(d)})
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+
+    getCustomer(customerId)
+      .then((d) => {
+        if (thisRequestId !== requestIdRef.current) return;
+        setData(d);
+      })
+      .catch((err) => {
+        if (thisRequestId !== requestIdRef.current) return;
+        console.error("Failed to load customer:", err);
+        setError(true);
+      })
+      .finally(() => {
+        if (thisRequestId === requestIdRef.current) setLoading(false);
+      });
   }, [open, customerId]);
 
   const formattedLTV = data?.lifetimeValue
     ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(data.lifetimeValue)
     : "—";
 
+  // Prefill the Deal step from this customer's data.
+  const dealPrefill = data
+    ? { companyName: data.companyName || "" }
+    : null;
+
+  const handleConvertSubmit = async (dealForm) => {
+    setConvertLoading(true);
+
+    try {
+      await addDeal({
+        deal_name: dealForm.dealName,
+        company_name: dealForm.companyName,
+        deal_amount: Number(dealForm.dealAmount),
+        stage: dealForm.stage,
+        assigned_to: dealForm.assignedTo || null,
+        expected_closing_date: dealForm.expectedCloseDate || null,
+        deal_source: dealForm.dealSource,
+        priority: dealForm.priority,
+        description: dealForm.description,
+        customer_id: data.id, // NOTE: confirm this field name matches your backend
+      });
+
+      pushToast({
+        title: "Deal created",
+        message: `${dealForm.dealName} added to your pipeline`,
+        variant: "success",
+      });
+
+      setConvertOpen(false);
+      onClose();
+
+      if (onConvertSuccess) onConvertSuccess();
+    } catch (err) {
+      console.error("Convert to deal failed:", err);
+
+      pushToast({
+        title: "Failed to create deal",
+        variant: "error",
+      });
+      // Keep the deal form open on failure so the user doesn't lose their input.
+    } finally {
+      setConvertLoading(false);
+    }
+  };
+
   return (
-    <Modal open={open} title="Customer Details" subtitle="Full profile for this customer" onClose={onClose} maxWidthClassName="max-w-2xl">
-      {loading && <Skeleton />}
-      {error && <ErrorState onClose={onClose} />}
-      {!loading && !error && data && (
-        <>
-          <div className="space-y-3">
-            <div className="flex items-start gap-4 p-5 rounded-2xl bg-gradient-to-br from-[#F0FFF8] to-white border border-[#C6F6E1]">
-              <Avatar name={data.companyName} />
-              <div className="flex-1 min-w-0 pt-0.5">
-                <h3 className="text-xl font-bold text-[#0F172A] truncate">{data.companyName || "Unknown"}</h3>
-                <p className="text-sm text-[#6B7280] truncate mt-0.5 font-medium">{data.contactName || "No contact"}</p>
-                <div className="flex flex-wrap items-center gap-2 mt-3">
-                  <Badge value={data.status} config={statusConfig} />
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
-                    <TrendingUp size={11} />LTV: {formattedLTV}
-                  </span>
-                  {data.industry && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                      <Tag size={11} />{data.industry}
+    <>
+      <Modal open={open} title="Customer Details" subtitle="Full profile for this customer" onClose={onClose} maxWidthClassName="max-w-2xl">
+        {loading && <Skeleton />}
+        {error && <ErrorState onClose={onClose} />}
+        {!loading && !error && data && (
+          <>
+            <div className="space-y-3">
+              <div className="flex items-start gap-4 p-5 rounded-2xl bg-gradient-to-br from-[#F0FFF8] to-white border border-[#C6F6E1]">
+                <Avatar name={data.companyName} />
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <h3 className="text-xl font-bold text-[#0F172A] truncate">{data.companyName || "Unknown"}</h3>
+                  <p className="text-sm text-[#6B7280] truncate mt-0.5 font-medium">{data.contactName || "No contact"}</p>
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                    <Badge value={data.status} config={statusConfig} />
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+                      <TrendingUp size={11} />LTV: {formattedLTV}
                     </span>
-                  )}
+                    {data.industry && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-slate-200">
+                        <Tag size={11} />{data.industry}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <Section title="Contact Information">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <Field label="Contact Name" icon={User} value={data.contactName} />
-                <Field label="Phone" icon={Phone} value={data.phone} />
-                <Field label="Email" icon={Mail} value={data.email} />
-                <Field label="Industry" icon={Building2} value={data.industry} />
-              </div>
-            </Section>
+              <Section title="Contact Information">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <Field label="Contact Name" icon={User} value={data.contactName} />
+                  <Field label="Phone" icon={Phone} value={data.phone} />
+                  <Field label="Email" icon={Mail} value={data.email} />
+                  <Field label="Industry" icon={Building2} value={data.industry} />
+                </div>
+              </Section>
 
-            <Section title="Account Details">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-                <Field label="Status" icon={Tag} value={data.status} />
-                <Field label="Lifetime Value" icon={TrendingUp} value={formattedLTV} />
-                <Field label="Join Date" icon={Calendar} value={data.joinDate} />
-              </div>
-            </Section>
-          </div>
+              <Section title="Account Details">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                  <Field label="Status" icon={Tag} value={data.status} />
+                  <Field label="Lifetime Value" icon={TrendingUp} value={formattedLTV} />
+                  <Field label="Join Date" icon={Calendar} value={data.joinDate} />
+                </div>
+              </Section>
 
-          <div className="mt-5 pt-4 border-t border-[#F0F2F5] flex items-center justify-between">
-            <p className="text-xs text-[#9CA3AF]">Joined {data.joinDate || "—"}</p>
-            <div className="flex items-center gap-2.5">
-              <button type="button" onClick={onClose} className="h-10 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#374151] font-medium hover:bg-[#F9FAFB] transition">Close</button>
-              {onEdit && (
-                <button type="button" onClick={() => { onClose(); onEdit(data); }} className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition text-white text-sm font-semibold flex items-center gap-2 shadow-sm">
-                  <Pencil size={13} />Edit Customer
+              {/* Convert to Deal banner */}
+              <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-100">
+                <div>
+                  <p className="text-sm font-semibold text-violet-800">Ready to start a deal?</p>
+                  <p className="text-xs text-violet-600 mt-0.5">Convert this customer into a new deal in your pipeline.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setConvertOpen(true)}
+                  className="shrink-0 h-9 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 transition text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+                >
+                  <ArrowRightLeft size={13} />
+                  Convert to Deal
                 </button>
-              )}
+              </div>
             </div>
-          </div>
-        </>
+
+            <div className="mt-5 pt-4 border-t border-[#F0F2F5] flex items-center justify-between">
+              <p className="text-xs text-[#9CA3AF]">Joined {data.joinDate || "—"}</p>
+              <div className="flex items-center gap-2.5">
+                <button type="button" onClick={onClose} className="h-10 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#374151] font-medium hover:bg-[#F9FAFB] transition">Close</button>
+                {onEdit && (
+                  <button type="button" onClick={() => { onClose(); onEdit(data); }} className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition text-white text-sm font-semibold flex items-center gap-2 shadow-sm">
+                    <Pencil size={13} />Edit Customer
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </Modal>
+
+      {/* Convert to Deal Modal */}
+      {convertOpen && (
+        <DealFormModal
+          open={convertOpen}
+          onClose={() => setConvertOpen(false)}
+          onSubmit={handleConvertSubmit}
+          loading={convertLoading}
+          convertMode={true}
+          prefill={dealPrefill}
+        />
       )}
-    </Modal>
+    </>
   );
 }

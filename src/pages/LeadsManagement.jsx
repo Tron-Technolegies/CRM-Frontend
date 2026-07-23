@@ -5,6 +5,8 @@ import LeadsKpis from "../components/leads/LeadsKpis";
 import LeadsList from "../components/leads/LeadsList";
 import LeadFormModal from "../components/leads/LeadFormModal";
 import CustomerFormModal from "../components/customers/CustomerFormModal";
+import AccountFormModal from "../components/accounts/AccountFormModal";
+import DealFormModal from "../components/deals/DealFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 
 import { useToast } from "../components/ui/toastContext";
@@ -24,12 +26,15 @@ export default function LeadsManagement() {
   const [addLoading, setAddLoading] = useState(false);
   const [editLead, setEditLead] = useState(null);
 
-  // Conversion
+  // Conversion flow
   const [convertLeadId, setConvertLeadId] = useState(null);
   const [convertType, setConvertType] = useState(null); // "customer" | "account" | null
-  const [isDealFlow, setIsDealFlow] = useState(false); // true only when converting via "Convert Deal"
+  const [isDealFlow, setIsDealFlow] = useState(false);
   const [showConvertChoice, setShowConvertChoice] = useState(false);
-  const [customerLoading, setCustomerLoading] = useState(false);
+  const [dealStep, setDealStep] = useState(false); // true once we've moved to the deal-details step
+  const [pendingEntityForm, setPendingEntityForm] = useState(null); // staged customer/account payload, deal flow only
+  const [entitySubmitLoading, setEntitySubmitLoading] = useState(false);
+  const [dealSubmitLoading, setDealSubmitLoading] = useState(false);
 
   // Delete
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -37,8 +42,19 @@ export default function LeadsManagement() {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
 
+  const resetConversionState = () => {
+    setConvertLeadId(null);
+    setConvertType(null);
+    setIsDealFlow(false);
+    setShowConvertChoice(false);
+    setDealStep(false);
+    setPendingEntityForm(null);
+  };
+
+
   /* Start conversion */
   const handleConvert = (leadId, type) => {
+    resetConversionState();
     setConvertLeadId(leadId);
 
     if (type === "deal") {
@@ -49,8 +65,6 @@ export default function LeadsManagement() {
       return;
     }
 
-    // Plain Customer-only or Account-only conversion — no deal created.
-    setIsDealFlow(false);
     setConvertType(type);
   };
 
@@ -62,24 +76,47 @@ export default function LeadsManagement() {
   };
 
 
-  /* Submit conversion form */
-  const handleConvertSubmit = async form => {
-    setCustomerLoading(true);
+  /* Customer/Account form finished — either submit now, or move to the deal step */
+  const handleEntityContinue = async form => {
+    if (isDealFlow) {
+      setPendingEntityForm(form);
+      setDealStep(true);
+      return;
+    }
+
+    await submitConversion(form, null);
+  };
+
+
+  /* Deal form finished — submit everything collected so far */
+  const handleDealContinue = async dealForm => {
+    await submitConversion(pendingEntityForm, dealForm);
+  };
+
+
+  /* Shared submit for both flows */
+  const submitConversion = async (entityForm, dealForm) => {
+    const setLoadingFlag = dealForm ? setDealSubmitLoading : setEntitySubmitLoading;
+    setLoadingFlag(true);
 
     try {
       const payload = {
         create_customer: convertType === "customer",
         create_account: convertType === "account",
         create_deal: isDealFlow,
-        customer_data: convertType === "customer" ? form : null,
-        account_data: convertType === "account" ? form : null,
+        customer_data: convertType === "customer" ? entityForm : null,
+        account_data: convertType === "account" ? entityForm : null,
       };
 
-      // Deal-specific fields only apply when we're actually creating a deal.
-      if (isDealFlow) {
-        payload.deal_name = `${form.companyName || form.accountName || "Untitled"} Deal`;
-        payload.deal_amount = 0;
-        payload.stage = "Discussion";
+      if (isDealFlow && dealForm) {
+        payload.deal_name = dealForm.dealName;
+        payload.deal_amount = Number(dealForm.dealAmount);
+        payload.stage = dealForm.stage;
+        payload.assigned_to = dealForm.assignedTo || null;
+        payload.expected_closing_date = dealForm.expectedCloseDate || null;
+        payload.deal_source = dealForm.dealSource;
+        payload.priority = dealForm.priority;
+        payload.description = dealForm.description;
       }
 
       await convertLead(convertLeadId, payload);
@@ -90,10 +127,7 @@ export default function LeadsManagement() {
         variant: "success",
       });
 
-      setConvertType(null);
-      setConvertLeadId(null);
-      setIsDealFlow(false);
-
+      resetConversionState();
       await fetchLeads();
     } catch (error) {
       console.error(error);
@@ -102,11 +136,20 @@ export default function LeadsManagement() {
         title: "Conversion failed",
         variant: "error",
       });
-      // Keep the modal open on failure so the user doesn't lose their input.
+      // Keep whichever step is open so the user doesn't lose their input.
     } finally {
-      setCustomerLoading(false);
+      setLoadingFlag(false);
     }
   };
+
+
+  // Prefill for the Deal step, derived from whatever the customer/account
+  // form just collected (companyName for Customer, acc_name for Account).
+  const defaultDealPrefill = pendingEntityForm
+    ? {
+        companyName: pendingEntityForm.companyName || pendingEntityForm.acc_name || "",
+      }
+    : null;
 
 
   const requestDelete = id => {
@@ -311,11 +354,7 @@ export default function LeadsManagement() {
             </button>
 
             <button
-              onClick={() => {
-                setShowConvertChoice(false);
-                setConvertLeadId(null);
-                setIsDealFlow(false);
-              }}
+              onClick={resetConversionState}
               className="w-full border py-3 rounded-xl"
             >
               Cancel
@@ -324,18 +363,36 @@ export default function LeadsManagement() {
         </div>
       )}
 
+      {/* Step 1: Customer details */}
       <CustomerFormModal
-        open={!!convertType}
-        onClose={() => {
-          setConvertType(null);
-          setConvertLeadId(null);
-          setIsDealFlow(false);
-        }}
+        open={convertType === "customer" && !dealStep}
+        onClose={resetConversionState}
         convertMode={true}
         leadId={convertLeadId}
-        conversionType={convertType}
-        onContinue={handleConvertSubmit}
-        loading={customerLoading}
+        onContinue={handleEntityContinue}
+        loading={entitySubmitLoading}
+      />
+
+      {/* Step 1: Account details */}
+      <AccountFormModal
+        open={convertType === "account" && !dealStep}
+        onClose={resetConversionState}
+        convertMode={true}
+        leadId={convertLeadId}
+        onContinue={handleEntityContinue}
+        loading={entitySubmitLoading}
+      />
+
+      {/* Step 2 (deal flow only): Deal details */}
+      <DealFormModal
+        open={isDealFlow && dealStep}
+        onClose={resetConversionState}
+        onBack={() => setDealStep(false)}
+        onSubmit={handleDealContinue}
+        loading={dealSubmitLoading}
+        convertMode={true}
+        leadId={convertLeadId}
+        prefill={defaultDealPrefill}
       />
 
       <ConfirmDialog
