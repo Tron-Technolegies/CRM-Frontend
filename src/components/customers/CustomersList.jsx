@@ -107,7 +107,6 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Phone</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Industry</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Status</th>
-              <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Lifetime Value</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Join Date</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Actions</th>
             </tr>
@@ -115,7 +114,7 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
 
           <tbody className="divide-y divide-[#EEF2F7]">
             {paginated.map((c) => (
-              <tr key={c.id} className="hover:bg-[#FAFAFA]">
+              <tr key={c.id} className="hover:bg-[#FAFAFA] cursor-pointer" onClick={() => setViewId(c.id)}>
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-[#F1F5F9] border border-[#E5E7EB] flex items-center justify-center text-sm font-semibold text-[#475569]">
@@ -133,14 +132,12 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
                 <td className="px-6 py-5">
                   <span className={`inline-flex px-3 py-1 rounded-full text-sm ${statusStyles(c.status)}`}>{c.status}</span>
                 </td>
-                <td className="px-6 py-5"><p className="text-sm text-[#111827]">{formatCurrency(c.lifetimeValue)}</p></td>
                 <td className="px-6 py-5"><p className="text-sm text-[#64748B]">{formatDate(c.joinDate)}</p></td>
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-3 text-[#64748B]">
-                    <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="View" onClick={() => setViewId(c.id)}><Eye size={18} /></button>
-                    <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="Edit" onClick={() => onEdit(c)}><Pencil size={18} /></button>
-                    {/* <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="More" onClick={() => openNotImplemented("More")}><MoreVertical size={18} /></button> */}
-                    <button type="button" className="hover:text-red-600 cursor-pointer" aria-label="Delete" onClick={() => onDelete(c.id)}><Trash2 size={18} /></button>
+                    <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="View" onClick={(e) => {e.stopPropagation();setViewId(c.id);}}><Eye size={18} /></button>
+                    <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="Edit" onClick={(e) => {e.stopPropagation();onEdit(c);}}><Pencil size={18} /></button>
+                    <button type="button" className="hover:text-red-600 cursor-pointer" aria-label="Delete" onClick={(e) => {e.stopPropagation();onDelete(c.id);}}><Trash2 size={18} /></button>
                   </div>
                 </td>
               </tr>

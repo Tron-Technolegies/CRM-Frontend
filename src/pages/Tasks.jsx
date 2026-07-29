@@ -40,21 +40,12 @@ export default function Tasks() {
 
     try {
       await removeTask(deleteTargetId);
-
-      pushToast({
-        title: "Task deleted",
-        variant: "success",
-      });
-
+      pushToast({ title: "Task deleted", variant: "success" });
       setConfirmDeleteOpen(false);
       setDeleteTargetId(null);
     } catch (err) {
       console.error("Delete failed:", err.response?.data || err);
-
-      pushToast({
-        title: "Failed to delete task",
-        variant: "error",
-      });
+      pushToast({ title: "Failed to delete task", variant: "error" });
     } finally {
       setDeleteLoading(false);
     }
@@ -68,7 +59,11 @@ export default function Tasks() {
         title: form.title.trim(),
         description: form.description.trim(),
         assigned_to: form.assignedTo || null,
-        related_to: form.relatedTo || null,
+        related_type: form.relatedType !== "none" ? form.relatedType : null,
+        related_lead: form.relatedType === "lead" ? form.relatedLead || null : null,
+        related_contact: form.relatedType === "contact" ? form.relatedContact || null : null,
+        related_deal: form.relatedType === "deal" ? form.relatedDeal || null : null,
+        related_account: form.relatedType === "account" ? form.relatedAccount || null : null,
         priority: form.priority.toLowerCase(),
         status: form.status.toLowerCase(),
         due_date: form.dueDate,
@@ -83,11 +78,7 @@ export default function Tasks() {
       setAddOpen(false);
     } catch (err) {
       console.error("Add task failed:", err.response?.data || err);
-
-      pushToast({
-        title: "Failed to add task",
-        variant: "error",
-      });
+      pushToast({ title: "Failed to add task", variant: "error" });
     } finally {
       setAddLoading(false);
     }
@@ -103,7 +94,11 @@ export default function Tasks() {
         title: form.title.trim(),
         description: form.description.trim(),
         assigned_to: form.assignedTo || null,
-        related_to: form.relatedTo || null,
+        related_type: form.relatedType !== "none" ? form.relatedType : null,
+        related_lead: form.relatedType === "lead" ? form.relatedLead || null : null,
+        related_contact: form.relatedType === "contact" ? form.relatedContact || null : null,
+        related_deal: form.relatedType === "deal" ? form.relatedDeal || null : null,
+        related_account: form.relatedType === "account" ? form.relatedAccount || null : null,
         priority: form.priority.toLowerCase(),
         status: form.status.toLowerCase(),
         due_date: form.dueDate,
@@ -118,11 +113,7 @@ export default function Tasks() {
       setEditTask(null);
     } catch (err) {
       console.error("Update task failed:", err.response?.data || err);
-
-      pushToast({
-        title: "Failed to update task",
-        variant: "error",
-      });
+      pushToast({ title: "Failed to update task", variant: "error" });
     } finally {
       setAddLoading(false);
     }
@@ -131,9 +122,7 @@ export default function Tasks() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-sm text-[#64748B]">
-          Loading tasks...
-        </p>
+        <p className="text-sm text-[#64748B]">Loading tasks...</p>
       </div>
     );
   }
@@ -141,9 +130,7 @@ export default function Tasks() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-[28px] font-semibold text-[#111827]">
-          Tasks
-        </h1>
+        <h1 className="text-[28px] font-semibold text-[#111827]">Tasks</h1>
 
         <button
           type="button"
@@ -185,9 +172,7 @@ export default function Tasks() {
         confirmText="Delete"
         danger
         loading={deleteLoading}
-        onCancel={() =>
-          deleteLoading ? null : setConfirmDeleteOpen(false)
-        }
+        onCancel={() => (deleteLoading ? null : setConfirmDeleteOpen(false))}
         onConfirm={confirmDelete}
       />
     </div>

@@ -5,6 +5,11 @@ export const getAccounts = async () => {
   return data;
 };
 
+export const getAccount = async (id) => {
+  const { data } = await api.get(`/account/single/view/${id}/`);
+  return data;
+};
+
 export const getStaff = async () => {
   const { data } = await api.get("/staff/view/");
   return data;
@@ -20,8 +25,6 @@ export const createAccount = async (payload) => {
   return data;
 };
 
-// NOTE: switched to PUT for consistency with updateLead/updateDeal.
-// Revert to POST if your backend route specifically expects it.
 export const updateAccount = async (id, payload) => {
   const { data } = await api.put(`/account/update/${id}/`, payload);
   return data;

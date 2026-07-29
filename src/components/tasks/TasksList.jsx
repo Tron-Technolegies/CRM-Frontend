@@ -41,6 +41,16 @@ function statusLabel(status) {
   }
 }
 
+function relatedTypeLabel(type) {
+  switch (type) {
+    case "lead": return "Lead";
+    case "contact": return "Contact";
+    case "deal": return "Deal";
+    case "account": return "Account";
+    default: return "";
+  }
+}
+
 function formatDate(value) {
   if (!value) return "—";
   const d = new Date(value);
@@ -88,7 +98,6 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
 
   return (
     <div className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden">
-      {/* Filters */}
       <div className="p-5 border-b border-[#EEF2F7] flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
         <div className="h-12 w-full xl:w-[340px] rounded-xl border border-[#E5E7EB] px-4 flex items-center gap-3">
           <Search size={18} className="text-[#6B7280]" />
@@ -116,7 +125,6 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
         </div>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[980px]">
           <thead className="border-b border-[#EEF2F7]">
@@ -133,7 +141,11 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
 
           <tbody className="divide-y divide-[#EEF2F7]">
             {paginated.map((task) => (
-              <tr key={task.id} className="hover:bg-[#FAFAFA]">
+              <tr
+                key={task.id}
+                onClick={() => setViewId(task.id)}
+                className="hover:bg-[#FAFAFA] cursor-pointer"
+              >
                 <td className="px-6 py-5">
                   <p className={`text-sm font-medium ${task.status?.toLowerCase() === "completed" ? "line-through text-[#64748B]" : "text-[#111827]"}`}>{task.title}</p>
                   {task.description && <p className="text-sm text-[#64748B] mt-0.5 truncate max-w-[200px]">{task.description}</p>}
@@ -142,7 +154,11 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
                   <p className="text-sm text-[#111827]">{task.assignedTo || "—"}</p>
                 </td>
                 <td className="px-6 py-5">
-                  <p className="text-sm text-[#111827]">{task.relatedTo || "—"}</p>
+                  <p className="text-sm text-[#111827]">
+                    {task.relatedTo && task.relatedTo !== "—"
+                      ? `${relatedTypeLabel(task.relatedType)}: ${task.relatedTo}`
+                      : "—"}
+                  </p>
                 </td>
                 <td className="px-6 py-5">
                   <span className={`text-sm font-medium ${priorityStyles(task.priority)}`}>
@@ -159,11 +175,10 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
                     {formatDate(task.dueDate)}
                   </p>
                 </td>
-                <td className="px-6 py-5">
+                <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-3 text-[#64748B]">
                     <button type="button" className="hover:text-[#111827]" aria-label="View" onClick={() => setViewId(task.id)}><Eye size={18} /></button>
                     <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={() => onEdit(task)}><Pencil size={18} /></button>
-                    {/* <button type="button" className="hover:text-[#111827]" aria-label="More" onClick={() => openNotImplemented("More")}><MoreVertical size={18} /></button> */}
                     <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={() => onDelete(task.id)}><Trash2 size={18} /></button>
                   </div>
                 </td>
@@ -178,7 +193,6 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
         </table>
       </div>
 
-      {/* Footer */}
       <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <p className="text-sm text-[#64748B]">
           Showing {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} tasks
@@ -192,10 +206,10 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
         </div>
       </div>
 
-      <TaskViewModal 
-      open={!!viewId} 
-      onClose={() => setViewId(null)} 
-      onEdit={onEdit} 
+      <TaskViewModal
+      open={!!viewId}
+      onClose={() => setViewId(null)}
+      onEdit={onEdit}
       taskId={viewId} />
     </div>
   );

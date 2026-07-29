@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Eye, Pencil, Search, Trash2 } from "lucide-react";
-import AccountViewModal from "./AccountViewModal";
 import Pagination from "../Pagination";
 import usePagination from "../../api/usePagination";
 
@@ -9,9 +8,9 @@ const AccountsList = ({
   accounts = [],
   onDelete,
   onEdit,
+  onView,
 }) => {
 
-  const [viewAccount, setViewAccount] = useState(null);
   const [search, setSearch] = useState("");
 
   const filteredAccounts = accounts.filter((account) =>
@@ -33,12 +32,6 @@ const AccountsList = ({
   useEffect(() => {
     resetPage();
   }, [search, resetPage]);
-  // account.phone_number
-  //   ?.toLowerCase()
-  //   .includes(search.toLowerCase()) ||
-  // account.industry
-  //   ?.toLowerCase()
-  //   .includes(search.toLowerCase())
 
   return (
     <div className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden">
@@ -109,63 +102,72 @@ const AccountsList = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-[#EEF2F7]">
-            {paginatedAccounts.map((account) => (
+            {paginatedAccounts.map((account) => {
+              const parentAccount = accounts.find(
+                (a) => String(a.id) === String(account.parent_account),
+              );
 
+              return (
+                <tr
+                  key={account.id}
+                  onClick={() => onView(account)}
+                  className="hover:bg-[#FAFAFA] cursor-pointer"
+                >
+                  <td className="px-6 py-5">
 
-              <tr
-                key={account.id}
-                className="hover:bg-[#FAFAFA]">
-                <td className="px-6 py-5">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-semibold">
+                        {account.account_name?.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-semibold">
-                      {account.account_name?.slice(0, 2).toUpperCase()}
+                        <p className="text-sm font-semibold">
+                          {account.account_name}
+                        </p>
+                        <p className="text-sm text-slate-500">
+                          {account.website || "-"}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-
-                      <p className="text-sm font-semibold">
-                        {account.account_name}
-                      </p>
-                      <p className="text-sm text-slate-500">
-                        {account.website || "-"}
-                      </p>
+                  </td>
+                  <td className="px-6 py-5 text-sm">
+                    {account.phone_number || "-"}
+                  </td>
+                  <td className="px-6 py-5 text-sm">
+                    {account.account_type || "-"}
+                  </td>
+                  <td className="px-6 py-5 text-sm">
+                    {account.industry || "-"}
+                  </td>
+                  <td className="px-6 py-5 text-sm">
+                    {account.assigned_to_name || "-"}
+                  </td>
+                  <td className="px-6 py-5 text-sm">
+                    {parentAccount?.account_name || "-"}
+                  </td>
+                  <td className="px-6 py-5">
+                    <div
+                      className="flex gap-3 text-slate-500"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => onView(account)}>
+                        <Eye size={18} />
+                      </button>
+                      <button
+                        onClick={() => onEdit(account)}>
+                        <Pencil size={18} />
+                      </button>
+                      <button
+                        onClick={() => onDelete(account.id)}>
+                        <Trash2 size={18} />
+                      </button>
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-5 text-sm">
-                  {account.phone_number || "-"}
-                </td>
-                <td className="px-6 py-5 text-sm">
-                  {account.account_type || "-"}
-                </td>
-                <td className="px-6 py-5 text-sm">
-                  {account.industry || "-"}
-                </td>
-                <td className="px-6 py-5 text-sm">
-                  {account.assigned_to_name || "-"}
-                </td>
-                <td className="px-6 py-5 text-sm">
-                  {account.parent_account || "-"}
-                </td>
-                <td className="px-6 py-5">
-                  <div className="flex gap-3 text-slate-500">
-                    <button
-                      onClick={() => setViewAccount(account)}>
-                      <Eye size={18} />
-                    </button>
-                    <button
-                      onClick={() => onEdit(account)}>
-                      <Pencil size={18} />
-                    </button>
-                    <button
-                      onClick={() => onDelete(account.id)}>
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
 
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -179,10 +181,6 @@ const AccountsList = ({
           onPageChange={changePage}
         />
       </div>
-      <AccountViewModal
-        open={!!viewAccount}
-        onClose={() => setViewAccount(null)}
-        account={viewAccount} />
     </div>
   );
 };

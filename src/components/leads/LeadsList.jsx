@@ -32,6 +32,7 @@ function statusLabel(status) {
 
 export default function LeadsList({
   leads,
+  staff,
   onDelete,
   onEdit,
   onConvert
@@ -155,7 +156,7 @@ export default function LeadsList({
       </div>
 
       {/* Desktop table */}
-      <div className="hidden md:block overflow-x-auto">
+      <div  className="hidden md:block overflow-x-auto">
         <table className="w-full min-w-[980px]">
           <thead className="border-b border-[#EEF2F7]">
             <tr className="text-left">
@@ -171,7 +172,7 @@ export default function LeadsList({
 
           <tbody className="divide-y divide-[#EEF2F7]">
             {paginated.map((lead) => (
-              <tr key={lead.id} className="hover:bg-[#FAFAFA]">
+              <tr key={lead.id} onClick={() => setViewId(lead.id)} className="hover:bg-[#FAFAFA]">
                 <td className="px-6 py-5">
                   <p className="text-sm font-medium text-[#111827]">{lead.name}</p>
                 </td>
@@ -195,9 +196,9 @@ export default function LeadsList({
                 </td>
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-3 text-[#64748B]">
-                    <button type="button" className="hover:text-[#111827]" aria-label="View" onClick={() => setViewId(lead.id)}><Eye size={18} /></button>
-                    <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={() => onEdit(lead)}><Pencil size={18} /></button>
-                    <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={() => onDelete(lead.id)}><Trash2 size={18} /></button>
+                    <button type="button" className="hover:text-[#111827]" aria-label="View" onClick={(e) => {e.stopPropagation();setViewId(lead.id);}}><Eye size={18} /></button>
+                    <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={(e) => {e.stopPropagation();onEdit(lead);}}><Pencil size={18} /></button>
+                    <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={(e) => {e.stopPropagation();onDelete(lead.id);}}><Trash2 size={18} /></button>
                   </div>
                 </td>
               </tr>
@@ -230,6 +231,7 @@ export default function LeadsList({
         open={!!viewId}
         onClose={() => setViewId(null)}
         leadId={viewId}
+        staff={staff}
         onEdit={(lead) => {
           setViewId(null);
           onEdit(lead);

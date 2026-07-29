@@ -72,7 +72,9 @@ const Accounts = () => {
       <AccountViewModal
         open={!!viewAccount}
         account={viewAccount}
+        accounts={accounts}
         onClose={() => setViewAccount(null)}
+        onEdit={(account) => setEditAccount(account)}
       />
 
       {/* Add Account */}

@@ -18,6 +18,7 @@ const relatedTypeOptions = [
   { value: "none", label: "None" },
   { value: "lead", label: "Lead" },
   { value: "customer", label: "Customer" },
+  { value: "account", label: "Account" },
 ];
 
 // Your GET endpoints (view_meetings / view_single_meeting) return ISO
@@ -61,6 +62,9 @@ function validateMeeting(form) {
   if (form.relatedType === "customer" && !form.relatedCustomer) {
     errors.relatedCustomer = "Please select a customer";
   }
+  if (form.relatedType === "account" && !form.relatedAccount) {
+    errors.relatedAccount = "Please select an account";
+  }
 
   return errors;
 }
@@ -72,6 +76,7 @@ export default function AddMeeting({
   staff = [],
   leads = [],
   customers = [],
+  accounts = [],
 }) {
   const blankForm = useMemo(
     () => ({
@@ -87,6 +92,7 @@ export default function AddMeeting({
       relatedType: "none",
       relatedLead: "",
       relatedCustomer: "",
+      relatedAccount: "",
       repeat: "none",
     }),
     [],
@@ -118,6 +124,7 @@ export default function AddMeeting({
       relatedType: initialData.relatedType || "none",
       relatedLead: initialData.relatedLead?.id || "",
       relatedCustomer: initialData.relatedCustomer?.id || "",
+      relatedAccount: initialData.relatedAccount?.id || "",
       repeat: initialData.repeat || "none",
     });
     setTouched({});
@@ -150,6 +157,7 @@ export default function AddMeeting({
       location: true,
       relatedLead: true,
       relatedCustomer: true,
+      relatedAccount: true,
     });
 
     if (hasErrors) return;
@@ -171,6 +179,8 @@ export default function AddMeeting({
       related_lead: form.relatedType === "lead" ? form.relatedLead : null,
       related_customer:
         form.relatedType === "customer" ? form.relatedCustomer : null,
+      related_account:
+        form.relatedType === "account" ? form.relatedAccount : null,
       repeat: form.repeat,
     };
 
@@ -489,6 +499,36 @@ export default function AddMeeting({
                 {touched.relatedCustomer && errors.relatedCustomer && (
                   <p className="text-xs text-red-600 mt-1">
                     {errors.relatedCustomer}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {form.relatedType === "account" && (
+              <div>
+                <label className={labelClass}>
+                  Account <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={form.relatedAccount}
+                  onChange={(e) =>
+                    setField("relatedAccount", e.target.value)
+                  }
+                  onBlur={() =>
+                    setTouched((p) => ({ ...p, relatedAccount: true }))
+                  }
+                  className={`${inputClass} bg-white`}
+                >
+                  <option value="">Select Account</option>
+                  {accounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.account_name}
+                    </option>
+                  ))}
+                </select>
+                {touched.relatedAccount && errors.relatedAccount && (
+                  <p className="text-xs text-red-600 mt-1">
+                    {errors.relatedAccount}
                   </p>
                 )}
               </div>

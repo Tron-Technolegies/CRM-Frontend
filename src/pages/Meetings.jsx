@@ -5,10 +5,11 @@ import useMeeting from "../hooks/useMeeting";
 
 import MeetingsTable from "../components/Meeting/MeetingsTable";
 import AddMeeting from "../components/Meeting/AddMeeting";
+import MeetingViewModal from "../components/Meeting/MeetingViewModal";
 
 import { getLeads, getStaff } from "../api/lead";
 import { getCustomers } from "../api/customer";
-
+import { getAccounts } from "../api/account";
 
 export default function Meetings() {
   const {
@@ -23,20 +24,24 @@ export default function Meetings() {
   const [showModal, setShowModal] = useState(false);
   const [editData, setEditData] = useState(null);
 
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewMeetingId, setViewMeetingId] = useState(null);
 
   const [staff, setStaff] = useState([]);
   const [leads, setLeads] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [accounts, setAccounts] = useState([]);
 
   useEffect(() => {
-      loadStaff();
-      loadLeads();
-      loadCustomers();
+    loadStaff();
+    loadLeads();
+    loadCustomers();
+    loadAccounts();
   }, []);
 
   const loadStaff = async () => {
     const data = await getStaff();
-      setStaff(data);
+    setStaff(data);
   };
 
   const loadLeads = async () => {
@@ -46,14 +51,14 @@ export default function Meetings() {
   };
 
   const loadCustomers = async () => {
-    const res = await getCustomers();
-    setCustomers(res.data);
+    const data = await getCustomers();
+    setCustomers(data || []);
   };
 
-
-
-  
-
+  const loadAccounts = async () => {
+    const data = await getAccounts();
+    setAccounts(data || []);
+  };
 
   const openAddModal = () => {
     setEditData(null);
@@ -68,6 +73,11 @@ export default function Meetings() {
     } catch (err) {
       console.error("Failed to load meeting:", err);
     }
+  };
+
+  const openViewModal = (id) => {
+    setViewMeetingId(id);
+    setViewOpen(true);
   };
 
   const handleSubmit = async (formData) => {
@@ -98,9 +108,7 @@ export default function Meetings() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-sm text-gray-500">
-          Loading meetings...
-        </p>
+        <p className="text-sm text-gray-500">Loading meetings...</p>
       </div>
     );
   }
@@ -124,6 +132,7 @@ export default function Meetings() {
 
         <MeetingsTable
           meetings={meetings}
+          onView={openViewModal}
           onEdit={openEditModal}
           onDelete={handleDelete}
         />
@@ -137,6 +146,7 @@ export default function Meetings() {
               staff={staff}
               leads={leads}
               customers={customers}
+              accounts={accounts}
               onSubmit={handleSubmit}
               onClose={() => {
                 setShowModal(false);
@@ -146,6 +156,19 @@ export default function Meetings() {
           </div>
         </div>
       )}
+
+      <MeetingViewModal
+        open={viewOpen}
+        meetingId={viewMeetingId}
+        onClose={() => {
+          setViewOpen(false);
+          setViewMeetingId(null);
+        }}
+        onEdit={(meeting) => {
+          setEditData(meeting);
+          setShowModal(true);
+        }}
+      />
     </>
   );
 }

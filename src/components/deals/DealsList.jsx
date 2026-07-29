@@ -40,6 +40,19 @@ function stageStyles(stage) {
   }
 }
 
+function priorityStyles(priority) {
+  switch (priority) {
+    case "High":
+      return "bg-rose-50 text-rose-600";
+    case "Medium":
+      return "bg-amber-50 text-amber-700";
+    case "Low":
+      return "bg-green-50 text-green-700";
+    default:
+      return "bg-slate-100 text-slate-700";
+  }
+}
+
 export default function DealsList({ deals, onDelete, onEdit }) {
   const { pushToast } = useToast();
   const [query, setQuery] = useState("");
@@ -129,22 +142,28 @@ export default function DealsList({ deals, onDelete, onEdit }) {
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px]">
+        <table className="w-full min-w-[1180px]">
           <thead className="border-b border-[#EEF2F7]">
             <tr>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Deal Name</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Company Name</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Stage</th>
+              <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Priority</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Value</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Expected Close Date</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Assigned To</th>
+              <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Related To</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Actions</th>
             </tr>
           </thead>
 
           <tbody className="divide-y divide-[#EEF2F7]">
             {paginated.map((deal) => (
-              <tr key={deal.id} className="hover:bg-[#FAFAFA]">
+              <tr
+                key={deal.id}
+                onClick={() => setViewId(deal.id)}
+                className="hover:bg-[#FAFAFA] cursor-pointer"
+              >
                 <td className="px-6 py-5">
                   <p className="text-sm font-medium text-[#111827]">{deal.name}</p>
                 </td>
@@ -157,6 +176,11 @@ export default function DealsList({ deals, onDelete, onEdit }) {
                   </span>
                 </td>
                 <td className="px-6 py-5">
+                  <span className={`inline-flex px-3 py-1 rounded-full text-sm ${priorityStyles(deal.priority)}`}>
+                    {deal.priority || "—"}
+                  </span>
+                </td>
+                <td className="px-6 py-5">
                   <p className="text-sm text-[#111827]">{formatCurrency(deal.value)}</p>
                 </td>
                 <td className="px-6 py-5">
@@ -166,6 +190,18 @@ export default function DealsList({ deals, onDelete, onEdit }) {
                   <p className="text-sm text-[#111827]">{deal.assignedTo}</p>
                 </td>
                 <td className="px-6 py-5">
+                  {deal.relatedTo ? (
+                    <span className="text-sm text-[#111827]">
+                      {deal.relatedTo.name}
+                      <span className="text-xs text-[#9CA3AF] ml-1 capitalize">
+                        ({deal.relatedTo.type})
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="text-sm text-[#D1D5DB]">—</span>
+                  )}
+                </td>
+                <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-3 text-[#64748B]">
                     <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="View" onClick={() => setViewId(deal.id)}><Eye size={18} /></button>
                     <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="Edit" onClick={() => onEdit(deal)}><Pencil size={18} /></button>
@@ -177,7 +213,7 @@ export default function DealsList({ deals, onDelete, onEdit }) {
             ))}
             {paginated.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-6 py-10 text-sm text-[#64748B]">No deals found.</td>
+                <td colSpan={9} className="px-6 py-10 text-sm text-[#64748B]">No deals found.</td>
               </tr>
             )}
           </tbody>

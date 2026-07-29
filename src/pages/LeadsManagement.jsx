@@ -301,6 +301,7 @@ export default function LeadsManagement() {
 
       <LeadsList
         leads={leads}
+        staff={staff}
         onDelete={requestDelete}
         onEdit={setEditLead}
         onConvert={handleConvert}

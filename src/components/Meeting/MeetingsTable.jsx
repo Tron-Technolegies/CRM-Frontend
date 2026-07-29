@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 
 function formatDateTime(value) {
   if (!value) return "—";
@@ -10,101 +10,100 @@ function formatDateTime(value) {
   });
 }
 
-export default function MeetingsTable({ meetings, onEdit, onDelete }) {
+export default function MeetingsTable({ meetings, onView, onEdit, onDelete }) {
   if (!meetings.length) {
     return (
-      <div className="rounded-xl border border-[#E5E7EB] bg-white p-10 text-center text-sm text-[#6B7280]">
+      <div className="bg-white border border-[#E5E7EB] rounded-2xl p-10 text-center text-sm text-[#64748B]">
         No meetings found.
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white">
+    <div className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="min-w-full">
-          <thead className="bg-[#E5EEFF]">
-            <tr>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-[#6B7280]">
-                Title
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-[#6B7280]">
-                Venue
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-[#6B7280]">
-                From
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-[#6B7280]">
-                To
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-[#6B7280]">
-                Host
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-[#6B7280]">
-                Related
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase text-[#6B7280]">
-                Repeat
-              </th>
-              <th className="px-6 py-4 text-center text-xs font-semibold uppercase text-[#6B7280]">
-                Actions
-              </th>
+        <table className="w-full min-w-[980px]">
+          <thead className="border-b border-[#EEF2F7]">
+            <tr className="text-left">
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Title</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Venue</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">From</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">To</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Host</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Related</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Repeat</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Actions</th>
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="divide-y divide-[#EEF2F7]">
             {meetings.map((meeting) => (
               <tr
                 key={meeting.id}
-                className="border-t border-[#E5E7EB] hover:bg-[#F9FAFB]"
+                onClick={() => onView(meeting.id)}
+                className="hover:bg-[#FAFAFA] cursor-pointer"
               >
-                <td className="px-6 py-4 text-sm text-[#111827]">
-                  {meeting.title || "—"}
+                <td className="px-6 py-5">
+                  <p className="text-sm font-semibold text-[#111827]">
+                    {meeting.title || "—"}
+                  </p>
                 </td>
 
-                <td className="px-6 py-4 text-sm capitalize text-[#111827]">
+                <td className="px-6 py-5 text-sm capitalize text-[#111827]">
                   {meeting.meetingVenue || "—"}
                 </td>
 
-                <td className="px-6 py-4 text-sm text-[#111827]">
+                <td className="px-6 py-5 text-sm text-[#64748B]">
                   {formatDateTime(meeting.fromDatetime)}
                 </td>
 
-                <td className="px-6 py-4 text-sm text-[#111827]">
+                <td className="px-6 py-5 text-sm text-[#64748B]">
                   {formatDateTime(meeting.toDatetime)}
                 </td>
 
                 {/* host is already a plain string ("full_name" or "—")
                     coming straight from the API — no object to unwrap */}
-                <td className="px-6 py-4 text-sm text-[#111827]">
+                <td className="px-6 py-5 text-sm text-[#111827]">
                   {meeting.host || "—"}
                 </td>
 
-                <td className="px-6 py-4 text-sm text-[#111827]">
+                <td className="px-6 py-5 text-sm text-[#111827]">
                   {meeting.relatedType === "lead" &&
                     (meeting.relatedLead?.name || "—")}
                   {meeting.relatedType === "customer" &&
                     (meeting.relatedCustomer?.name || "—")}
+                  {meeting.relatedType === "account" &&
+                    (meeting.relatedAccount?.name || "—")}
                   {(!meeting.relatedType || meeting.relatedType === "none") &&
                     "—"}
                 </td>
 
-                <td className="px-6 py-4 text-sm capitalize text-[#111827]">
+                <td className="px-6 py-5 text-sm capitalize text-[#111827]">
                   {meeting.repeat || "—"}
                 </td>
 
-                <td className="px-6 py-4">
-                  <div className="flex justify-center gap-3">
+                <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-3 text-[#64748B]">
                     <button
+                      type="button"
+                      onClick={() => onView(meeting.id)}
+                      className="hover:text-blue-600"
+                    >
+                      <Eye size={18} />
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => onEdit(meeting.id)}
-                      className="text-blue-600 hover:text-blue-800"
+                      className="hover:text-[#111827]"
                     >
                       <Pencil size={18} />
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => onDelete(meeting.id)}
-                      className="text-red-600 hover:text-red-800"
+                      className="hover:text-red-600"
                     >
                       <Trash2 size={18} />
                     </button>

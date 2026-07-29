@@ -16,6 +16,10 @@ import Modal from "../ui/Modal";
 
 import { getLead } from "../../api/lead";
 
+import AddCall from "../Calls/AddCall";
+import { createCall } from "../../api/call";
+import { createTask } from "../../api/task";
+
 
 const priorityConfig = {
   High: {
@@ -133,13 +137,41 @@ export default function LeadViewModal({
   onClose,
   onEdit,
   onConvert,
-  leadId
+  leadId,
+  staff,
 }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(null);
 
   const requestIdRef = useRef(0);
+
+  const [callOpen, setCallOpen] = useState(false);
+
+  const [callLoading, setCallLoading] = useState(false);
+
+  const handleCreateCall = async (callPayload, taskPayload) => {
+    setCallLoading(true);
+
+    try {
+      await createCall(callPayload);
+
+      if (taskPayload) {
+        try {
+          await createTask(taskPayload);
+        } catch (taskErr) {
+          console.error("Failed to create follow-up task:", taskErr);
+        }
+      }
+
+      setCallOpen(false);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setCallLoading(false);
+    }
+  };
+
 
   useEffect(() => {
     if (!open || !leadId) return;
@@ -234,6 +266,16 @@ export default function LeadViewModal({
             <Field label="Date" icon={Calendar} value={data.dateAdded} />
           </div>
 
+          <div className="p-5 border rounded-2xl">
+              <p className="text-xs text-gray-400 uppercase mb-2">
+                Description
+              </p>
+
+              <p className="text-sm whitespace-pre-wrap">
+                {data.description || "—"}
+              </p>
+          </div>
+
           {normalize(data.status) !== "converted" && (
             <div
               className="
@@ -280,8 +322,20 @@ export default function LeadViewModal({
                     flex gap-2 items-center
                   "
                 >
-                  <ArrowRightLeft size={14} />
-                  Convert Deal + Customer
+                  Convert Deal
+                </button>
+
+                <button
+                    onClick={() => setCallOpen(true)}
+                    className="
+                      px-4 py-2
+                      bg-indigo-600
+                      text-white
+                      rounded-xl
+                      text-sm
+                    "
+                  >
+                    Add Call
                 </button>
               </div>
             </div>
@@ -318,6 +372,19 @@ export default function LeadViewModal({
           </div>
         </div>
       )}
+
+
+      <AddCall
+        open={callOpen}
+        onClose={() => setCallOpen(false)}
+        onSubmit={handleCreateCall}
+        loading={callLoading}
+        staff={staff}
+        leads={data ? [data] : []}
+        lockedRelatedType="lead"
+        lockedRelatedId={data?.id || ""}
+        lockedRelatedName={data?.name || ""}
+      />
     </Modal>
   );
 }

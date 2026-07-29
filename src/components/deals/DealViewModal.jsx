@@ -1,4 +1,4 @@
-import { Calendar, DollarSign, Flag, Tag, Users, Pencil, Briefcase } from "lucide-react";
+import { Calendar, DollarSign, Flag, Tag, Users, Pencil, Briefcase, Building2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Modal from "../ui/Modal";
 import { getDeal } from "../../api/deal";
@@ -150,6 +150,22 @@ export default function DealViewModal({ open, onClose, onEdit, dealId = null }) 
                 <Field label="Assigned To" icon={Users} value={data.assignedTo} />
                 <Field label="Expected Close" icon={Calendar} value={data.expectedCloseDate} />
               </div>
+            </Section>
+
+            <Section title="Related To">
+              {data.relatedTo ? (
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-white border border-[#E5E7EB] flex items-center justify-center text-[#6B7280]">
+                    <Building2 size={16} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#111827]">{data.relatedTo.name}</p>
+                    <span className="text-xs text-[#9CA3AF] capitalize">{data.relatedTo.type}</span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-[#D1D5DB]">Not linked to a customer or account</p>
+              )}
             </Section>
 
             {data.description && (

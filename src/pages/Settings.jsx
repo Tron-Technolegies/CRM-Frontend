@@ -21,7 +21,7 @@ const sections = [
     path: "/settings/security",
   },
   {
-    title: "Preferences",
+    title: "Field Options",
     description: "Set your language, timezone, and other preferences.",
     icon: Globe,
     path: "/settings/preferences",

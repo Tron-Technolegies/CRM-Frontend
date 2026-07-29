@@ -200,7 +200,6 @@ export default function CustomerViewModal({ open, onClose, onEdit, customerId = 
               <Section title="Account Details">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
                   <Field label="Status" icon={Tag} value={data.status} />
-                  <Field label="Lifetime Value" icon={TrendingUp} value={formattedLTV} />
                   <Field label="Join Date" icon={Calendar} value={data.joinDate} />
                 </div>
               </Section>

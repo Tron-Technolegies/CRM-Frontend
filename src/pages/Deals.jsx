@@ -82,7 +82,8 @@ export default function Deals() {
         deal_source: form.dealSource,
         priority: form.priority,
         deal_description: form.description.trim(),
-        lead_id: form.leadId || null,
+        related_type: form.relatedType || null,
+        related_id: form.relatedId || null,
       });
 
       await fetchDeals();
@@ -121,6 +122,8 @@ export default function Deals() {
         deal_source: form.dealSource,
         priority: form.priority,
         deal_description: form.description.trim(),
+        related_type: form.relatedType || null,
+        related_id: form.relatedId || null,
       });
 
       await fetchDeals();
