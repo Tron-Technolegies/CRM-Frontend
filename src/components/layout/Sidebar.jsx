@@ -17,7 +17,9 @@ import {
   FileText,
   CalendarDays,
   Phone,
-  ChevronDown
+  ChevronDown,
+  Store,
+  Wrench
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -57,7 +59,7 @@ export default function Sidebar({ sidebarOpen }) {
         {
           icon: <Tag size={18} />,
           name: "Sales",
-          path: "/inventory/sales"
+          path: "/inventory/salesOrder"
         },
         {
           icon: <Tag size={18} />,
@@ -68,6 +70,16 @@ export default function Sidebar({ sidebarOpen }) {
           icon: <NotepadText size={18} />,
           name: "Invoices",
           path: "/inventory/invoices"
+        },
+        {
+          icon: <Store size={18} />,
+          name: "Vendor",
+          path: "/inventory/vendor"
+        },
+        {
+          icon: <Wrench size={18} />,
+          name: "Service",
+          path: "/inventory/service"
         }
       ]
     },

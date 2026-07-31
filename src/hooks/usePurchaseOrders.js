@@ -1,24 +1,24 @@
 import { useState } from "react";
 import {
-  addQuote,
-  getQuotes,
-  getQuote,
-  updateQuote,
-  deleteQuote as deleteQuoteApi,
-} from "../api/quotes";
+  addPurchaseOrder,
+  getPurchaseOrders,
+  getPurchaseOrder,
+  updatePurchaseOrder,
+  deletePurchaseOrder as deletePurchaseOrderApi,
+} from "../api/purchaseOrders";
 
-const useQuotes = () => {
-  const [quotes, setQuotes] = useState([]);
+const usePurchaseOrders = () => {
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [formData, setFormData] = useState(null);
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchQuotes = async () => {
+  const fetchPurchaseOrders = async () => {
     try {
       setLoading(true);
-      const data = await getQuotes();
-      setQuotes(data || []);
+      const data = await getPurchaseOrders();
+      setPurchaseOrders(data || []);
     } catch (err) {
       setError(err.response?.data || err.message);
     } finally {
@@ -26,10 +26,10 @@ const useQuotes = () => {
     }
   };
 
-  const loadQuote = async (id) => {
+  const loadPurchaseOrder = async (id) => {
     try {
       setLoading(true);
-      const data = await getQuote(id);
+      const data = await getPurchaseOrder(id);
       setFormData(data);
       setEditId(id);
       return data;
@@ -40,12 +40,10 @@ const useQuotes = () => {
     }
   };
 
-  // payload is the already-mapped, backend-shaped object.
-  // id defaults to whatever was loaded via loadQuote, but can be overridden.
-  const saveQuote = async (payload, id = editId) => {
+  const savePurchaseOrder = async (payload, id = editId) => {
     try {
       setLoading(true);
-      const response = id ? await updateQuote(id, payload) : await addQuote(payload);
+      const response = id ? await updatePurchaseOrder(id, payload) : await addPurchaseOrder(payload);
       return response;
     } catch (err) {
       setError(err.response?.data || err.message);
@@ -55,11 +53,11 @@ const useQuotes = () => {
     }
   };
 
-  const removeQuote = async (id) => {
+  const removePurchaseOrder = async (id) => {
     try {
       setLoading(true);
-      await deleteQuoteApi(id);
-      await fetchQuotes();
+      await deletePurchaseOrderApi(id);
+      await fetchPurchaseOrders();
     } catch (err) {
       setError(err.response?.data || err.message);
     } finally {
@@ -73,17 +71,17 @@ const useQuotes = () => {
   };
 
   return {
-    quotes,
+    purchaseOrders,
     formData,
     editId,
     loading,
     error,
-    fetchQuotes,
-    loadQuote,
-    saveQuote,
-    removeQuote,
+    fetchPurchaseOrders,
+    loadPurchaseOrder,
+    savePurchaseOrder,
+    removePurchaseOrder,
     resetForm,
   };
 };
 
-export default useQuotes;
+export default usePurchaseOrders;

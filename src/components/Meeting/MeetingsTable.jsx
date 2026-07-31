@@ -1,4 +1,5 @@
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Eye, Pencil, Trash2, X } from "lucide-react";
 
 function formatDateTime(value) {
   if (!value) return "—";
@@ -10,7 +11,68 @@ function formatDateTime(value) {
   });
 }
 
+function DeleteConfirmModal({ onCancel, onConfirm, deleting }) {
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
+        <div className="flex items-start justify-between px-6 pt-6">
+          <div>
+            <h2 className="text-xl font-semibold text-[#111827]">
+              Delete meeting?
+            </h2>
+            <p className="text-sm text-[#6B7280] mt-1">
+              This action cannot be undone.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="w-9 h-9 rounded-lg border border-[#E5E7EB] flex items-center justify-center text-[#6B7280] hover:bg-gray-50"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="flex justify-end gap-3 px-6 py-6">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-5 h-11 rounded-xl border border-[#E5E7EB] text-[#111827] hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={deleting}
+            className="px-5 h-11 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 disabled:opacity-60"
+          >
+            {deleting ? "Deleting..." : "Delete"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MeetingsTable({ meetings, onView, onEdit, onDelete }) {
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleConfirmDelete = async () => {
+    setDeleting(true);
+    try {
+      await onDelete(deleteTargetId);
+      setDeleteTargetId(null);
+    } catch (err) {
+      console.error("DELETE MEETING ERROR:", err);
+      alert("Could not delete this meeting. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (!meetings.length) {
     return (
       <div className="bg-white border border-[#E5E7EB] rounded-2xl p-10 text-center text-sm text-[#64748B]">
@@ -102,7 +164,7 @@ export default function MeetingsTable({ meetings, onView, onEdit, onDelete }) {
 
                     <button
                       type="button"
-                      onClick={() => onDelete(meeting.id)}
+                      onClick={() => setDeleteTargetId(meeting.id)}
                       className="hover:text-red-600"
                     >
                       <Trash2 size={18} />
@@ -114,6 +176,14 @@ export default function MeetingsTable({ meetings, onView, onEdit, onDelete }) {
           </tbody>
         </table>
       </div>
+
+      {deleteTargetId && (
+        <DeleteConfirmModal
+          onCancel={() => setDeleteTargetId(null)}
+          onConfirm={handleConfirmDelete}
+          deleting={deleting}
+        />
+      )}
     </div>
   );
 }

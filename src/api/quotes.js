@@ -1,17 +1,26 @@
 import api from "./Api";
 
-export const addQuote = (data) =>
-    api.post("quote/add/", data);
+export const getQuotes = async () => {
+  const { data } = await api.get("/quote/view/");
+  return data;
+};
 
-export const getQuotes = () =>
-    api.get("quote/view/");
+export const getQuote = async (id) => {
+  const { data } = await api.get(`/quote/single/view/${id}/`);
+  return data;
+};
 
-export const getSingleQuote = (id) =>
-    api.get(`quote/single/view/${id}/`);
+export const addQuote = async (payload) => {
+  const { data } = await api.post("/quote/add/", payload);
+  return data;
+};
 
-export const updateQuote = (id, data) =>
-    api.post(`quote/update/${id}/`, data);
+export const updateQuote = async (id, payload) => {
+  const { data } = await api.put(`/quote/update/${id}/`, payload);
+  return data;
+};
 
-export const deleteQuote = (id) =>
-    api.delete(`quote/delete/${id}/`);
-
+export const deleteQuote = async (id) => {
+  const { data } = await api.delete(`/quote/delete/${id}/`);
+  return data;
+};

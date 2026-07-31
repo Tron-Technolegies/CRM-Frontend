@@ -1,24 +1,24 @@
 import { useState } from "react";
 import {
-  addQuote,
-  getQuotes,
-  getQuote,
-  updateQuote,
-  deleteQuote as deleteQuoteApi,
-} from "../api/quotes";
+  addSalesOrder,
+  getSalesOrders,
+  getSalesOrder,
+  updateSalesOrder,
+  deleteSalesOrder as deleteSalesOrderApi,
+} from "../api/salesOrders";
 
-const useQuotes = () => {
-  const [quotes, setQuotes] = useState([]);
+const useSalesOrders = () => {
+  const [salesOrders, setSalesOrders] = useState([]);
   const [formData, setFormData] = useState(null);
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchQuotes = async () => {
+  const fetchSalesOrders = async () => {
     try {
       setLoading(true);
-      const data = await getQuotes();
-      setQuotes(data || []);
+      const data = await getSalesOrders();
+      setSalesOrders(data || []);
     } catch (err) {
       setError(err.response?.data || err.message);
     } finally {
@@ -26,10 +26,10 @@ const useQuotes = () => {
     }
   };
 
-  const loadQuote = async (id) => {
+  const loadSalesOrder = async (id) => {
     try {
       setLoading(true);
-      const data = await getQuote(id);
+      const data = await getSalesOrder(id);
       setFormData(data);
       setEditId(id);
       return data;
@@ -40,12 +40,10 @@ const useQuotes = () => {
     }
   };
 
-  // payload is the already-mapped, backend-shaped object.
-  // id defaults to whatever was loaded via loadQuote, but can be overridden.
-  const saveQuote = async (payload, id = editId) => {
+  const saveSalesOrder = async (payload, id = editId) => {
     try {
       setLoading(true);
-      const response = id ? await updateQuote(id, payload) : await addQuote(payload);
+      const response = id ? await updateSalesOrder(id, payload) : await addSalesOrder(payload);
       return response;
     } catch (err) {
       setError(err.response?.data || err.message);
@@ -55,11 +53,11 @@ const useQuotes = () => {
     }
   };
 
-  const removeQuote = async (id) => {
+  const removeSalesOrder = async (id) => {
     try {
       setLoading(true);
-      await deleteQuoteApi(id);
-      await fetchQuotes();
+      await deleteSalesOrderApi(id);
+      await fetchSalesOrders();
     } catch (err) {
       setError(err.response?.data || err.message);
     } finally {
@@ -73,17 +71,17 @@ const useQuotes = () => {
   };
 
   return {
-    quotes,
+    salesOrders,
     formData,
     editId,
     loading,
     error,
-    fetchQuotes,
-    loadQuote,
-    saveQuote,
-    removeQuote,
+    fetchSalesOrders,
+    loadSalesOrder,
+    saveSalesOrder,
+    removeSalesOrder,
     resetForm,
   };
 };
 
-export default useQuotes;
+export default useSalesOrders;

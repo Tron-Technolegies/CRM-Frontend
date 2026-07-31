@@ -1,16 +1,26 @@
 import api from "./Api";
 
-export const addProduct = (data) =>
-    api.post("product/add/", data);
+export const getProducts = async () => {
+  const { data } = await api.get("/product/view/");
+  return data;
+};
 
-export const getProducts = () =>
-    api.get("product/view/");
+export const getProduct = async (id) => {
+  const { data } = await api.get(`/product/single/view/${id}/`);
+  return data;
+};
 
-export const getSingleProduct = (id) =>
-    api.get(`product/single/view/${id}/`);
+export const createProduct = async (payload) => {
+  const { data } = await api.post("/product/add/", payload);
+  return data;
+};
 
-export const updateProduct = (id, data) =>
-    api.put(`product/update/${id}/`, data);
+export const updateProduct = async (id, payload) => {
+  const { data } = await api.put(`/product/update/${id}/`, payload);
+  return data;
+};
 
-export const deleteProduct = (id) =>
-    api.delete(`product/delete/${id}/`);
+export const deleteProduct = async (id) => {
+  const { data } = await api.delete(`/product/delete/${id}/`);
+  return data;
+};
