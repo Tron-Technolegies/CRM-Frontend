@@ -37,14 +37,11 @@ export default function Sidebar({ sidebarOpen }) {
 
     { name: "Customers", icon: <UserRound size={18} />, path: "/customers" },
 
+    { name: "Accounts", icon: <Building2 size={18} />, path: "/accounts" },
+
     { name: "Deals", icon: <Handshake size={18} />, path: "/deals" },
 
-    { name: "Tasks", icon: <ClipboardList size={18} />, path: "/tasks" },
-
-    { name: "Meetings", icon: <CalendarDays size={18} />, path: "/meetings" },
-
-    { name: "Calls", icon: <Phone size={18} />, path: "/calls" },
-
+    { name: "Quotes", icon: <FileText size={18} />, path: "/quotes" },
 
     {
       name: "Inventory",
@@ -52,9 +49,19 @@ export default function Sidebar({ sidebarOpen }) {
       dropdown: true,
       children: [
         {
+          icon: <Store size={18} />,
+          name: "Vendor",
+          path: "/inventory/vendor"
+        },
+        {
           icon: <Handbag size={18} />,
           name: "Products",
           path: "/inventory/products"
+        },
+        {
+          icon: <Wrench size={18} />,
+          name: "Service",
+          path: "/inventory/service"
         },
         {
           icon: <Tag size={18} />,
@@ -71,22 +78,14 @@ export default function Sidebar({ sidebarOpen }) {
           name: "Invoices",
           path: "/inventory/invoices"
         },
-        {
-          icon: <Store size={18} />,
-          name: "Vendor",
-          path: "/inventory/vendor"
-        },
-        {
-          icon: <Wrench size={18} />,
-          name: "Service",
-          path: "/inventory/service"
-        }
       ]
     },
 
-    { name: "Accounts", icon: <Building2 size={18} />, path: "/accounts" },
+    { name: "Tasks", icon: <ClipboardList size={18} />, path: "/tasks" },
 
-    { name: "Quotes", icon: <FileText size={18} />, path: "/quotes" },
+    { name: "Meetings", icon: <CalendarDays size={18} />, path: "/meetings" },
+
+    { name: "Calls", icon: <Phone size={18} />, path: "/calls" },
 
     { name: "Reports", icon: <BarChart3 size={18} />, path: "/reports" },
 

@@ -16,16 +16,15 @@ import Tasks from "./pages/Tasks";
 import Reports from "./pages/Reports";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
+import NotificationFullView from "./components/layout/NotificationFullView";
 
 // Inventory
 import Product from "./components/Inventory/Product";
 import SalesOrders from "./components/Inventory/SalesOrders";
 import PurchaseOrders from "./components/Inventory/PurchaseOrders";
-import Invoices from "./components/Inventory/Invoices";
+import Invoice from "./components/Inventory/Invoice";
 import Vendor from "./components/Inventory/Vendor";
 import Service from "./components/Inventory/Service";
-
-import AddInvoice from "./components/Inventory/Addinvoice/AddInvoice";
 
 // Settings
 import Profile from "./components/settings/Profile/Profile";
@@ -119,6 +118,10 @@ const router = createBrowserRouter([
         path: "users",
         element: <Users />,
       },
+      {
+        path: "notifications",
+        element: <NotificationFullView />,
+      },
 
       // Inventory
       {
@@ -151,11 +154,7 @@ const router = createBrowserRouter([
       },
       {
         path: "inventory/invoices",
-        element: <Invoices />,
-      },
-      {
-        path: "inventory/invoices/addinvoice",
-        element: <AddInvoice />,
+        element: <Invoice />,
       },
       {
         path: "inventory/vendor",

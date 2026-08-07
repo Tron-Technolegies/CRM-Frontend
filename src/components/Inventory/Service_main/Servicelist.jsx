@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useService from "../../../hooks/useService";
-import { Eye, Pencil, Trash2, X } from "lucide-react";
+import { Eye, Pencil, Trash2, X, Search } from "lucide-react";
+import { Plus } from "lucide-react";
+import Pagination from "../../Pagination";
+import usePagination from "../../../api/usePagination";
 
 function DeleteConfirmModal({ onCancel, onConfirm, deleting }) {
   return (
@@ -57,8 +60,32 @@ const billingTypeLabels = {
 
 export default function ServiceList({ onAdd, onEdit, onView }) {
   const { services, loading, error, removeService } = useService();
+  const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState(null);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
+
+  const filteredServices = (services || []).filter((s) => {
+    const q = search.toLowerCase();
+    return (
+      s.serviceName?.toLowerCase().includes(q) ||
+      s.serviceCode?.toLowerCase().includes(q) ||
+      s.category?.toLowerCase().includes(q)
+    );
+  });
+
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    paginatedData: paginatedServices,
+    changePage,
+    resetPage,
+  } = usePagination(filteredServices, 8);
+
+  useEffect(() => {
+    resetPage();
+  }, [search]);
 
   const handleConfirmDelete = async () => {
     const id = deleteTargetId;
@@ -81,10 +108,23 @@ export default function ServiceList({ onAdd, onEdit, onView }) {
         <button
           type="button"
           onClick={onAdd}
-          className="px-4 h-11 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+          className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-medium text-white hover:bg-blue-700"
         >
+          <Plus size={18} />
           Add Service
         </button>
+      </div>
+
+      {/* Search */}
+      <div className="mb-4 flex h-11 w-full max-w-sm items-center gap-3 rounded-xl border border-[#E5E7EB] px-4">
+        <Search size={18} className="text-[#6B7280]" />
+        <input
+          type="text"
+          placeholder="Search by name, code or category..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full bg-transparent text-sm outline-none"
+        />
       </div>
 
       {error && (
@@ -115,16 +155,16 @@ export default function ServiceList({ onAdd, onEdit, onView }) {
               </tr>
             )}
 
-            {!loading && services.length === 0 && (
+            {!loading && paginatedServices.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-4 py-6 text-center text-[#6B7280]">
-                  No services yet. Click "Add Service" to create one.
+                  {services.length === 0 ? "No services yet. Click \"Add Service\" to create one." : "No services found."}
                 </td>
               </tr>
             )}
 
             {!loading &&
-              services.map((s) => (
+              paginatedServices.map((s) => (
                 <tr
                   key={s.id}
                   onClick={() => onView(s.id)}
@@ -189,6 +229,17 @@ export default function ServiceList({ onAdd, onEdit, onView }) {
               ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="mt-4">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          itemName="services"
+          onPageChange={changePage}
+        />
       </div>
 
       {deleteTargetId && (

@@ -112,7 +112,7 @@ const SalesOrderFormPage = () => {
   const validate = () => {
     const next = {};
     if (!form.subject.trim()) next.subject = "Subject is required";
-    if (!form.customerId) next.customerId = "Customer is required";
+    if (!form.customerId && !form.accountId) next.customerId = "Select a quote linked to a customer or account";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -179,13 +179,12 @@ const SalesOrderFormPage = () => {
           </div>
 
           <div>
-            <label className="text-xs font-medium text-[#6B7280]">CUSTOMER *</label>
-            <select value={form.customerId} onChange={(e) => setField("customerId", e.target.value)} className="w-full h-11 mt-1 px-3 rounded-xl border border-[#E5E7EB] text-sm bg-white outline-none focus:ring-4 focus:ring-blue-100">
-              <option value="">Select customer</option>
-              {(customers || []).map((c) => (
-                <option key={c.id} value={c.id}>{c.company_name || c.companyName || c.name}</option>
-              ))}
-            </select>
+            <label className="text-xs font-medium text-[#6B7280]">
+              {form.accountId ? "ACCOUNT" : "CUSTOMER"} *
+            </label>
+            <div className="w-full h-11 mt-1 px-3 rounded-xl border border-[#E5E7EB] text-sm bg-gray-50 flex items-center text-[#111827]">
+              {form.accountId ? form.accountName || "—" : form.customerName || "—"}
+            </div>
             {errors.customerId && <p className="text-xs text-red-600 mt-1">{errors.customerId}</p>}
           </div>
           <div>

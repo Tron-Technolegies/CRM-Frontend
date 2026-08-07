@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pencil, Plus, Trash2, X, Check } from "lucide-react";
 import { useToast } from "../ui/toastContext.js";
 import usePreferences from "../../hooks/usePreferences";
+import BackButton from "../common/BackButton";
 
 const fieldGroups = [
   { key: "lead_status", label: "Lead Status" },
@@ -94,7 +95,10 @@ export default function Preferences() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[28px] font-semibold text-[#111827]">Preferences</h1>
+        <div className="flex items-center gap-4 mb-6">
+          <BackButton />
+          <h1 className="text-3xl font-bold text-gray-800">Preferences</h1>
+        </div>
         <p className="text-sm text-[#64748B] mt-1">Manage dropdown options used across your CRM.</p>
       </div>
 

@@ -24,7 +24,10 @@ export const blankSalesOrderForm = () => ({
   subject: "",
   status: "created",
   ownerId: "",
+  accountId: "",
+  accountName: "",
   customerId: "",
+  customerName: "",
   quoteId: "",
   dealId: "",
   contactName: "", // UI only — not stored on SalesOrder model, see note above
@@ -47,7 +50,10 @@ export const fromApiResponse = (data) => ({
   subject: data.subject || "",
   status: data.status || "created",
   ownerId: data.ownerId || "",
+  accountId: data.accountId != null ? String(data.accountId) : "",
+  accountName: data.accountName || "",
   customerId: data.customerId || "",
+  customerName: data.customerName || "",
   quoteId: data.quoteId || "",
   dealId: data.dealId || "",
   contactName: "",
@@ -114,6 +120,7 @@ export const toApiPayload = (form) => {
     subject: form.subject,
     status: form.status,
     owner_id: form.ownerId || null,
+    account_id: form.accountId || null,
     customer_id: form.customerId || null,
     quote_id: form.quoteId || null,
     deal_id: form.dealId || null,
@@ -150,40 +157,24 @@ export const lineTotal = (item) => {
 // GET /quote/prefill/<quote_id>/ -> patch applied onto the sales order form
 export const fromQuotePrefill = (data) => ({
   subject: data.subject || "",
-  contactName: data.contactName || "",
 
-  // Auto-select customer
+  accountId: data.accountId != null ? String(data.accountId) : "",
+  accountName: data.accountName || "",
   customerId: data.customerId != null ? String(data.customerId) : "",
+  customerName: data.customerName || "",
 
-  // Auto-select deal
+  contactName: data.contactName || "",
   dealId: data.dealId != null ? String(data.dealId) : "",
 
-  billingAddress: {
-    country: data.billingAddress?.country || "",
-    address: data.billingAddress?.address || "",
-    streetAdd: data.billingAddress?.streetAddress || "",
-    city: data.billingAddress?.city || "",
-    state: data.billingAddress?.state || "",
-    zipCode: data.billingAddress?.zipCode || "",
-  },
-
-  shippingAddress: {
-    country: data.shippingAddress?.country || "",
-    address: data.shippingAddress?.address || "",
-    streetAdd: data.shippingAddress?.streetAddress || "",
-    city: data.shippingAddress?.city || "",
-    state: data.shippingAddress?.state || "",
-    zipCode: data.shippingAddress?.zipCode || "",
-  },
-
-  // Auto-fill products — backend sends camelCase, not snake_case
+  billingAddress: data.billingAddress,
+  shippingAddress: data.shippingAddress,
   items:
-    Array.isArray(data.items) && data.items.length
+    Array.isArray(data.items) && data.items.length > 0
       ? data.items.map((item) => ({
           key: crypto.randomUUID(),
-          productId: item.productId != null ? String(item.productId) : "",
+          productId: item.productId || "",
           productName: item.productName || "",
-          serviceId: item.serviceId != null ? String(item.serviceId) : "",
+          serviceId: item.serviceId || "",
           serviceName: item.serviceName || "",
           description: item.description || "",
           quantity: item.quantity ?? 1,

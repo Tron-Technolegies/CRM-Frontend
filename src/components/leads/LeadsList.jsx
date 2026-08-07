@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Eye, Pencil, Search, Trash2 } from "lucide-react";
 import LeadViewModal from "./LeadViewModal";
-
-const PAGE_SIZE = 8;
+import Pagination from "../Pagination";
+import usePagination from "../../api/usePagination";
 
 // Normalize so status comparisons don't depend on backend casing.
 function normalize(value) {
@@ -41,7 +41,6 @@ export default function LeadsList({
   const [status, setStatus] = useState("All");
   const [source, setSource] = useState("All");
   const [assignedTo, setAssignedTo] = useState("All");
-  const [page, setPage] = useState(1);
   const [viewId, setViewId] = useState(null);
 
   const statusOptions = useMemo(() => {
@@ -72,20 +71,19 @@ export default function LeadsList({
     });
   }, [leads, query, status, source, assignedTo]);
 
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    paginatedData: paginated,
+    changePage,
+    resetPage,
+  } = usePagination(filtered, 8);
+
   useEffect(() => {
-    setPage(1);
+    resetPage();
   }, [query, status, source, assignedTo]);
-
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-
-  // Keep page in range if the result set shrinks (e.g. after a delete).
-  useEffect(() => {
-    if (totalPages > 0 && page > totalPages) {
-      setPage(totalPages);
-    }
-  }, [totalPages, page]);
-
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden">
@@ -213,18 +211,14 @@ export default function LeadsList({
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <p className="text-sm text-[#64748B]">
-          Showing {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} leads
-        </p>
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="w-9 h-9 rounded-lg border border-[#E5E7EB] grid place-items-center disabled:opacity-40">‹</button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <button key={p} type="button" onClick={() => setPage(p)} className={`w-9 h-9 rounded-lg grid place-items-center text-sm ${p === page ? "bg-blue-600 text-white" : "border border-[#E5E7EB] text-[#111827]"}`}>{p}</button>
-          ))}
-          <button type="button" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || totalPages === 0} className="w-9 h-9 rounded-lg border border-[#E5E7EB] grid place-items-center disabled:opacity-40">›</button>
-        </div>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        itemName="leads"
+        onPageChange={changePage}
+      />
 
       {/* View Modal */}
       <LeadViewModal

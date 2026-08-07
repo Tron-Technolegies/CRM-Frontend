@@ -1,132 +1,50 @@
-import { React, useEffect } from "react";
-import useProfile from "../../../hooks/useProfile";
+import React from "react";
 
-const ProfileDetails = () => {
+const ProfileDetails = ({ profile }) => {
+  if (!profile) return null;
 
-    const { profile, fetchProfile, } = useProfile();
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-8 mb-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="flex-1 lg:pr-8 border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-800 mb-8">User Information</h2>
 
-    useEffect(() => {
-        fetchProfile();
-    }, []);
-
-    return (
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-5">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div className="flex-1 lg:pr-8  border-gray-200">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-8">
-                        User Information
-                    </h2>
-
-                    <div className="space-y-7">
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">{profile?.first_name}/</span>
-                            <span className="font-semibold text-gray-800 text-right">
-                                Admin Name
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Last Name</span>
-                            <span className="font-semibold text-gray-800 text-right">
-                                Last Name
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Email</span>
-                            <span className="font-semibold text-gray-800 text-right">
-                                admin@gmail.com
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Role</span>
-                            <span className="font-semibold text-gray-800 text-right">
-                                Role Name
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Profile</span>
-                            <span className="font-semibold text-gray-800 text-right">
-                                Text
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Added By</span>
-                            <span className="font-semibold text-gray-800 text-right">
-                                Admin Name
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Alias</span>
-                        </div>
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Mobile</span>
-                            <span className="font-semibold text-gray-800 text-right">
-                                00000000000
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Website</span>
-                        </div>
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Fax</span>
-                        </div>
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Date Of Birth</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Address Information */}
-
-                <div className="flex-1 lg:pl-8">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-8">
-                        Address Information
-                    </h2>
-
-                    <div className="space-y-7">
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Street</span>
-                            <span className="font-semibold text-gray-800 text-right">
-                                Street
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">City</span>
-                            <span className="font-semibold text-gray-800 text-right">
-                                City
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">State</span>
-                            <span className="font-semibold text-gray-800 text-right">
-                                Kerala
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Zip Code</span>
-                            <span className="font-semibold text-gray-800 text-right">
-                                680001
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between items-center border-b border-gray-200 pb-3">
-                            <span className="text-gray-500">Country</span>
-                            <span className="font-semibold text-gray-800 text-right">
-                                India
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+          <div className="space-y-7">
+            <Row label="First Name" value={profile.fullName} />
+            <Row label="Last Name" value={profile.lastName} />
+            <Row label="Email" value={profile.email} />
+            <Row label="Role" value={profile.role} />
+            <Row label="Profile" value={profile.profileType} />
+            <Row label="Added By" value={profile.addedBy} />
+            <Row label="Alias" value={profile.alias} />
+            <Row label="Mobile" value={profile.mobile} />
+            <Row label="Website" value={profile.website} />
+            <Row label="Fax" value={profile.fax} />
+            <Row label="Date Of Birth" value={profile.dateOfBirth} />
+          </div>
         </div>
-    );
+
+        <div className="flex-1 lg:pl-8">
+          <h2 className="text-xl font-semibold text-gray-800 mb-8">Address Information</h2>
+
+          <div className="space-y-7">
+            <Row label="Street" value={profile.street} />
+            <Row label="City" value={profile.city} />
+            <Row label="State" value={profile.state} />
+            <Row label="Zip Code" value={profile.zipCode} />
+            <Row label="Country" value={profile.country} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
+
+const Row = ({ label, value }) => (
+  <div className="flex justify-between items-center border-b border-gray-200 pb-3">
+    <span className="text-gray-500">{label}</span>
+    <span className="font-semibold text-gray-800 text-right">{value || "-"}</span>
+  </div>
+);
 
 export default ProfileDetails;

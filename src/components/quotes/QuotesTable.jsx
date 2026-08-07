@@ -1,6 +1,7 @@
 import { Eye, Pencil, Funnel, Search, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Pagination from "../Pagination";
+import usePagination from "../../api/usePagination";
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value || 0);
@@ -16,7 +17,6 @@ const STAGE_LABELS = {
 };
 
 const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete }) => {
-  const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [stage, setStage] = useState("all");
   const searchText = search.trim().toLowerCase();
@@ -36,9 +36,19 @@ const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete })
     return matchesSearch && matchesStage;
   });
 
-  const itemsPerPage = 10;
-  const totalItems = filteredQuotes.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    paginatedData: paginatedQuotes,
+    changePage,
+    resetPage,
+  } = usePagination(filteredQuotes, 10);
+
+  useEffect(() => {
+    resetPage();
+  }, [search, stage]);
 
   const tabs = [
     { key: "all", label: "All" },
@@ -58,10 +68,7 @@ const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete })
                 type="text"
                 placeholder="Search by Quote ID, Customer or Subject..."
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setCurrentPage(1);
-                }}
+                onChange={(e) => setSearch(e.target.value)}
                 className="w-full rounded-md border border-gray-300 py-3 pl-10 pr-4 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
             </div>
@@ -71,10 +78,7 @@ const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete })
                 {tabs.map((tab) => (
                   <button
                     key={tab.key}
-                    onClick={() => {
-                      setStage(tab.key);
-                      setCurrentPage(1);
-                    }}
+                    onClick={() => setStage(tab.key)}
                     className={`rounded-md px-4 py-1 text-md font-semibold transition ${
                       stage === tab.key
                         ? "bg-white text-[#004EDC]"
@@ -117,34 +121,32 @@ const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete })
                     Loading quotes...
                   </td>
                 </tr>
-              ) : filteredQuotes.length > 0 ? (
-                filteredQuotes
-                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                  .map((quote) => (
-                    <tr key={quote.id} className="hover:bg-gray-50">
-                      <td className="border-b border-gray-200 px-5 py-4 text-sm text-gray-700 font-medium">
-                        {quote.subject}
-                      </td>
-                      <td className="border-b border-gray-200 px-5 py-4 font-medium">
-                        {STAGE_LABELS[quote.quoteStage] || quote.quoteStage}
-                      </td>
-                      <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">
-                        {formatCurrency(quote.grandTotal)}
-                      </td>
-                      <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">{quote.dealName}</td>
-                      <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">{quote.contactName}</td>
-                      <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">{quote.accountName}</td>
-                      <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">{quote.customerName}</td>
-                      <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">{quote.quoteOwner}</td>
-                      <td className="border-b border-gray-200 px-5 py-4">
-                        <div className="flex justify-center gap-3">
-                          <Eye size={18} className="cursor-pointer text-gray-700" onClick={() => onView?.(quote.id)} />
-                          <Pencil size={18} className="cursor-pointer text-gray-700" onClick={() => onEdit?.(quote.id)} />
-                          <Trash2 size={18} className="cursor-pointer text-gray-700" onClick={() => onDelete?.(quote.id)} />
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+              ) : paginatedQuotes.length > 0 ? (
+                paginatedQuotes.map((quote) => (
+                  <tr key={quote.id} className="hover:bg-gray-50">
+                    <td className="border-b border-gray-200 px-5 py-4 text-sm text-gray-700 font-medium">
+                      {quote.subject}
+                    </td>
+                    <td className="border-b border-gray-200 px-5 py-4 font-medium">
+                      {STAGE_LABELS[quote.quoteStage] || quote.quoteStage}
+                    </td>
+                    <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">
+                      {formatCurrency(quote.grandTotal)}
+                    </td>
+                    <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">{quote.dealName}</td>
+                    <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">{quote.contactName}</td>
+                    <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">{quote.accountName}</td>
+                    <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">{quote.customerName}</td>
+                    <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">{quote.quoteOwner}</td>
+                    <td className="border-b border-gray-200 px-5 py-4">
+                      <div className="flex justify-center gap-3">
+                        <Eye size={18} className="cursor-pointer text-gray-700" onClick={() => onView?.(quote.id)} />
+                        <Pencil size={18} className="cursor-pointer text-gray-700" onClick={() => onEdit?.(quote.id)} />
+                        <Trash2 size={18} className="cursor-pointer text-gray-700" onClick={() => onDelete?.(quote.id)} />
+                      </div>
+                    </td>
+                  </tr>
+                ))
               ) : (
                 <tr>
                   <td colSpan="9" className="text-center py-5 text-gray-500">
@@ -162,7 +164,7 @@ const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete })
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
           itemName="quotes"
-          onPageChange={setCurrentPage}
+          onPageChange={changePage}
         />
       </div>
     </div>

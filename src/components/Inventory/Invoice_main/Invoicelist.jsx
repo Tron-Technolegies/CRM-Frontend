@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import useProducts from "../../../hooks/useProducts";
-import { Eye, Pencil, Trash2, X, Search } from "lucide-react";
+import useInvoices from "../../../hooks/useInvoices";
+import { downloadInvoicePdf } from "../../../api/invoice";
+import { Eye, Pencil, Trash2, X, Search, Download } from "lucide-react";
 import { Plus } from "lucide-react";
 import Pagination from "../../Pagination";
 import usePagination from "../../../api/usePagination";
@@ -11,12 +12,8 @@ function DeleteConfirmModal({ onCancel, onConfirm, deleting }) {
       <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
         <div className="flex items-start justify-between px-6 pt-6">
           <div>
-            <h2 className="text-xl font-semibold text-[#111827]">
-              Delete product?
-            </h2>
-            <p className="text-sm text-[#6B7280] mt-1">
-              This action cannot be undone.
-            </p>
+            <h2 className="text-xl font-semibold text-[#111827]">Delete invoice?</h2>
+            <p className="text-sm text-[#6B7280] mt-1">This action cannot be undone.</p>
           </div>
           <button
             type="button"
@@ -50,18 +47,19 @@ function DeleteConfirmModal({ onCancel, onConfirm, deleting }) {
   );
 }
 
-export default function ProductList({ onAdd, onEdit, onView }) {
-  const { products, loading, error, removeProduct } = useProducts();
+export default function InvoiceList({ onAdd, onEdit, onView }) {
+  const { invoices, loading, error, removeInvoice } = useInvoices();
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState(null);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [downloadingId, setDownloadingId] = useState(null);
 
-  const filteredProducts = (products || []).filter((p) => {
+  const filteredInvoices = (invoices || []).filter((inv) => {
     const q = search.toLowerCase();
     return (
-      p.name?.toLowerCase().includes(q) ||
-      p.productCode?.toLowerCase().includes(q) ||
-      p.sku?.toLowerCase().includes(q)
+      inv.subject?.toLowerCase().includes(q) ||
+      inv.invoiceNumber?.toLowerCase().includes(q) ||
+      inv.customer?.toLowerCase().includes(q)
     );
   });
 
@@ -70,10 +68,10 @@ export default function ProductList({ onAdd, onEdit, onView }) {
     totalPages,
     totalItems,
     itemsPerPage,
-    paginatedData: paginatedProducts,
+    paginatedData: paginatedInvoices,
     changePage,
     resetPage,
-  } = usePagination(filteredProducts, 8);
+  } = usePagination(filteredInvoices, 8);
 
   useEffect(() => {
     resetPage();
@@ -83,36 +81,55 @@ export default function ProductList({ onAdd, onEdit, onView }) {
     const id = deleteTargetId;
     setDeletingId(id);
     try {
-      await removeProduct(id);
+      await removeInvoice(id);
       setDeleteTargetId(null);
     } catch (err) {
-      console.error("DELETE PRODUCT ERROR:", err);
-      alert("Could not delete this product. Please try again.");
+      console.error("DELETE INVOICE ERROR:", err);
+      alert("Could not delete this invoice. Please try again.");
     } finally {
       setDeletingId(null);
     }
   };
 
+  const handleDownload = async (inv) => {
+    setDownloadingId(inv.id);
+    try {
+      await downloadInvoicePdf(inv.id, inv.invoiceNumber);
+    } catch (err) {
+      console.error("DOWNLOAD INVOICE PDF ERROR:", err);
+      alert("Could not download the invoice PDF. Please try again.");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const statusStyles = {
+    draft: "bg-gray-100 text-[#6B7280]",
+    sent: "bg-blue-50 text-blue-700",
+    paid: "bg-green-50 text-green-700",
+    overdue: "bg-red-50 text-red-700",
+    cancelled: "bg-gray-100 text-[#6B7280]",
+  };
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-[#111827]">Products</h1>
+        <h1 className="text-2xl font-semibold text-[#111827]">Invoices</h1>
         <button
           type="button"
-          onClick={onAdd}
+          onClick={() => onAdd?.()}
           className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-medium text-white hover:bg-blue-700"
         >
           <Plus size={18} />
-          Add Product
+          Create Invoice
         </button>
       </div>
 
-      {/* Search */}
       <div className="mb-4 flex h-11 w-full max-w-sm items-center gap-3 rounded-xl border border-[#E5E7EB] px-4">
         <Search size={18} className="text-[#6B7280]" />
         <input
           type="text"
-          placeholder="Search by name, code or SKU..."
+          placeholder="Search by subject, number or customer..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full bg-transparent text-sm outline-none"
@@ -129,86 +146,67 @@ export default function ProductList({ onAdd, onEdit, onView }) {
         <table className="w-full text-sm">
           <thead className="bg-blue-50 text-[#374151]">
             <tr>
-              <th className="text-left px-4 py-3 font-medium">Product Name</th>
-              <th className="text-left px-4 py-3 font-medium">Product Code</th>
-              <th className="text-left px-4 py-3 font-medium">Type</th>
-              <th className="text-left px-4 py-3 font-medium">Unit Price</th>
+              <th className="text-left px-4 py-3 font-medium">Subject</th>
+              <th className="text-left px-4 py-3 font-medium">Invoice #</th>
               <th className="text-left px-4 py-3 font-medium">Status</th>
+              <th className="text-left px-4 py-3 font-medium">Invoice Date</th>
+              <th className="text-left px-4 py-3 font-medium">Customer</th>
+              <th className="text-left px-4 py-3 font-medium">Owner</th>
               <th className="text-right px-4 py-3 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-[#6B7280]">
-                  Loading products...
+                <td colSpan={7} className="px-4 py-6 text-center text-[#6B7280]">
+                  Loading invoices...
                 </td>
               </tr>
             )}
 
-            {!loading && paginatedProducts.length === 0 && (
+            {!loading && paginatedInvoices.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-[#6B7280]">
-                  No products found.
+                <td colSpan={7} className="px-4 py-6 text-center text-[#6B7280]">
+                  No invoices found.
                 </td>
               </tr>
             )}
 
             {!loading &&
-              paginatedProducts.map((p) => (
+              paginatedInvoices.map((inv) => (
                 <tr
-                  key={p.id}
-                  onClick={() => onView(p.id)}
+                  key={inv.id}
+                  onClick={() => onView?.(inv.id)}
                   className="border-t border-[#E5E7EB] hover:bg-gray-50 cursor-pointer"
                 >
-                  <td className="px-4 py-3 text-[#111827]">{p.name}</td>
-                  <td className="px-4 py-3 text-[#111827]">{p.productCode}</td>
-                  <td className="px-4 py-3 text-[#6B7280] capitalize">
-                    {p.productType || "-"}
-                  </td>
-                  <td className="px-4 py-3 text-[#6B7280]">
-                    {typeof p.unitPrice === "number"
-                      ? p.unitPrice.toFixed(2)
-                      : p.unitPrice || "-"}
-                  </td>
+                  <td className="px-4 py-3 text-[#111827]">{inv.subject}</td>
+                  <td className="px-4 py-3 text-[#6B7280]">{inv.invoiceNumber}</td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-1 rounded-lg text-xs font-medium ${
-                        p.status === "active"
-                          ? "bg-green-50 text-green-700"
-                          : "bg-gray-100 text-[#6B7280]"
-                      }`}
-                    >
-                      {p.status === "active" ? "Active" : "Inactive"}
+                    <span className={`px-2 py-1 rounded-lg text-xs font-medium capitalize ${statusStyles[inv.status] || "bg-gray-100 text-[#6B7280]"}`}>
+                      {inv.status}
                     </span>
                   </td>
-                  <td
-                    className="px-4 py-3"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <td className="px-4 py-3 text-[#6B7280]">{inv.invoiceDate}</td>
+                  <td className="px-4 py-3 text-[#6B7280]">{inv.customer}</td>
+                  <td className="px-4 py-3 text-[#6B7280]">{inv.owner}</td>
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-3">
-                      <button
-                        type="button"
-                        onClick={() => onView(p.id)}
-                        className="text-[#6B7280] hover:text-[#111827]"
-                        aria-label="View product"
-                      >
+                      <button type="button" onClick={() => onView?.(inv.id)} className="text-[#6B7280] hover:text-[#111827]" aria-label="View invoice">
                         <Eye size={18} />
                       </button>
                       <button
                         type="button"
-                        onClick={() => onEdit(p.id)}
-                        className="text-blue-600 hover:text-blue-700"
-                        aria-label="Edit product"
+                        onClick={() => handleDownload(inv)}
+                        disabled={downloadingId === inv.id}
+                        className="text-[#6B7280] hover:text-[#111827] disabled:opacity-50"
+                        aria-label="Download invoice PDF"
                       >
+                        <Download size={18} />
+                      </button>
+                      <button type="button" onClick={() => onEdit?.(inv.id)} className="text-blue-600 hover:text-blue-700" aria-label="Edit invoice">
                         <Pencil size={18} />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setDeleteTargetId(p.id)}
-                        className="text-red-600 hover:text-red-700"
-                        aria-label="Delete product"
-                      >
+                      <button type="button" onClick={() => setDeleteTargetId(inv.id)} className="text-red-600 hover:text-red-700" aria-label="Delete invoice">
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -225,7 +223,7 @@ export default function ProductList({ onAdd, onEdit, onView }) {
           totalPages={totalPages}
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
-          itemName="products"
+          itemName="invoices"
           onPageChange={changePage}
         />
       </div>

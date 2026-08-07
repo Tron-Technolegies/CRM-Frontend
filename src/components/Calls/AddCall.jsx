@@ -95,8 +95,8 @@ export default function AddCall({
   const isFollowUp = form.status === "follow up";
 
   const handleSubmit = () => {
-    if (!form.subject || !form.call_type || !form.start_time || !form.duration) {
-        setError("Subject, call type, start time and duration are required");
+    if (!form.subject || !form.start_time || !form.duration) {
+        setError("Subject, start time and duration are required");
         return;
     }
 
@@ -173,7 +173,7 @@ export default function AddCall({
               />
             </div>
 
-            <div>
+            {/* <div>
               <label className="text-sm text-[#111827] font-medium">Call Type <span className="text-red-500">*</span></label>
               <select
                 value={form.call_type}
@@ -184,7 +184,7 @@ export default function AddCall({
                   <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
                 ))}
               </select>
-            </div>
+            </div> */}
 
             <div>
               <label className="text-sm text-[#111827] font-medium">Status</label>

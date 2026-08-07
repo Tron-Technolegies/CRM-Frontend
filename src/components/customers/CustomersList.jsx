@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Eye, MoreVertical, Pencil, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { useToast } from "../ui/toastContext.js";
 import CustomerViewModal from "./CustomerViewModal.jsx";
-
-const PAGE_SIZE = 8;
+import Pagination from "../Pagination";
+import usePagination from "../../api/usePagination";
 
 function formatCurrency(value) {
   const n = Number(value || 0);
@@ -39,7 +39,6 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [industry, setIndustry] = useState("All");
-  const [page, setPage] = useState(1);
 
   const [viewId, setViewId] = useState(null);
 
@@ -63,12 +62,19 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
     });
   }, [customers, query, status, industry]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [query, status, industry]);
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    paginatedData: paginated,
+    changePage,
+    resetPage,
+  } = usePagination(filtered, 8);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  useEffect(() => {
+    resetPage();
+  }, [query, status, industry]);
 
   const openNotImplemented = (label) => {
     pushToast({ title: `${label} not implemented`, message: "Wire this to your backend later.", variant: "info" });
@@ -150,18 +156,14 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <p className="text-sm text-[#64748B]">
-          Showing {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} customers
-        </p>
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="w-9 h-9 rounded-lg border border-[#E5E7EB] grid place-items-center disabled:opacity-40 cursor-pointer">‹</button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <button key={p} type="button" onClick={() => setPage(p)} className={`w-9 h-9 rounded-lg grid place-items-center text-sm cursor-pointer ${p === page ? "bg-blue-600 text-white" : "border border-[#E5E7EB] text-[#111827]"}`}>{p}</button>
-          ))}
-          <button type="button" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || totalPages === 0} className="w-9 h-9 rounded-lg border border-[#E5E7EB] grid place-items-center disabled:opacity-40 cursor-pointer">›</button>
-        </div>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        itemName="customers"
+        onPageChange={changePage}
+      />
 
       <CustomerViewModal
       open={!!viewId}

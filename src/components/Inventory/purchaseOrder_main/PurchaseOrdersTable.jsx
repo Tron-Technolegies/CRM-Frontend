@@ -1,6 +1,7 @@
 import { Eye, Pencil, Trash2, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Pagination from "../../Pagination";
+import usePagination from "../../../api/usePagination";
 import { lineTotal } from "../../../utils/purchaseOrderMapping";
 
 const formatCurrency = (value) =>
@@ -19,7 +20,6 @@ const computeGrandTotal = (order) =>
   (order.items || []).reduce((sum, item) => sum + lineTotal(item), 0);
 
 const PurchaseOrdersTable = ({ orders = [], loading = false, error = null, onEdit, onView, onDelete }) => {
-  const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const searchText = search.trim().toLowerCase();
 
@@ -33,10 +33,19 @@ const PurchaseOrdersTable = ({ orders = [], loading = false, error = null, onEdi
     );
   });
 
-  const itemsPerPage = 10;
-  const totalItems = filtered.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    paginatedData: paginated,
+    changePage,
+    resetPage,
+  } = usePagination(filtered, 10);
+
+  useEffect(() => {
+    resetPage();
+  }, [search]);
 
   return (
     <div className="p-6">
@@ -47,10 +56,7 @@ const PurchaseOrdersTable = ({ orders = [], loading = false, error = null, onEdi
           type="text"
           placeholder="Search by Subject, PO Number, or Vendor..."
           value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setCurrentPage(1);
-          }}
+          onChange={(e) => setSearch(e.target.value)}
           className="w-full bg-transparent text-sm outline-none"
         />
       </div>
@@ -157,7 +163,7 @@ const PurchaseOrdersTable = ({ orders = [], loading = false, error = null, onEdi
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
           itemName="purchase orders"
-          onPageChange={setCurrentPage}
+          onPageChange={changePage}
         />
       </div>
     </div>

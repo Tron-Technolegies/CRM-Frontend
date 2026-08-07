@@ -7,7 +7,7 @@ import { getLead } from "../../api/lead";
 import { getCustomers } from "../../api/customer";
 import { getAccounts } from "../../api/account";
 
-function validateDeal(form) {
+function validateDeal(form, convertMode = false) {
   const errors = {};
 
   if (!form.dealName.trim()) {
@@ -32,7 +32,10 @@ function validateDeal(form) {
     errors.expectedCloseDate = "Expected close date is required";
   }
 
-  if (!form.relatedType || !form.relatedId) {
+  // "Related To" only applies to the standalone Add/Edit Deal flow —
+  // in conversion mode the deal is inherently related to the entity
+  // just created in the prior step, so don't require it here.
+  if (!convertMode && (!form.relatedType || !form.relatedId)) {
     errors.related = "Select a customer or account to link this deal to";
   }
 
@@ -175,7 +178,7 @@ export default function DealFormModal({
     }
   }, [open, convertMode, initialData, blankForm]);
 
-  const errors = validateDeal(form);
+  const errors = validateDeal(form, convertMode);
   const hasErrors = Object.keys(errors).length > 0;
 
   const setField = (key, value) => {

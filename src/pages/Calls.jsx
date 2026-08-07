@@ -4,6 +4,7 @@ import CallsTable from "../components/Calls/CallsTable";
 import AddCall from "../components/Calls/AddCall";
 import CallViewModal from "../components/Calls/CallViewModal";
 import { useToast } from "../components/ui/toastContext";
+import { Plus } from "lucide-react";
 
 import {
   getCalls,
@@ -173,6 +174,7 @@ export default function Calls() {
             onClick={() => setAddOpen(true)}
             className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-medium text-white hover:bg-blue-700"
           >
+            <Plus size={18} />
             Log Call
           </button>
         </div>
