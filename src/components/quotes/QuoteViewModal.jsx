@@ -1,8 +1,7 @@
-import { Calendar, FileText, Pencil, Tag, Users } from "lucide-react";
+import { Calendar, FileText, MapPin, Pencil, Tag, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import Modal from "../ui/Modal";
-
-const BASE_URL = "http://127.0.0.1:8000/api/admin";
+import { getQuote } from "../../api/quotes";
 
 function formatValue(value) {
   if (value === null || value === undefined || value === "") return "—";
@@ -22,9 +21,12 @@ function Badge({ value }) {
   const label = String(value || "draft");
   const colors = {
     draft: "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
-    sent: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
-    accepted: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
-    rejected: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
+    negotiation: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+    delivered: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
+    on_hold: "bg-orange-50 text-orange-700 ring-1 ring-orange-200",
+    confirmed: "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200",
+    closed_won: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+    closed_lost: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
   };
   return (
     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${colors[label.toLowerCase()] || colors.draft}`}>
@@ -86,21 +88,31 @@ function ErrorState({ onClose }) {
   );
 }
 
-function AddressBlock({ title, address }) {
-  const lines = [
-    address?.address,
-    address?.street_address,
-    address?.city,
-    address?.state,
-    address?.zip_code,
-    address?.country,
-  ].filter(Boolean);
-
+function AddressField({ label, value }) {
   return (
-    <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4">
-      <h3 className="text-sm font-semibold text-[#111827]">{title}</h3>
-      <div className="mt-2 space-y-1 text-sm text-[#64748B]">
-        {lines.length > 0 ? lines.map((line) => <p key={line}>{line}</p>) : <p>—</p>}
+    <div>
+      <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-widest">{label}</p>
+      <p className={`text-sm font-medium mt-1 ${value ? "text-[#111827]" : "text-[#D1D5DB]"}`}>
+        {value || "—"}
+      </p>
+    </div>
+  );
+}
+
+function AddressBlock({ title, address }) {
+  return (
+    <div className="rounded-2xl bg-[#FAFAFA] border border-[#EAECF0] p-5">
+      <div className="flex items-center gap-1.5 mb-4">
+        <MapPin size={13} className="text-[#9CA3AF]" />
+        <h3 className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest">{title}</h3>
+      </div>
+      <div className="grid grid-cols-2 gap-x-5 gap-y-4">
+        <AddressField label="Country" value={address?.country} />
+        <AddressField label="Address" value={address?.address} />
+        <AddressField label="Street Address" value={address?.streetAdd || address?.street_address} />
+        <AddressField label="City" value={address?.city} />
+        <AddressField label="State" value={address?.state} />
+        <AddressField label="Zip Code" value={address?.zipCode} />
       </div>
     </div>
   );
@@ -113,21 +125,30 @@ export default function QuoteViewModal({ open, onClose, onEdit, quoteId = null }
 
   useEffect(() => {
     if (!open || !quoteId) return;
+
+    let cancelled = false;
     setLoading(true);
     setData(null);
     setError(false);
-    fetch(`${BASE_URL}/quote/single/view/${quoteId}/`)
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to load quote");
-        return response.json();
+
+    getQuote(quoteId)
+      .then((payload) => {
+        if (!cancelled) setData(payload);
       })
-      .then((payload) => setData(payload))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [open, quoteId]);
 
-  const products = Array.isArray(data?.products) ? data.products : data?.quote_products || [];
-  const total = products.reduce((sum, item) => sum + Number(item.total || 0), 0);
+  const products = Array.isArray(data?.products) ? data.products : [];
+  const total = products.reduce((sum, item) => sum + Number(item.lineTotal || 0), 0);
 
   return (
     <Modal
@@ -149,10 +170,10 @@ export default function QuoteViewModal({ open, onClose, onEdit, quoteId = null }
               <div className="flex-1 min-w-0 pt-0.5">
                 <h3 className="text-xl font-bold text-[#0F172A] truncate">{data.subject || "Untitled Quote"}</h3>
                 <p className="text-sm text-[#6B7280] truncate mt-0.5 font-medium">
-                  {data.contact_name || "No contact"} {data.account_name ? `· ${data.account_name}` : ""}
+                  {data.contactName || "No contact"} {data.accountName && data.accountName !== "—" ? `· ${data.accountName}` : ""}
                 </p>
                 <div className="flex flex-wrap items-center gap-2 mt-3">
-                  <Badge value={data.quote_stage} />
+                  <Badge value={data.quoteStage} />
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
                     <Tag size={11} />
                     {formatMoney(total)}
@@ -163,30 +184,31 @@ export default function QuoteViewModal({ open, onClose, onEdit, quoteId = null }
 
             <Section title="Quote Details">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-                <Field label="Stage" icon={Tag} value={formatValue(data.quote_stage)} />
+                <Field label="Stage" icon={Tag} value={formatValue(data.quoteStage)} />
                 <Field label="Subject" icon={FileText} value={formatValue(data.subject)} />
-                <Field label="Contact" icon={Users} value={formatValue(data.contact_name)} />
-                <Field label="Valid Until" icon={Calendar} value={formatValue(data.valid_until)} />
-                <Field label="Assigned To" icon={Users} value={formatValue(data.assigned_to_name || data.assignedTo)} />
-                <Field label="Deal" icon={FileText} value={formatValue(data.deal_name || data.deal)} />
+                <Field label="Contact" icon={Users} value={formatValue(data.contactName)} />
+                <Field label="Valid Until" icon={Calendar} value={formatValue(data.validUntil)} />
+                <Field label="Account" icon={Users} value={formatValue(data.accountName)} />
+                <Field label="Customer" icon={Users} value={formatValue(data.customerName)} />
+                <Field label="Deal" icon={FileText} value={formatValue(data.dealName)} />
               </div>
             </Section>
 
             <Section title="Line Items">
               <div className="space-y-3">
                 {products.length > 0 ? products.map((item, index) => (
-                  <div key={item.id || `${item.product}-${index}`} className="rounded-xl border border-[#E5E7EB] bg-white p-4">
+                  <div key={item.productId || `${item.product}-${index}`} className="rounded-xl border border-[#E5E7EB] bg-white p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="text-sm font-semibold text-[#111827]">{item.product || `Product ${index + 1}`}</p>
                         <p className="text-sm text-[#64748B] mt-1">{item.description || "—"}</p>
                       </div>
-                      <p className="text-sm font-semibold text-[#111827]">{formatMoney(item.total)}</p>
+                      <p className="text-sm font-semibold text-[#111827]">{formatMoney(item.lineTotal)}</p>
                     </div>
                     <div className="mt-3 grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm">
                       <p className="text-[#64748B]">Qty: <span className="text-[#111827]">{item.quantity || 1}</span></p>
-                      <p className="text-[#64748B]">Price: <span className="text-[#111827]">{formatMoney(item.list_price)}</span></p>
-                      <p className="text-[#64748B]">Discount: <span className="text-[#111827]">{item.discount || 0}%</span></p>
+                      <p className="text-[#64748B]">Price: <span className="text-[#111827]">{formatMoney(item.listPrice)}</span></p>
+                      <p className="text-[#64748B]">Discount: <span className="text-[#111827]">{formatMoney(item.discount)}</span></p>
                       <p className="text-[#64748B]">Tax: <span className="text-[#111827]">{item.tax || 0}%</span></p>
                       <p className="text-[#64748B]">Amount: <span className="text-[#111827]">{formatMoney(item.amount)}</span></p>
                     </div>
@@ -197,14 +219,16 @@ export default function QuoteViewModal({ open, onClose, onEdit, quoteId = null }
               </div>
             </Section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <AddressBlock title="Billing Address" address={data.billing_address || data.billingAddress} />
-              <AddressBlock title="Shipping Address" address={data.shipping_address || data.shippingAddress} />
-            </div>
+            <Section title="Address Details">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <AddressBlock title="Billing Address" address={data.billingAddress} />
+                <AddressBlock title="Shipping Address" address={data.shippingAddress} />
+              </div>
+            </Section>
           </div>
 
           <div className="mt-5 pt-4 border-t border-[#F0F2F5] flex items-center justify-between">
-            <p className="text-xs text-[#9CA3AF]">Valid until {data.valid_until || "—"}</p>
+            <p className="text-xs text-[#9CA3AF]">Valid until {data.validUntil || "—"}</p>
             <div className="flex items-center gap-2.5">
               <button
                 type="button"

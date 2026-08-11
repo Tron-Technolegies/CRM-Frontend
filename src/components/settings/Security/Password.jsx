@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Lock } from "lucide-react";
-import { changePassword } from "../../../api/auth";
+import { Lock, CheckCircle2 } from "lucide-react";
+import { changePassword } from "../../../api/changepass";
 
 const Password = () => {
     const [formData, setFormData] = useState({
@@ -10,35 +10,44 @@ const Password = () => {
     });
 
     const [loading, setLoading] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
 
     const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value,
         });
+
+        // Clear old messages once the user starts editing again
+        if (successMessage) setSuccessMessage("");
+        if (errorMessage) setErrorMessage("");
     };
 
     const handleSubmit = async () => {
+        setSuccessMessage("");
+        setErrorMessage("");
+
         if (
             !formData.current_password ||
             !formData.new_password ||
             !formData.confirm_password
         ) {
-            alert("Please fill all fields");
+            setErrorMessage("Please fill all fields");
             return;
         }
 
         if (formData.new_password !== formData.confirm_password) {
-            alert("Passwords do not match");
+            setErrorMessage("Passwords do not match");
             return;
         }
 
         try {
             setLoading(true);
 
-            const res = await changePassword(formData);
+            const data = await changePassword(formData);
 
-            alert(res.data.message);
+            setSuccessMessage(data.message || "Password updated successfully");
 
             setFormData({
                 current_password: "",
@@ -46,7 +55,7 @@ const Password = () => {
                 confirm_password: "",
             });
         } catch (error) {
-            alert(error.response?.data?.message || "Something went wrong");
+            setErrorMessage(error.response?.data?.message || "Something went wrong");
         } finally {
             setLoading(false);
         }
@@ -60,6 +69,19 @@ const Password = () => {
                     Password Management
                 </h1>
             </div>
+
+            {successMessage && (
+                <div className="mb-6 flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                    <CheckCircle2 size={18} className="text-green-600 shrink-0" />
+                    <span>{successMessage}</span>
+                </div>
+            )}
+
+            {errorMessage && (
+                <div className="mb-6 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                    {errorMessage}
+                </div>
+            )}
 
             <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">

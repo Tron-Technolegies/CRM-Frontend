@@ -30,19 +30,23 @@ export default function useTask() {
 
   const addTask = async (taskData) => {
     await createTask(taskData);
+    await fetchTasks();
   };
 
   const editTask = async (id, taskData) => {
     await updateTask(id, taskData);
+    await fetchTasks();
   };
 
   const removeTask = async (id) => {
     await deleteTask(id);
+    setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
   return {
     tasks,
     loading,
+    fetchTasks,
     addTask,
     editTask,
     removeTask,

@@ -1,41 +1,11 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-
 import ReportsKpis from "../components/reports/ReportsKpis";
 import ReportsRevenueChart from "../components/reports/ReportsRevenueChart";
 import ReportsDealsByStage from "../components/reports/ReportsDealsByStage";
 import ReportsLeadsSource from "../components/reports/ReportsLeadsSource";
-
-const api = axios.create({
-  baseURL: "http://localhost:8000/api/admin",
-});
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function firstOfMonthISO() {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
-}
+import { useReports } from "../hooks/useReports";
 
 export default function Reports() {
-  const [report, setReport] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState(firstOfMonthISO());
-  const [endDate, setEndDate] = useState(todayISO());
-
-  const fetchReport = () => {
-    setLoading(true);
-    api.get("/report/dashboard/", { params: { start_date: startDate, end_date: endDate } })
-      .then((res) => setReport(res.data))
-      .catch((err) => console.error("Failed to fetch report:", err))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    fetchReport();
-  }, [startDate, endDate]);
+  const { report, loading, error, startDate, endDate, setStartDate, setEndDate } = useReports();
 
   return (
     <div className="space-y-6">
@@ -73,6 +43,10 @@ export default function Reports() {
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <p className="text-sm text-[#64748B]">Loading reports...</p>
+        </div>
+      ) : error ? (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-sm text-red-600">Failed to load reports. Please try again.</p>
         </div>
       ) : (
         <>

@@ -16,19 +16,15 @@ import Tasks from "./pages/Tasks";
 import Reports from "./pages/Reports";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
-
-// Quotes
+import NotificationFullView from "./components/layout/NotificationFullView";
 
 // Inventory
-import Products from "./components/Inventory/Product";
+import Product from "./components/Inventory/Product";
 import SalesOrders from "./components/Inventory/SalesOrders";
 import PurchaseOrders from "./components/Inventory/PurchaseOrders";
-import Invoices from "./components/Inventory/Invoices";
-
-import Addproduct from "./components/Inventory/AddProduct/Addproduct";
-import Addsales from "./components/Inventory/Addsales/Addsales";
-import AddPurchase from "./components/Inventory/Addpurchase/AddPurchase";
-import AddInvoice from "./components/Inventory/Addinvoice/AddInvoice";
+import Invoice from "./components/Inventory/Invoice";
+import Vendor from "./components/Inventory/Vendor";
+import Service from "./components/Inventory/Service";
 
 // Settings
 import Profile from "./components/settings/Profile/Profile";
@@ -41,10 +37,13 @@ import BillingHistory from "./components/settings/Billing/BillingHistory";
 import BillingPlanUsage from "./components/settings/Billing/BillingPlanUsage";
 import BillingPaymentContact from "./components/settings/Billing/BillingPaymentContact";
 import DataSecurity from "./components/settings/DataPrivacy/DataSecurity";
+
 import Login from "./components/auth/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Signup from "./components/auth/Signup";
-import AddQuotes from "./components/quotes/AddQuotes";
+import QuoteFormPage from "./components/quotes/QuoteFormPage";
+import SalesOrderFormPage from "./components/Inventory/SalesOrder_main/SalesOrderFormPage";
+import PurchaseOrderFormPage from "./components/Inventory/purchaseOrder_main/PurchaseOrderFormPage";
 
 const router = createBrowserRouter([
   {
@@ -53,9 +52,8 @@ const router = createBrowserRouter([
   },
   {
     path: "/signup",
-    element: <Signup />
+    element: <Signup />,
   },
-
   {
     path: "/",
     element: (
@@ -64,7 +62,6 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-
       {
         index: true,
         element: <Dashboard />,
@@ -73,7 +70,6 @@ const router = createBrowserRouter([
         path: "dashboard",
         element: <Dashboard />,
       },
-
       {
         path: "leads",
         element: <LeadsManagement />,
@@ -87,8 +83,12 @@ const router = createBrowserRouter([
         element: <Quotes />,
       },
       {
-        path: "/addquote",
-        element: <AddQuotes />,
+        path: "quotes/add",
+        element: <QuoteFormPage />,
+      },
+      {
+        path: "quotes/edit/:id",
+        element: <QuoteFormPage />,
       },
       {
         path: "deals",
@@ -118,39 +118,51 @@ const router = createBrowserRouter([
         path: "users",
         element: <Users />,
       },
+      {
+        path: "notifications",
+        element: <NotificationFullView />,
+      },
 
       // Inventory
       {
         path: "inventory/products",
-        element: <Products />,
+        element: <Product />,
       },
       {
-        path: "inventory/products/addproduct",
-        element: <Addproduct />,
-      },
-      {
-        path: "inventory/sales",
+        path: "inventory/salesOrder",
         element: <SalesOrders />,
       },
       {
-        path: "inventory/sales/addsales",
-        element: <Addsales />,
+        path: "inventory/salesOrder/add",
+        element: <SalesOrderFormPage />,
+      },
+      {
+        path: "inventory/salesOrder/edit/:id",
+        element: <SalesOrderFormPage />,
       },
       {
         path: "inventory/purchase",
         element: <PurchaseOrders />,
       },
       {
-        path: "inventory/purchase/addpurchase",
-        element: <AddPurchase />,
+        path: "inventory/purchase/add",
+        element: <PurchaseOrderFormPage />,
+      },
+      {
+        path: "inventory/purchase/edit/:id",
+        element: <PurchaseOrderFormPage />,
       },
       {
         path: "inventory/invoices",
-        element: <Invoices />,
+        element: <Invoice />,
       },
       {
-        path: "inventory/invoices/addinvoice",
-        element: <AddInvoice />,
+        path: "inventory/vendor",
+        element: <Vendor />,
+      },
+      {
+        path: "inventory/service",
+        element: <Service />,
       },
 
       // Settings

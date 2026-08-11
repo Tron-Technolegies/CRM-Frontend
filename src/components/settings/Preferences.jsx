@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useState } from "react";
 import { Pencil, Plus, Trash2, X, Check } from "lucide-react";
 import { useToast } from "../ui/toastContext.js";
-
-const api = axios.create({ baseURL: "http://localhost:8000/api/admin" });
+import usePreferences from "../../hooks/usePreferences";
+import BackButton from "../common/BackButton";
 
 const fieldGroups = [
   { key: "lead_status", label: "Lead Status" },
@@ -21,45 +20,42 @@ const fieldGroups = [
 export default function Preferences() {
   const { pushToast } = useToast();
   const [activeField, setActiveField] = useState("lead_status");
-  const [options, setOptions] = useState([]);
   const [newLabel, setNewLabel] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [editingId, setEditingId] = useState(null);
   const [editLabel, setEditLabel] = useState("");
 
-  const fetchOptions = () => {
-    setFetching(true);
-    api.get(`/picklists/view/?field=${activeField}`)
-      .then((res) => setOptions(res.data))
-      .catch((err) => {
-        console.error("Failed to fetch options:", err);
-        pushToast({ title: "Failed to load options", variant: "error" });
-      })
-      .finally(() => setFetching(false));
+  const { options, loading, addOption, editOption, removeOption } = usePreferences(activeField);
+
+  const selectField = (key) => {
+    setActiveField(key);
+    setEditingId(null);
   };
 
-  useEffect(() => {
-    fetchOptions();
-    setEditingId(null);
-  }, [activeField]);
-
-  const addOption = async () => {
+  const handleAdd = async () => {
     if (!newLabel.trim()) return;
-    setLoading(true);
+
+    setSaving(true);
     try {
       const value = newLabel.trim().toLowerCase().replace(/\s+/g, "_");
-      await api.post("/picklists/add/", { field: activeField, value, label: newLabel.trim() });
+      await addOption({ field: activeField, value, label: newLabel.trim() });
+      pushToast({
+        title: "Option added",
+        message: `${newLabel.trim()} added successfully`,
+        variant: "success",
+      });
       setNewLabel("");
-      fetchOptions();
-      pushToast({ title: "Option added", message: `${newLabel.trim()} added successfully`, variant: "success" });
     } catch (err) {
       console.error("Failed to add option:", err);
-      const message = err.response?.data || "Failed to add option";
-      pushToast({ title: "Failed to add option", message: typeof message === "string" ? message : "This option may already exist", variant: "error" });
+      const message = err.response?.data;
+      pushToast({
+        title: "Failed to add option",
+        message: typeof message === "string" ? message : "This option may already exist",
+        variant: "error",
+      });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -75,10 +71,10 @@ export default function Preferences() {
 
   const saveEdit = async (id) => {
     if (!editLabel.trim()) return;
+
     try {
-      await api.put(`/picklists/update/${id}/`, { label: editLabel.trim() });
+      await editOption(id, { label: editLabel.trim() });
       setEditingId(null);
-      fetchOptions();
       pushToast({ title: "Option updated", variant: "success" });
     } catch (err) {
       console.error("Failed to update option:", err);
@@ -86,10 +82,9 @@ export default function Preferences() {
     }
   };
 
-  const deleteOption = async (id, label) => {
+  const handleDelete = async (id, label) => {
     try {
-      await api.delete(`/picklists/delete/${id}/`);
-      fetchOptions();
+      await removeOption(id);
       pushToast({ title: "Option deleted", message: `${label} removed`, variant: "success" });
     } catch (err) {
       console.error("Failed to delete option:", err);
@@ -100,7 +95,10 @@ export default function Preferences() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[28px] font-semibold text-[#111827]">Preferences</h1>
+        <div className="flex items-center gap-4 mb-6">
+          <BackButton />
+          <h1 className="text-3xl font-bold text-gray-800">Preferences</h1>
+        </div>
         <p className="text-sm text-[#64748B] mt-1">Manage dropdown options used across your CRM.</p>
       </div>
 
@@ -111,7 +109,7 @@ export default function Preferences() {
             <button
               key={f.key}
               type="button"
-              onClick={() => setActiveField(f.key)}
+              onClick={() => selectField(f.key)}
               className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition cursor-pointer ${
                 activeField === f.key ? "bg-blue-50 text-blue-600 font-medium" : "text-[#374151] hover:bg-[#F9FAFB]"
               }`}
@@ -131,23 +129,23 @@ export default function Preferences() {
             <input
               value={newLabel}
               onChange={(e) => setNewLabel(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addOption()}
+              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
               placeholder="Enter new option label"
               className="h-11 flex-1 rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
             />
             <button
               type="button"
-              onClick={addOption}
-              disabled={loading}
+              onClick={handleAdd}
+              disabled={saving}
               className="h-11 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 disabled:opacity-60 cursor-pointer"
             >
               <Plus size={16} /> Add
             </button>
           </div>
 
-          {fetching && <p className="text-sm text-[#94A3B8] text-center py-6">Loading options...</p>}
+          {loading && <p className="text-sm text-[#94A3B8] text-center py-6">Loading options...</p>}
 
-          {!fetching && (
+          {!loading && (
             <div className={`space-y-2 pr-1 ${options.length > 5 ? "max-h-[300px] overflow-y-auto" : ""}`}>
               {options.map((o) => (
                 <div key={o.id} className="flex items-center justify-between px-4 py-3 rounded-xl border border-[#EEF2F7] bg-[#FAFAFA]">
@@ -176,7 +174,7 @@ export default function Preferences() {
                         <button type="button" onClick={() => startEdit(o)} className="text-[#94A3B8] hover:text-blue-600 transition cursor-pointer">
                           <Pencil size={15} />
                         </button>
-                        <button type="button" onClick={() => deleteOption(o.id, o.label)} className="text-[#94A3B8] hover:text-rose-500 transition cursor-pointer">
+                        <button type="button" onClick={() => handleDelete(o.id, o.label)} className="text-[#94A3B8] hover:text-rose-500 transition cursor-pointer">
                           <Trash2 size={16} />
                         </button>
                       </div>

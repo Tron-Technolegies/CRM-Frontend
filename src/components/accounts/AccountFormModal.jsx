@@ -201,33 +201,37 @@ export default function AccountFormModal({
 
     if (hasErrors) return;
 
-    // NOTE: field names below match what the backend serializer returns
-    // (and what AccountViewModal / the prefill effect above read back):
-    // account_name, phone_number, account_site, parent_account, account_type,
-    // billing_address / shipping_address with street_address + zip_code.
+    // NOTE: the add/update backend views (add_account / update_account) read
+    // these specific request keys — acc_name, phone, acc_site, parent_acc,
+    // acc_type, billing_add / shipping_add with street_add — which differ
+    // from the field names the view/list endpoints return (account_name,
+    // phone_number, street_address, zip_code, etc, read back above in the
+    // initialData effect). Sending the "read" shape here was causing the
+    // backend's account_name/phone_number lookup to always come back
+    // undefined -> 400 "mandatory fields" error on every submit.
     const payload = {
-      account_name: form.accountName,
+      acc_name: form.accountName,
       assigned_to: form.assignedTo || null,
-      phone_number: form.phoneNumber,
-      account_site: form.accountSite,
-      parent_account: form.parentAccount || null,
+      phone: form.phoneNumber,
+      acc_site: form.accountSite,
+      parent_acc: form.parentAccount || null,
       website: form.website,
-      account_type: form.accountType,
+      acc_type: form.accountType,
       industry: form.industry,
       ownership: form.ownership,
       employees: form.employees,
-      billing_address: {
+      billing_add: {
         country: form.billingAddress.country,
         address: form.billingAddress.address,
-        street_address: form.billingAddress.streetAdd,
+        street_add: form.billingAddress.streetAdd,
         city: form.billingAddress.city,
         state: form.billingAddress.state,
         zip_code: form.billingAddress.zipCode,
       },
-      shipping_address: {
+      shipping_add: {
         country: form.shippingAddress.country,
         address: form.shippingAddress.address,
-        street_address: form.shippingAddress.streetAdd,
+        street_add: form.shippingAddress.streetAdd,
         city: form.shippingAddress.city,
         state: form.shippingAddress.state,
         zip_code: form.shippingAddress.zipCode,

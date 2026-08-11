@@ -4,7 +4,6 @@ import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
 import { usePicklist } from "../../hooks/usePicklist";
 
-
 function validateTask(form) {
   const errors = {};
   if (!form.title.trim()) errors.title = "Task title is required";
@@ -14,7 +13,10 @@ function validateTask(form) {
 
 export default function TaskFormModal({ open, onClose, onSubmit, loading = false, initialData = null }) {
   const [staff, setStaff] = useState([]);
+  const [leads, setLeads] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [deals, setDeals] = useState([]);
+  const [accounts, setAccounts] = useState([]);
   const priorityOptions = usePicklist("task_priority");
   const statusOptions = usePicklist("task_status");
 
@@ -22,15 +24,39 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
     const fetchStaff = async () => {
       try {
         const { data } = await api.get("/staff/view/");
-
         setStaff(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Failed to fetch staff:", err);
         setStaff([]);
       }
     };
-
     fetchStaff();
+  }, []);
+
+  useEffect(() => {
+    const fetchLeads = async () => {
+      try {
+        const { data } = await api.get("/lead/view/");
+        setLeads(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch leads:", err);
+        setLeads([]);
+      }
+    };
+    fetchLeads();
+  }, []);
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        const { data } = await api.get("/customer/view/");
+        setCustomers(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch customers:", err);
+        setCustomers([]);
+      }
+    };
+    fetchCustomers();
   }, []);
 
   useEffect(() => {
@@ -43,15 +69,31 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
         setDeals([]);
       }
     };
-
     fetchDeals();
+  }, []);
+
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        const { data } = await api.get("/account/view/");
+        setAccounts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch accounts:", err);
+        setAccounts([]);
+      }
+    };
+    fetchAccounts();
   }, []);
 
   const blankForm = useMemo(() => ({
     title: "",
     description: "",
     assignedTo: "",
-    relatedTo: "",
+    relatedType: "none",
+    relatedLead: "",
+    relatedContact: "",
+    relatedDeal: "",
+    relatedAccount: "",
     priority: "medium",
     status: "pending",
     dueDate: "",
@@ -62,14 +104,21 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
 
   useEffect(() => {
     if (initialData) {
+      const relatedType = initialData.relatedType || "none";
+      const relatedId = initialData.relatedToId || "";
+
       setForm({
         title: initialData.title || "",
         description: initialData.description || "",
-        assignedTo: initialData.assignedToId || "",
-        relatedTo: initialData.relatedTo || "",
+        assignedTo: initialData.assigned_to || initialData.assignedToId || "",
+        relatedType,
+        relatedLead: relatedType === "lead" ? relatedId : "",
+        relatedContact: relatedType === "contact" ? relatedId : "",
+        relatedDeal: relatedType === "deal" ? relatedId : "",
+        relatedAccount: relatedType === "account" ? relatedId : "",
+        dueDate: initialData.due_date || initialData.dueDate || "",
         priority: initialData.priority?.toLowerCase() || "medium",
         status: initialData.status?.toLowerCase() || "pending",
-        dueDate: initialData.dueDate || "",
       });
     } else {
       setForm(blankForm);
@@ -139,18 +188,6 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
         </div>
 
         <div>
-          <label className="text-sm text-[#111827] font-medium">Related To</label>
-          <select
-            value={form.relatedTo}
-            onChange={(e) => setField("relatedTo", e.target.value)}
-            className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
-          >
-            <option value="">Select a deal</option>
-            {deals.map((d) => (<option key={d.id} value={d.id}>{d.deal_name || d.name}</option>))}
-          </select>
-        </div>
-
-        <div>
           <label className="text-sm text-[#111827] font-medium">Priority</label>
           <select
             value={form.priority}
@@ -160,6 +197,77 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
             {priorityOptions.map((o) => <option key={o.id} value={o.value}>{o.label}</option>)}
           </select>
         </div>
+
+        <div className="md:col-span-2">
+          <label className="text-sm text-[#111827] font-medium">Related To</label>
+          <select
+            value={form.relatedType}
+            onChange={(e) => setField("relatedType", e.target.value)}
+            className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+          >
+            <option value="none">None</option>
+            <option value="lead">Lead</option>
+            <option value="contact">Contact (Customer)</option>
+            <option value="deal">Deal</option>
+            <option value="account">Account</option>
+          </select>
+        </div>
+
+        {form.relatedType === "lead" && (
+          <div className="md:col-span-2">
+            <label className="text-sm text-[#111827] font-medium">Select Lead</label>
+            <select
+              value={form.relatedLead}
+              onChange={(e) => setField("relatedLead", e.target.value)}
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">Select lead</option>
+              {leads.map((l) => (<option key={l.id} value={l.id}>{l.name}</option>))}
+            </select>
+          </div>
+        )}
+
+        {form.relatedType === "contact" && (
+          <div className="md:col-span-2">
+            <label className="text-sm text-[#111827] font-medium">Select Contact</label>
+            <select
+              value={form.relatedContact}
+              onChange={(e) => setField("relatedContact", e.target.value)}
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">Select contact</option>
+              {customers.map((c) => (<option key={c.id} value={c.id}>{c.companyName}</option>))}
+            </select>
+          </div>
+        )}
+
+        {form.relatedType === "deal" && (
+          <div className="md:col-span-2">
+            <label className="text-sm text-[#111827] font-medium">Select Deal</label>
+            <select
+              value={form.relatedDeal}
+              onChange={(e) => setField("relatedDeal", e.target.value)}
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">Select a deal</option>
+              {deals.map((d) => (<option key={d.id} value={d.id}>{d.deal_name || d.name}</option>))}
+            </select>
+          </div>
+        )}
+
+        {form.relatedType === "account" && (
+          <div className="md:col-span-2">
+            <label className="text-sm text-[#111827] font-medium">Select Account</label>
+            <select
+              value={form.relatedAccount}
+              onChange={(e) => setField("relatedAccount", e.target.value)}
+              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">Select account</option>
+              {accounts.map((a) => (<option key={a.id} value={a.id}>{a.account_name}</option>))}
+            </select>
+          </div>
+        )}
 
         <div>
           <label className="text-sm text-[#111827] font-medium">Status</label>

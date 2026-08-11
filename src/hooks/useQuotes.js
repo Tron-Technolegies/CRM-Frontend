@@ -1,150 +1,89 @@
 import { useState } from "react";
 import {
-    addQuote,
-    getQuotes,
-    getSingleQuote,
-    updateQuote,
-    deleteQuote as deleteQuoteApi,
+  addQuote,
+  getQuotes,
+  getQuote,
+  updateQuote,
+  deleteQuote as deleteQuoteApi,
 } from "../api/quotes";
 
-
-const initialState = {
-    subject: "",
-    quote_stage: "draft",
-    valid_until: "",
-    assigned_to: "",
-    deal_id: "",
-    contact_name: "",
-    account_id: "",
-
-    carrier: "",
-    team: "",
-
-    terms_conditions: "",
-    description: "",
-
-    products: []
-};
-
-
 const useQuotes = () => {
+  const [quotes, setQuotes] = useState([]);
+  const [formData, setFormData] = useState(null);
+  const [editId, setEditId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-    const [formData, setFormData] = useState(initialState);
+  const fetchQuotes = async () => {
+    try {
+      setLoading(true);
+      const data = await getQuotes();
+      setQuotes(data || []);
+    } catch (err) {
+      setError(err.response?.data || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const [quotes, setQuotes] = useState([]);
-    const [quote, setQuote] = useState(null);
+  const loadQuote = async (id) => {
+    try {
+      setLoading(true);
+      const data = await getQuote(id);
+      setFormData(data);
+      setEditId(id);
+      return data;
+    } catch (err) {
+      setError(err.response?.data || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const [editId, setEditId] = useState(null);
+  // payload is the already-mapped, backend-shaped object.
+  // id defaults to whatever was loaded via loadQuote, but can be overridden.
+  const saveQuote = async (payload, id = editId) => {
+    try {
+      setLoading(true);
+      const response = id ? await updateQuote(id, payload) : await addQuote(payload);
+      return response;
+    } catch (err) {
+      setError(err.response?.data || err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+  const removeQuote = async (id) => {
+    try {
+      setLoading(true);
+      await deleteQuoteApi(id);
+      await fetchQuotes();
+    } catch (err) {
+      setError(err.response?.data || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const resetForm = () => {
+    setFormData(null);
+    setEditId(null);
+  };
 
-
-    // Common input handler
-    const handleChange = (e) => {
-
-        const { name, value } = e.target;
-
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value
-        }));
-
-    };
-
-    const removeQuote = async (id) => {
-        try {
-            setLoading(true);
-
-            await deleteQuoteApi(id);
-
-            // Refresh list
-            await fetchQuotes();
-
-        } catch (err) {
-            setError(err.response?.data || err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-
-
-    // Save Quote
-    const saveQuote = async () => {
-
-        try {
-
-            setLoading(true);
-
-            let response;
-
-            if (editId) {
-                response = await updateQuote(editId, formData);
-            }
-            else {
-                response = await addQuote(formData);
-            }
-
-            return response.data;
-        } catch (err) {
-
-            setError(err.response?.data || err.message);
-            throw err;
-
-        } finally {
-
-            setLoading(false);
-        }
-
-    };
-
-    // Load quote for edit
-    const loadQuote = async (id) => {
-
-        try {
-
-            const response = await getSingleQuote(id);
-
-            setFormData(response.data);
-            setEditId(id);
-
-        }
-        catch (err) {
-
-            setError(err.response?.data || err.message);
-
-        }
-
-    };
-
-
-
-    // Get all quotes
-    const fetchQuotes = async () => {
-        try {
-            const response = await getQuotes();
-            setQuotes(response.data);
-        }
-        catch (err) {
-            setError(err.response?.data || err.message);
-        }
-    };
-    return {
-        formData,
-        handleChange,
-        quotes,
-        quote,
-        loading,
-        error,
-        saveQuote,
-        loadQuote,
-        editId,
-        fetchQuotes,
-        removeQuote,
-    };
+  return {
+    quotes,
+    formData,
+    editId,
+    loading,
+    error,
+    fetchQuotes,
+    loadQuote,
+    saveQuote,
+    removeQuote,
+    resetForm,
+  };
 };
-
 
 export default useQuotes;

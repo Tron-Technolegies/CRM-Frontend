@@ -21,23 +21,23 @@ const sections = [
     path: "/settings/security",
   },
   {
-    title: "Preferences",
+    title: "Field Options",
     description: "Set your language, timezone, and other preferences.",
     icon: Globe,
     path: "/settings/preferences",
   },
-  {
-    title: "Billing",
-    description: "View your subscription and billing details.",
-    icon: CreditCard,
-    path: "/settings/billing",
-  },
-  {
-    title: "Data & Privacy",
-    description: "Manage your data and privacy preferences.",
-    icon: Database,
-    path: "/settings/data-privacy",
-  },
+  // {
+  //   title: "Billing",
+  //   description: "View your subscription and billing details.",
+  //   icon: CreditCard,
+  //   path: "/settings/billing",
+  // },
+  // {
+  //   title: "Data & Privacy",
+  //   description: "Manage your data and privacy preferences.",
+  //   icon: Database,
+  //   path: "/settings/data-privacy",
+  // },
 ];
 
 export default function Settings() {

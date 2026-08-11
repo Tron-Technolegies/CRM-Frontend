@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Eye, MoreVertical, Pencil, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { useToast } from "../ui/toastContext.js";
 import CustomerViewModal from "./CustomerViewModal.jsx";
-
-const PAGE_SIZE = 8;
+import Pagination from "../Pagination";
+import usePagination from "../../api/usePagination";
 
 function formatCurrency(value) {
   const n = Number(value || 0);
@@ -39,7 +39,6 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [industry, setIndustry] = useState("All");
-  const [page, setPage] = useState(1);
 
   const [viewId, setViewId] = useState(null);
 
@@ -63,12 +62,19 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
     });
   }, [customers, query, status, industry]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [query, status, industry]);
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    paginatedData: paginated,
+    changePage,
+    resetPage,
+  } = usePagination(filtered, 8);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  useEffect(() => {
+    resetPage();
+  }, [query, status, industry]);
 
   const openNotImplemented = (label) => {
     pushToast({ title: `${label} not implemented`, message: "Wire this to your backend later.", variant: "info" });
@@ -107,7 +113,6 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Phone</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Industry</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Status</th>
-              <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Lifetime Value</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Join Date</th>
               <th className="px-6 py-4 text-left text-sm text-[#64748B] font-medium">Actions</th>
             </tr>
@@ -115,7 +120,7 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
 
           <tbody className="divide-y divide-[#EEF2F7]">
             {paginated.map((c) => (
-              <tr key={c.id} className="hover:bg-[#FAFAFA]">
+              <tr key={c.id} className="hover:bg-[#FAFAFA] cursor-pointer" onClick={() => setViewId(c.id)}>
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-[#F1F5F9] border border-[#E5E7EB] flex items-center justify-center text-sm font-semibold text-[#475569]">
@@ -133,14 +138,12 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
                 <td className="px-6 py-5">
                   <span className={`inline-flex px-3 py-1 rounded-full text-sm ${statusStyles(c.status)}`}>{c.status}</span>
                 </td>
-                <td className="px-6 py-5"><p className="text-sm text-[#111827]">{formatCurrency(c.lifetimeValue)}</p></td>
                 <td className="px-6 py-5"><p className="text-sm text-[#64748B]">{formatDate(c.joinDate)}</p></td>
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-3 text-[#64748B]">
-                    <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="View" onClick={() => setViewId(c.id)}><Eye size={18} /></button>
-                    <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="Edit" onClick={() => onEdit(c)}><Pencil size={18} /></button>
-                    {/* <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="More" onClick={() => openNotImplemented("More")}><MoreVertical size={18} /></button> */}
-                    <button type="button" className="hover:text-red-600 cursor-pointer" aria-label="Delete" onClick={() => onDelete(c.id)}><Trash2 size={18} /></button>
+                    <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="View" onClick={(e) => {e.stopPropagation();setViewId(c.id);}}><Eye size={18} /></button>
+                    <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="Edit" onClick={(e) => {e.stopPropagation();onEdit(c);}}><Pencil size={18} /></button>
+                    <button type="button" className="hover:text-red-600 cursor-pointer" aria-label="Delete" onClick={(e) => {e.stopPropagation();onDelete(c.id);}}><Trash2 size={18} /></button>
                   </div>
                 </td>
               </tr>
@@ -153,18 +156,14 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <p className="text-sm text-[#64748B]">
-          Showing {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} customers
-        </p>
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="w-9 h-9 rounded-lg border border-[#E5E7EB] grid place-items-center disabled:opacity-40 cursor-pointer">‹</button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <button key={p} type="button" onClick={() => setPage(p)} className={`w-9 h-9 rounded-lg grid place-items-center text-sm cursor-pointer ${p === page ? "bg-blue-600 text-white" : "border border-[#E5E7EB] text-[#111827]"}`}>{p}</button>
-          ))}
-          <button type="button" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || totalPages === 0} className="w-9 h-9 rounded-lg border border-[#E5E7EB] grid place-items-center disabled:opacity-40 cursor-pointer">›</button>
-        </div>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        itemName="customers"
+        onPageChange={changePage}
+      />
 
       <CustomerViewModal
       open={!!viewId}

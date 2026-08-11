@@ -1,24 +1,30 @@
-import { useState } from "react";
-import { getProfile } from "../api/profile"
+import { useCallback, useState } from "react";
+import { getProfile, updateProfile } from "../api/profile";
 
-const useProfile = () => {
-    const [profile, setProfile] = useState(null);
+export default function useProfile() {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-    const fetchProfile = async () => {
-        try {
-            const response = await getProfile();
+  const fetchProfile = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await getProfile();
+      setProfile(data);
+    } catch (err) {
+      console.error("FETCH PROFILE ERROR:", err);
+      setError("Could not load profile.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-            setProfile(response.data.data);
+  const saveProfile = useCallback(async (payload) => {
+    const data = await updateProfile(payload);
+    setProfile(data);
+    return data;
+  }, []);
 
-        } catch (error) {
-            console.log(error);
-        }
-    };
-
-    return {
-        profile,
-        fetchProfile,
-    };
-};
-
-export default useProfile;
+  return { profile, loading, error, fetchProfile, saveProfile };
+}

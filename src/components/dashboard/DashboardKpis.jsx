@@ -41,7 +41,7 @@ export default function DashboardKpis({ report }) {
       iconColor: "text-emerald-600",
     },
     {
-      label: "Total Customers",
+      label: "Customers",
       value: report?.total_customers ?? "—",
       subtext: "All Time",
       icon: Check,

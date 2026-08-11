@@ -4,8 +4,10 @@ import Spinner from "../ui/Spinner";
 import { usePicklist } from "../../hooks/usePicklist";
 import api from "../../api/Api";
 import { getLead } from "../../api/lead";
+import { getCustomers } from "../../api/customer";
+import { getAccounts } from "../../api/account";
 
-function validateDeal(form) {
+function validateDeal(form, convertMode = false) {
   const errors = {};
 
   if (!form.dealName.trim()) {
@@ -30,6 +32,13 @@ function validateDeal(form) {
     errors.expectedCloseDate = "Expected close date is required";
   }
 
+  // "Related To" only applies to the standalone Add/Edit Deal flow —
+  // in conversion mode the deal is inherently related to the entity
+  // just created in the prior step, so don't require it here.
+  if (!convertMode && (!form.relatedType || !form.relatedId)) {
+    errors.related = "Select a customer or account to link this deal to";
+  }
+
   return errors;
 }
 
@@ -47,7 +56,8 @@ export default function DealFormModal({
   prefill = null, // e.g. { companyName } — from whatever the Customer/Account step collected
 }) {
   const [staff, setStaff] = useState([]);
-  const [unconvertedLeads, setUnconvertedLeads] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [accounts, setAccounts] = useState([]);
   const [leadPrefill, setLeadPrefill] = useState(null); // { companyName, source } from the lead itself
 
   const stageOptions = usePicklist("deal_stage");
@@ -76,26 +86,23 @@ export default function DealFormModal({
   }, []);
 
   useEffect(() => {
-    // "Link to Lead" only applies to the standalone Add Deal flow.
-    if (convertMode || initialData) return;
+    // "Related To" picker only applies to the standalone Add/Edit Deal flow.
+    if (convertMode) return;
 
-    const fetchLeads = async () => {
-      try {
-        const { data } = await api.get("/leads/unconverted/");
+    getCustomers()
+      .then((data) => setCustomers(Array.isArray(data) ? data : []))
+      .catch((err) => {
+        console.error("Failed to fetch customers:", err);
+        setCustomers([]);
+      });
 
-        if (Array.isArray(data)) {
-          setUnconvertedLeads(data);
-        } else {
-          setUnconvertedLeads([]);
-        }
-      } catch (err) {
-        console.error("Failed to fetch leads:", err);
-        setUnconvertedLeads([]);
-      }
-    };
-
-    fetchLeads();
-  }, [convertMode, initialData]);
+    getAccounts()
+      .then((data) => setAccounts(Array.isArray(data) ? data : []))
+      .catch((err) => {
+        console.error("Failed to fetch accounts:", err);
+        setAccounts([]);
+      });
+  }, [convertMode]);
 
   // In conversion mode, pull the original lead's source/company as a fallback
   // prefill — parent-supplied `prefill` (from the Customer/Account step) still
@@ -132,7 +139,8 @@ export default function DealFormModal({
       dealSource: effectiveSource,
       priority: "Medium",
       description: "",
-      leadId: "",
+      relatedType: "",
+      relatedId: "",
     }),
     [effectiveCompanyName, effectiveSource]
   );
@@ -152,7 +160,8 @@ export default function DealFormModal({
         dealSource: initialData.source || "Website",
         priority: initialData.priority || "Medium",
         description: initialData.description || "",
-        leadId: "",
+        relatedType: initialData.relatedTo?.type || "",
+        relatedId: initialData.relatedTo?.id ? String(initialData.relatedTo.id) : "",
       });
     } else {
       setForm(blankForm);
@@ -169,7 +178,7 @@ export default function DealFormModal({
     }
   }, [open, convertMode, initialData, blankForm]);
 
-  const errors = validateDeal(form);
+  const errors = validateDeal(form, convertMode);
   const hasErrors = Object.keys(errors).length > 0;
 
   const setField = (key, value) => {
@@ -195,6 +204,7 @@ export default function DealFormModal({
       stage: true,
       assignedTo: true,
       expectedCloseDate: true,
+      related: true,
     });
 
     if (hasErrors) return;
@@ -224,37 +234,99 @@ export default function DealFormModal({
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-        {!initialData && !convertMode && (
+        {!convertMode && (
           <div className="md:col-span-2">
             <label className="text-sm text-[#111827] font-medium">
-              Link to Lead{" "}
-              <span className="text-[#64748B] font-normal">(optional)</span>
+              Related To <span className="text-red-500">*</span>
             </label>
 
-            <select
-              value={form.leadId}
-              onChange={(e) => {
-                const lead = unconvertedLeads.find(
-                  (l) => l.id === Number(e.target.value)
-                );
-
-                setField("leadId", e.target.value);
-
-                if (lead) {
-                  setField("companyName", lead.company_name || "");
-                  setField("dealSource", lead.source || "Website");
+            <div className="mt-2 flex gap-3">
+              <select
+                value={form.relatedType}
+                onChange={(e) => {
+                  setField("relatedType", e.target.value);
+                  setField("relatedId", "");
+                }}
+                onBlur={() =>
+                  setTouched((prev) => ({ ...prev, related: true }))
                 }
-              }}
-              className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
-            >
-              <option value="">No lead linked</option>
+                className="h-11 w-40 rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
+              >
+                <option value="">Select type</option>
+                <option value="customer">Customer</option>
+                <option value="account">Account</option>
+              </select>
 
-              {unconvertedLeads.map((lead) => (
-                <option key={lead.id} value={lead.id}>
-                  {lead.name}
-                </option>
-              ))}
-            </select>
+              {form.relatedType === "customer" && (
+                <select
+                  value={form.relatedId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    const customer = customers.find(
+                      (c) => String(c.id) === id
+                    );
+
+                    setField("relatedId", id);
+
+                    if (customer) {
+                      setField(
+                        "companyName",
+                        customer.companyName || form.companyName
+                      );
+                    }
+                  }}
+                  onBlur={() =>
+                    setTouched((prev) => ({ ...prev, related: true }))
+                  }
+                  className="h-11 flex-1 rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
+                >
+                  <option value="">Select customer</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.contactName} — {c.companyName}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {form.relatedType === "account" && (
+                <select
+                  value={form.relatedId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    const account = accounts.find(
+                      (a) => String(a.id) === id
+                    );
+
+                    setField("relatedId", id);
+
+                    if (account) {
+                      setField(
+                        "companyName",
+                        account.account_name || form.companyName
+                      );
+                    }
+                  }}
+                  onBlur={() =>
+                    setTouched((prev) => ({ ...prev, related: true }))
+                  }
+                  className="h-11 flex-1 rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
+                >
+                  <option value="">Select account</option>
+                  {accounts.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.account_name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {touched.related && errors.related && (
+              <p className="text-xs text-red-600 mt-1">
+                {errors.related}
+              </p>
+            )}
           </div>
         )}
 
@@ -327,7 +399,7 @@ export default function DealFormModal({
 
         <div>
           <label className="text-sm font-medium">
-            Stage <span className="text-red-500">*</span>
+            Stage
           </label>
 
           <select

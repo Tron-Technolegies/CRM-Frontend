@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Mail, MoreVertical, Pencil, Search, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Eye, MoreVertical, Pencil, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { useToast } from "../ui/toastContext.js";
 import StaffViewModal from "./StaffViewModal.jsx";
-
-const PAGE_SIZE = 6;
+import Pagination from "../Pagination";
+import usePagination from "../../api/usePagination";
 
 function initials(name) {
   const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
@@ -47,7 +47,6 @@ export default function UsersList({ users, onDelete, onEdit }) {
   const [query, setQuery] = useState("");
   const [role, setRole] = useState("All");
   const [status, setStatus] = useState("All");
-  const [page, setPage] = useState(1);
 
   const [viewId, setViewId] = useState(null);
 
@@ -71,12 +70,19 @@ export default function UsersList({ users, onDelete, onEdit }) {
     });
   }, [users, query, role, status]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [query, role, status]);
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    paginatedData: paginated,
+    changePage,
+    resetPage,
+  } = usePagination(filtered, 6);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  useEffect(() => {
+    resetPage();
+  }, [query, role, status]);
 
   const openNotImplemented = (label) => {
     pushToast({ title: `${label} not implemented`, message: "Wire this to your backend later.", variant: "info" });
@@ -140,7 +146,11 @@ export default function UsersList({ users, onDelete, onEdit }) {
 
           <tbody className="divide-y divide-[#EEF2F7]">
             {paginated.map((u) => (
-              <tr key={u.id} className="hover:bg-[#FAFAFA]">
+              <tr
+                key={u.id}
+                onClick={() => setViewId(u.id)}
+                className="hover:bg-[#FAFAFA] cursor-pointer"
+              >
                 {/* <td className="px-6 py-5">
                   <input type="checkbox" aria-label={`Select ${u.fullName}`} className="rounded border-[#E5E7EB]" />
                 </td> */}
@@ -168,12 +178,11 @@ export default function UsersList({ users, onDelete, onEdit }) {
                   </span>
                 </td>
                 <td className="px-6 py-5">
-                  <p className="text-sm text-[#64748B]">{u.status === "Invited" ? "Never" : formatDate(u.invitedAt)}</p>
+                  <p className="text-sm text-[#64748B]">{u.lastActive ? formatDate(u.lastActive) : "Never"}</p>
                 </td>
-                <td className="px-6 py-5">
+                <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-3 text-[#64748B]">
                     <button type="button" className="hover:text-[#111827]" aria-label="View" onClick={() => setViewId(u.id)}><Eye size={18} /></button>
-                    <button type="button" className="hover:text-[#111827]" aria-label="Email" onClick={() => openNotImplemented("Email")}><Mail size={18} /></button>
                     <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={() => onEdit(u)}><Pencil size={18} /></button>
                     <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={() => onDelete(u.id)}><Trash2 size={18} /></button>
                   </div>
@@ -190,18 +199,14 @@ export default function UsersList({ users, onDelete, onEdit }) {
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <p className="text-sm text-[#64748B]">
-          Showing {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} users
-        </p>
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="w-9 h-9 rounded-lg border border-[#E5E7EB] grid place-items-center disabled:opacity-40">‹</button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <button key={p} type="button" onClick={() => setPage(p)} className={`w-9 h-9 rounded-lg grid place-items-center text-sm ${p === page ? "bg-blue-600 text-white" : "border border-[#E5E7EB] text-[#111827]"}`}>{p}</button>
-          ))}
-          <button type="button" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || totalPages === 0} className="w-9 h-9 rounded-lg border border-[#E5E7EB] grid place-items-center disabled:opacity-40">›</button>
-        </div>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        itemName="users"
+        onPageChange={changePage}
+      />
 
       <StaffViewModal 
       open={!!viewId} 

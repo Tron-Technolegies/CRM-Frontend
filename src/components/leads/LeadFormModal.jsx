@@ -10,9 +10,6 @@ function validateLead(form) {
   const errors = {};
   if (!form.fullName.trim()) errors.fullName = "Full name is required";
   if (!form.phoneNumber.trim()) errors.phoneNumber = "Phone number is required";
-  if (!form.companyName.trim()) errors.companyName = "Company name is required";
-  if (!form.leadSource) errors.leadSource = "Lead source is required";
-  if (!form.priority) errors.priority = "Priority is required";
   return errors;
 }
 
@@ -185,7 +182,7 @@ export default function LeadFormModal({
 
         <div>
           <label className="text-sm text-[#111827] font-medium">
-            Company Name <span className="text-red-500">*</span>
+            Company Name
           </label>
           <input
             value={form.companyName}
@@ -201,7 +198,7 @@ export default function LeadFormModal({
 
         <div>
           <label className="text-sm text-[#111827] font-medium">
-            Lead Source <span className="text-red-500">*</span>
+            Lead Source 
           </label>
           <select
             value={form.leadSource}
@@ -240,7 +237,7 @@ export default function LeadFormModal({
 
         <div>
           <label className="text-sm text-[#111827] font-medium">
-            Priority <span className="text-red-500">*</span>
+            Priority
           </label>
           <select
             value={form.priority}

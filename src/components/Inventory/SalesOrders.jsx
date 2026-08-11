@@ -1,93 +1,97 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
+import SalesOrdersTable from "./SalesOrder_main/SalesOrdersTable";
+import SalesOrderViewModal from "./SalesOrder_main/SalesOrderViewModal";
+import ConfirmDialog from "../ui/ConfirmDialog";
+import useSalesOrders from "../../hooks/useSalesOrders";
 
-const SalesOrder = () => {
-    const salesorder = [
-        {
-            id: 1, subject: "text", status: "created", grand: "Rs.65,677.00", deal: "text", contact: "text", account: "text", order: "Mathew John"
-        },
-        {
-            id: 2, subject: "text", status: "created", grand: "Rs.65,677.00", deal: "text", contact: "text", account: "text", order: "Mathew John"
+const SalesOrders = () => {
+  const navigate = useNavigate();
+  const { salesOrders, loading, fetchSalesOrders, removeSalesOrder } =
+    useSalesOrders();
 
-        },
-    ];
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewOrderId, setViewOrderId] = useState(null);
 
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-    return (
-        <div className="mt-5">
-            <div className="flex items-center justify-between mb-8">
-                <h1 className="text-[28px] font-bold text-[#111827]">
-                    Sales Order
-                </h1>
-                <Link to="addsales">
-                    <button
-                        type="button"
-                        className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-7 text-sm font-medium text-white transition hover:bg-blue-700">
-                        Create Sales Order
-                    </button>
-                </Link>
+  useEffect(() => {
+    fetchSalesOrders();
+  }, []);
 
-            </div>
-            <div className="overflow-x-auto border rounded-lg border-slate-300">
-                <table className="min-w-full border-collapse">
-                    <thead>
-                        <tr className="bg-[#E5EEFF] border border-gray-300">
-                            <th className="px-5 py-5 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                                SUBJECT
-                            </th>
-                            <th className="px-5 py-8 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                                STATUS
-                            </th>
-                            <th className="px-5 py-5 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                                GRAND TOTAL
-                            </th>
-                            <th className="px-5 py-5 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                                DEAL NAME
-                            </th>
-                            <th className="px-5 py-5 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                                CONTACT NAME
-                            </th>
-                            <th className="px-5 py-5 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                                ACCOUNT NAME
-                            </th>
-                            <th className="px-5 py-5 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">
-                                ORDER OWNER
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {salesorder.map((sales) => (
-                            <tr
-                                key={sales.id}
-                                className="hover:bg-gray-50">
-                                <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium text-gray-700">
-                                    {sales.subject}
-                                </td>
-                                <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">
-                                    {sales.status}
-                                </td>
-                                <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">
-                                    {sales.grand}
-                                </td>
-                                <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">
-                                    {sales.deal}
-                                </td>
-                                <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">
-                                    {sales.contact}
-                                </td>
-                                <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">
-                                    {sales.account}
-                                </td>
-                                <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">
-                                    {sales.order}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
+  const handleAdd = () => navigate("/inventory/salesOrder/add");
+  const handleEdit = (id) => navigate(`/inventory/salesOrder/edit/${id}`);
+  const handleView = (id) => {
+    setViewOrderId(id);
+    setViewOpen(true);
+  };
+
+  const requestDelete = (id) => {
+    setDeleteTargetId(id);
+    setConfirmDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return;
+
+    setDeleteLoading(true);
+
+    try {
+      await removeSalesOrder(deleteTargetId);
+    } finally {
+      setDeleteLoading(false);
+      setConfirmDeleteOpen(false);
+      setDeleteTargetId(null);
+    }
+  };
+
+  return (
+    <div className="mt-5 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-[28px] font-bold text-[#111827]">Sales Orders</h1>
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2"
+        >
+          <Plus size={18} />
+          Create Sales Order
+        </button>
+      </div>
+
+      <SalesOrdersTable
+        orders={salesOrders}
+        loading={loading}
+        onEdit={handleEdit}
+        onView={handleView}
+        onDelete={requestDelete}
+      />
+
+      <SalesOrderViewModal
+        open={viewOpen}
+        onClose={() => setViewOpen(false)}
+        orderId={viewOrderId}
+        onEdit={(order) => {
+          setViewOpen(false);
+          handleEdit(order.id);
+        }}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Delete sales order?"
+        description="This action cannot be undone."
+        confirmText="Delete"
+        danger
+        loading={deleteLoading}
+        onCancel={() => setConfirmDeleteOpen(false)}
+        onConfirm={confirmDelete}
+      />
+    </div>
+  );
 };
 
-export default SalesOrder;
+export default SalesOrders;

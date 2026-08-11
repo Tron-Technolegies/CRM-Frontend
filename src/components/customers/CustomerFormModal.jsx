@@ -7,14 +7,11 @@ import { getLeads, getLeadToCustomerPrefill } from "../../api/lead";
 
 function validateCustomer(form) {
   const errors = {};
-  if (!form.companyName.trim()) errors.companyName = "Company name is required";
   if (!form.contactName.trim()) errors.contactName = "Contact name is required";
   if (!form.email.trim()) errors.email = "Email is required";
   if (!form.phone.trim()) errors.phone = "Phone is required";
   if (!form.industry) errors.industry = "Industry is required";
   if (!form.status) errors.status = "Status is required";
-  const value = Number(form.lifetimeValue);
-  if (!form.lifetimeValue || Number.isNaN(value) || value < 0) errors.lifetimeValue = "Valid lifetime value is required";
   return errors;
 }
 
@@ -68,7 +65,7 @@ export default function CustomerFormModal({
         status: initialData.status || "Active",
         lifetimeValue: initialData.lifetimeValue || "",
         dealId: "",
-        leadId: "",
+        leadId: leadId,
       });
     } else {
       setForm(blankForm);
@@ -194,7 +191,7 @@ export default function CustomerFormModal({
         )}
 
         <div>
-          <label className="text-sm text-[#111827] font-medium">Company Name <span className="text-red-500">*</span></label>
+          <label className="text-sm text-[#111827] font-medium">Company Name</label>
           <input
             value={form.companyName}
             onChange={(e) => setField("companyName", e.target.value)}
@@ -242,7 +239,7 @@ export default function CustomerFormModal({
         </div>
 
         <div>
-          <label className="text-sm text-[#111827] font-medium">Industry <span className="text-red-500">*</span></label>
+          <label className="text-sm text-[#111827] font-medium">Industry </label>
           <select
             value={form.industry}
             onChange={(e) => setField("industry", e.target.value)}
@@ -255,7 +252,7 @@ export default function CustomerFormModal({
         </div>
 
         <div>
-          <label className="text-sm text-[#111827] font-medium">Status <span className="text-red-500">*</span></label>
+          <label className="text-sm text-[#111827] font-medium">Status </label>
           <select
             value={form.status}
             onChange={(e) => setField("status", e.target.value)}
@@ -267,18 +264,6 @@ export default function CustomerFormModal({
           {touched.status && errors.status && <p className="text-xs text-red-600 mt-1">{errors.status}</p>}
         </div>
 
-        <div className="md:col-span-2">
-          <label className="text-sm text-[#111827] font-medium">Lifetime Value <span className="text-red-500">*</span></label>
-          <input
-            inputMode="decimal"
-            value={form.lifetimeValue}
-            onChange={(e) => setField("lifetimeValue", e.target.value)}
-            onBlur={() => setTouched((p) => ({ ...p, lifetimeValue: true }))}
-            placeholder="$ 45000.00"
-            className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100 cursor-text"
-          />
-          {touched.lifetimeValue && errors.lifetimeValue && <p className="text-xs text-red-600 mt-1">{errors.lifetimeValue}</p>}
-        </div>
       </div>
 
       <div className="mt-6 pt-6 border-t border-[#EEF2F7] flex items-center justify-end gap-3">

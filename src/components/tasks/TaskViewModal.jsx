@@ -16,6 +16,16 @@ const statusConfig = {
   Cancelled:     { style: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",          dot: "bg-rose-500" },
 };
 
+function relatedTypeLabel(type) {
+  switch (type) {
+    case "lead": return "Lead";
+    case "contact": return "Contact";
+    case "deal": return "Deal";
+    case "account": return "Account";
+    default: return "";
+  }
+}
+
 function Badge({ value, config }) {
   const cfg = config[value] || { style: "bg-slate-100 text-slate-600 ring-1 ring-slate-200", dot: "bg-slate-400" };
   return (
@@ -101,6 +111,9 @@ export default function TaskViewModal({ open, onClose, onEdit, taskId = null }) 
       });
   }, [open, taskId]);
 
+  const hasRelatedTo = data?.relatedTo && data.relatedTo !== "—";
+  const relatedLabel = relatedTypeLabel(data?.relatedType);
+
   return (
     <Modal open={open} title="Task Details" subtitle="Full details for this task" onClose={onClose} maxWidthClassName="max-w-2xl">
       {loading && <Skeleton />}
@@ -114,7 +127,9 @@ export default function TaskViewModal({ open, onClose, onEdit, taskId = null }) 
               </div>
               <div className="flex-1 min-w-0 pt-0.5">
                 <h3 className="text-xl font-bold text-[#0F172A] leading-tight">{data.title || "Untitled Task"}</h3>
-                {data.relatedTo && <p className="text-sm text-[#6B7280] mt-0.5 font-medium">Related to: {data.relatedTo}</p>}
+                {hasRelatedTo && (
+                  <p className="text-sm text-[#6B7280] mt-0.5 font-medium">{relatedLabel}: {data.relatedTo}</p>
+                )}
                 <div className="flex flex-wrap items-center gap-2 mt-3">
                   <Badge value={data.status} config={statusConfig} />
                   <Badge value={data.priority} config={priorityConfig} />
@@ -132,10 +147,23 @@ export default function TaskViewModal({ open, onClose, onEdit, taskId = null }) 
                 <Field label="Status" icon={Tag} value={data.status} />
                 <Field label="Priority" icon={Flag} value={data.priority} />
                 <Field label="Assigned To" icon={Users} value={data.assignedTo} />
-                <Field label="Related To" icon={Link} value={data.relatedTo} />
                 <Field label="Due Date" icon={Calendar} value={data.dueDate} />
               </div>
             </Section>
+
+            {hasRelatedTo && (
+              <Section title="Related To">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-[#EEF2FF] flex items-center justify-center flex-shrink-0">
+                    <Link size={15} className="text-[#6366F1]" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-widest">{relatedLabel}</p>
+                    <p className="text-sm font-semibold text-[#111827]">{data.relatedTo}</p>
+                  </div>
+                </div>
+              </Section>
+            )}
 
             {data.description && (
               <Section title="Description">

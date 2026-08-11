@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 // import useAuth from "../hooks/useAuth";
 import useAuth from "../../hooks/useAuth";
+import { Eye, EyeOff } from "lucide-react";
 
 const Signup = () => {
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -11,7 +14,6 @@ const Signup = () => {
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
     company_name: "",
     company_email: "",
     company_phone: "",
@@ -34,17 +36,10 @@ const Signup = () => {
       !form.name ||
       !form.email ||
       !form.password ||
-      !form.confirmPassword ||
       !form.company_name ||
       !form.company_email
     ) {
       setError("Please fill all required fields");
-      return;
-    }
-
-
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match");
       return;
     }
 
@@ -232,20 +227,17 @@ const Signup = () => {
 
 
 
+                <div>
 
-                <div className="grid grid-cols-2 gap-4">
+                  <label className="text-sm font-medium text-slate-700">
+                    Password <span className="text-red-500">*</span>
+                  </label>
 
-
-                  <div>
-
-                    <label className="text-sm font-medium text-slate-700">
-                      Password <span className="text-red-500">*</span>
-                    </label>
-
+                  <div className="relative mt-2">
 
                     <input
 
-                      type="password"
+                      type={showPassword ? "text" : "password"}
 
                       value={form.password}
 
@@ -255,40 +247,20 @@ const Signup = () => {
 
                       placeholder="Minimum 8 characters"
 
-                      className="mt-2 h-12 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      className="h-12 w-full rounded-xl border border-slate-200 pl-4 pr-11 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
 
                     />
 
-                  </div>
-
-
-
-
-                  <div>
-
-                    <label className="text-sm font-medium text-slate-700">
-                      Confirm Password <span className="text-red-500">*</span>
-                    </label>
-
-
-                    <input
-
-                      type="password"
-
-                      value={form.confirmPassword}
-
-                      onChange={(e) =>
-                        setField("confirmPassword", e.target.value)
-                      }
-
-                      placeholder="Confirm password"
-
-                      className="mt-2 h-12 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
 
                   </div>
-
 
                 </div>
 

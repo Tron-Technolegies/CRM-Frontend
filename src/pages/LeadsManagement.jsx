@@ -109,6 +109,7 @@ export default function LeadsManagement() {
       };
 
       if (isDealFlow && dealForm) {
+        payload.related_type = convertType; // "customer" or "account" — required by convert_lead's deal branch
         payload.deal_name = dealForm.dealName;
         payload.deal_amount = Number(dealForm.dealAmount);
         payload.stage = dealForm.stage;
@@ -301,6 +302,7 @@ export default function LeadsManagement() {
 
       <LeadsList
         leads={leads}
+        staff={staff}
         onDelete={requestDelete}
         onEdit={setEditLead}
         onConvert={handleConvert}

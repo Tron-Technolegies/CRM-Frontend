@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
-
 const callTypeOptions = ["inbound", "outbound"];
-const statusOptions = ["scheduled", "completed", "missed", "cancelled"];
+const statusOptions = ["scheduled", "follow up", "completed", "missed", "cancelled"];
+const priorityOptions = ["low", "medium", "high"];
 
 export default function AddCall({
     open,
@@ -15,8 +15,11 @@ export default function AddCall({
     leads = [],
     customers = [],
     deals = [],
+    accounts = [],
+    lockedRelatedType = null,
+    lockedRelatedId = null,
+    lockedRelatedName = null,
     }) {
-
 
   const [form, setForm] = useState({
     subject: "",
@@ -30,39 +33,81 @@ export default function AddCall({
     related_lead: "",
     related_contact: "",
     related_deal: "",
+    related_account: "",
+    task_priority: "medium",
+    task_due_date: "",
   });
 
   const [error, setError] = useState("");
 
+  const isLocked = Boolean(lockedRelatedType && lockedRelatedId);
+
   useEffect(() => {
-    if (initialData) {
-        setForm({
-        subject: initialData.subject || "",
-        call_type: initialData.call_type || "outbound",
-        status: initialData.status || "scheduled",
-        start_time: initialData.start_time || "",
-        duration: initialData.duration || "",
-        notes: initialData.notes || "",
-        assigned_to: initialData.assigned_to || "",
-        related_type: initialData.related_type || "none",
-        related_lead: initialData.related_lead || "",
-        related_contact: initialData.related_contact || "",
-        related_deal: initialData.related_deal || "",
-        });
+    let related_type = "none";
+    let related_lead = "";
+    let related_contact = "";
+    let related_deal = "";
+    let related_account = "";
+
+    if (isLocked) {
+      // Preselect the relation the modal was opened from (e.g. the lead being viewed)
+      related_type = lockedRelatedType;
+      if (lockedRelatedType === "lead") related_lead = lockedRelatedId;
+      if (lockedRelatedType === "contact") related_contact = lockedRelatedId;
+      if (lockedRelatedType === "deal") related_deal = lockedRelatedId;
+      if (lockedRelatedType === "account") related_account = lockedRelatedId;
+    } else if (initialData?.lead) {
+      related_type = "lead";
+      related_lead = initialData.lead?.id ?? initialData.lead;
+    } else if (initialData?.contact) {
+      related_type = "contact";
+      related_contact = initialData.contact?.id ?? initialData.contact;
+    } else if (initialData?.deal) {
+      related_type = "deal";
+      related_deal = initialData.deal?.id ?? initialData.deal;
+    } else if (initialData?.account) {
+      related_type = "account";
+      related_account = initialData.account?.id ?? initialData.account;
     }
-  }, [initialData]);
+
+    setForm({
+      subject: initialData?.subject || "",
+      call_type: initialData?.call_type || "outbound",
+      status: initialData?.status || "scheduled",
+      start_time: initialData?.start_time || "",
+      duration: initialData?.duration || "",
+      notes: initialData?.notes || "",
+      assigned_to: initialData?.assigned_to?.id ?? initialData?.assigned_to ?? "",
+
+      related_type,
+      related_lead,
+      related_contact,
+      related_deal,
+      related_account,
+
+      task_priority: initialData?.task_priority || "medium",
+      task_due_date: initialData?.task_due_date || "",
+    });
+  }, [initialData, open, isLocked, lockedRelatedType, lockedRelatedId]);
 
   const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
+  const isFollowUp = form.status === "follow up";
+
   const handleSubmit = () => {
-    if (!form.subject || !form.call_type || !form.start_time || !form.duration) {
-        setError("Subject, call type, start time and duration are required");
+    if (!form.subject || !form.start_time || !form.duration) {
+        setError("Subject, start time and duration are required");
         return;
+    }
+
+    if (isFollowUp && (!form.task_priority || !form.task_due_date)) {
+      setError("Priority and due date are required when status is Follow Up");
+      return;
     }
 
     setError("");
 
-    onSubmit({
+    const callPayload = {
         subject: form.subject,
         call_type: form.call_type,
         status: form.status,
@@ -71,13 +116,28 @@ export default function AddCall({
         notes: form.notes,
         assigned_to: form.assigned_to || null,
         related_type: form.related_type,
-        related_lead:
-        form.related_type === "lead" ? form.related_lead : null,
-        related_contact:
-        form.related_type === "contact" ? form.related_contact : null,
-        related_deal:
-        form.related_type === "deal" ? form.related_deal : null,
-    });
+        related_lead: form.related_type === "lead" ? form.related_lead || null : null,
+        related_contact: form.related_type === "contact" ? form.related_contact || null : null,
+        related_deal: form.related_type === "deal" ? form.related_deal || null : null,
+        related_account: form.related_type === "account" ? form.related_account || null : null,
+    };
+
+    const taskPayload = isFollowUp
+      ? {
+          title: form.subject,
+          assigned_to: form.assigned_to || null,
+          related_type: form.related_type !== "none" ? form.related_type : null,
+          related_lead: form.related_type === "lead" ? form.related_lead || null : null,
+          related_contact: form.related_type === "contact" ? form.related_contact || null : null,
+          related_deal: form.related_type === "deal" ? form.related_deal || null : null,
+          related_account: form.related_type === "account" ? form.related_account || null : null,
+          priority: form.task_priority,
+          status: "pending",
+          due_date: form.task_due_date,
+        }
+      : null;
+
+    onSubmit(callPayload, taskPayload);
   };
 
   if (!open) return null;
@@ -113,7 +173,7 @@ export default function AddCall({
               />
             </div>
 
-            <div>
+            {/* <div>
               <label className="text-sm text-[#111827] font-medium">Call Type <span className="text-red-500">*</span></label>
               <select
                 value={form.call_type}
@@ -124,7 +184,7 @@ export default function AddCall({
                   <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
                 ))}
               </select>
-            </div>
+            </div> */}
 
             <div>
               <label className="text-sm text-[#111827] font-medium">Status</label>
@@ -175,66 +235,121 @@ export default function AddCall({
               </select>
             </div>
 
-            <div className="md:col-span-2">
-              <label className="text-sm text-[#111827] font-medium">Related To</label>
-              <select
-                value={form.related_type}
-                onChange={(e) => setField("related_type", e.target.value)}
-                className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
-              >
-                <option value="none">None</option>
-                <option value="lead">Lead</option>
-                <option value="contact">Contact (Customer)</option>
-                <option value="deal">Deal</option>
-              </select>
-            </div>
+            {isFollowUp && (
+              <>
+                <div>
+                  <label className="text-sm text-[#111827] font-medium">Task Priority <span className="text-red-500">*</span></label>
+                  <select
+                    value={form.task_priority}
+                    onChange={(e) => setField("task_priority", e.target.value)}
+                    className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+                  >
+                    {priorityOptions.map((p) => (
+                      <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                    ))}
+                  </select>
+                </div>
 
-            {form.related_type === "lead" && (
-              <div className="md:col-span-2">
-                <label className="text-sm text-[#111827] font-medium">Select Lead</label>
-                <select
-                  value={form.related_lead}
-                  onChange={(e) => setField("related_lead", e.target.value)}
-                  className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
-                >
-                  <option value="">Select lead</option>
-                  {leads.map((l) => (
-                    <option key={l.id} value={l.id}>{l.name}</option>
-                  ))}
-                </select>
-              </div>
+                <div>
+                  <label className="text-sm text-[#111827] font-medium">Task Due Date <span className="text-red-500">*</span></label>
+                  <input
+                    type="date"
+                    value={form.task_due_date}
+                    onChange={(e) => setField("task_due_date", e.target.value)}
+                    className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+              </>
             )}
 
-            {form.related_type === "contact" && (
+            {isLocked ? (
               <div className="md:col-span-2">
-                <label className="text-sm text-[#111827] font-medium">Select Contact</label>
-                <select
-                  value={form.related_contact}
-                  onChange={(e) => setField("related_contact", e.target.value)}
-                  className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
-                >
-                  <option value="">Select contact</option>
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>{c.companyName}</option>
-                  ))}
-                </select>
+                <label className="text-sm text-[#111827] font-medium">Related To</label>
+                <div className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] bg-gray-50 px-4 text-sm flex items-center text-[#111827]">
+                  {lockedRelatedType.charAt(0).toUpperCase() + lockedRelatedType.slice(1)}: {lockedRelatedName || "—"}
+                </div>
               </div>
-            )}
+            ) : (
+              <>
+                <div className="md:col-span-2">
+                  <label className="text-sm text-[#111827] font-medium">Related To</label>
+                  <select
+                    value={form.related_type}
+                    onChange={(e) => setField("related_type", e.target.value)}
+                    className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+                  >
+                    <option value="none">None</option>
+                    <option value="lead">Lead</option>
+                    <option value="contact">Contact (Customer)</option>
+                    <option value="deal">Deal</option>
+                    <option value="account">Account</option>
+                  </select>
+                </div>
 
-            {form.related_type === "deal" && (
-              <div className="md:col-span-2">
-                <label className="text-sm text-[#111827] font-medium">Select Deal</label>
-                <select
-                  value={form.related_deal}
-                  onChange={(e) => setField("related_deal", e.target.value)}
-                  className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
-                >
-                  <option value="">Select deal</option>
-                  {deals.map((d) => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
-                  ))}
-                </select>
-              </div>
+                {form.related_type === "lead" && (
+                  <div className="md:col-span-2">
+                    <label className="text-sm text-[#111827] font-medium">Select Lead</label>
+                    <select
+                      value={form.related_lead}
+                      onChange={(e) => setField("related_lead", e.target.value)}
+                      className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+                    >
+                      <option value="">Select lead</option>
+                      {leads.map((l) => (
+                        <option key={l.id} value={l.id}>{l.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {form.related_type === "contact" && (
+                  <div className="md:col-span-2">
+                    <label className="text-sm text-[#111827] font-medium">Select Contact</label>
+                    <select
+                      value={form.related_contact}
+                      onChange={(e) => setField("related_contact", e.target.value)}
+                      className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+                    >
+                      <option value="">Select contact</option>
+                      {customers.map((c) => (
+                        <option key={c.id} value={c.id}>{c.companyName}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {form.related_type === "deal" && (
+                  <div className="md:col-span-2">
+                    <label className="text-sm text-[#111827] font-medium">Select Deal</label>
+                    <select
+                      value={form.related_deal}
+                      onChange={(e) => setField("related_deal", e.target.value)}
+                      className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+                    >
+                      <option value="">Select deal</option>
+                      {deals.map((d) => (
+                        <option key={d.id} value={d.id}>{d.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {form.related_type === "account" && (
+                  <div className="md:col-span-2">
+                    <label className="text-sm text-[#111827] font-medium">Select Account</label>
+                    <select
+                      value={form.related_account}
+                      onChange={(e) => setField("related_account", e.target.value)}
+                      className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+                    >
+                      <option value="">Select account</option>
+                      {accounts.map((a) => (
+                        <option key={a.id} value={a.id}>{a.accountName || a.account_name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </>
             )}
 
             <div className="md:col-span-2">

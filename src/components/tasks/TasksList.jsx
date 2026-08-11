@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Eye, MoreVertical, Pencil, Search, Trash2 } from "lucide-react";
 import { useToast } from "../ui/toastContext.js";
 import TaskViewModal from "./TaskViewModal.jsx";
-
-const PAGE_SIZE = 8;
+import Pagination from "../Pagination";
+import usePagination from "../../api/usePagination";
 
 function priorityStyles(priority) {
   switch (priority?.toLowerCase()) {
@@ -41,6 +41,16 @@ function statusLabel(status) {
   }
 }
 
+function relatedTypeLabel(type) {
+  switch (type) {
+    case "lead": return "Lead";
+    case "contact": return "Contact";
+    case "deal": return "Deal";
+    case "account": return "Account";
+    default: return "";
+  }
+}
+
 function formatDate(value) {
   if (!value) return "—";
   const d = new Date(value);
@@ -58,7 +68,6 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [priority, setPriority] = useState("All");
-  const [page, setPage] = useState(1);
 
   const [viewId, setViewId] = useState(null);
 
@@ -75,12 +84,19 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
     });
   }, [tasks, query, status, priority]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [query, status, priority]);
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    paginatedData: paginated,
+    changePage,
+    resetPage,
+  } = usePagination(filtered, 8);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  useEffect(() => {
+    resetPage();
+  }, [query, status, priority]);
 
   const openNotImplemented = (label) => {
     pushToast({ title: `${label} not implemented`, message: "Wire this to your backend later.", variant: "info" });
@@ -88,7 +104,6 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
 
   return (
     <div className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden">
-      {/* Filters */}
       <div className="p-5 border-b border-[#EEF2F7] flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
         <div className="h-12 w-full xl:w-[340px] rounded-xl border border-[#E5E7EB] px-4 flex items-center gap-3">
           <Search size={18} className="text-[#6B7280]" />
@@ -116,7 +131,6 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
         </div>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[980px]">
           <thead className="border-b border-[#EEF2F7]">
@@ -133,7 +147,11 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
 
           <tbody className="divide-y divide-[#EEF2F7]">
             {paginated.map((task) => (
-              <tr key={task.id} className="hover:bg-[#FAFAFA]">
+              <tr
+                key={task.id}
+                onClick={() => setViewId(task.id)}
+                className="hover:bg-[#FAFAFA] cursor-pointer"
+              >
                 <td className="px-6 py-5">
                   <p className={`text-sm font-medium ${task.status?.toLowerCase() === "completed" ? "line-through text-[#64748B]" : "text-[#111827]"}`}>{task.title}</p>
                   {task.description && <p className="text-sm text-[#64748B] mt-0.5 truncate max-w-[200px]">{task.description}</p>}
@@ -142,7 +160,11 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
                   <p className="text-sm text-[#111827]">{task.assignedTo || "—"}</p>
                 </td>
                 <td className="px-6 py-5">
-                  <p className="text-sm text-[#111827]">{task.relatedTo || "—"}</p>
+                  <p className="text-sm text-[#111827]">
+                    {task.relatedTo && task.relatedTo !== "—"
+                      ? `${relatedTypeLabel(task.relatedType)}: ${task.relatedTo}`
+                      : "—"}
+                  </p>
                 </td>
                 <td className="px-6 py-5">
                   <span className={`text-sm font-medium ${priorityStyles(task.priority)}`}>
@@ -159,11 +181,10 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
                     {formatDate(task.dueDate)}
                   </p>
                 </td>
-                <td className="px-6 py-5">
+                <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-3 text-[#64748B]">
                     <button type="button" className="hover:text-[#111827]" aria-label="View" onClick={() => setViewId(task.id)}><Eye size={18} /></button>
                     <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={() => onEdit(task)}><Pencil size={18} /></button>
-                    {/* <button type="button" className="hover:text-[#111827]" aria-label="More" onClick={() => openNotImplemented("More")}><MoreVertical size={18} /></button> */}
                     <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={() => onDelete(task.id)}><Trash2 size={18} /></button>
                   </div>
                 </td>
@@ -178,24 +199,19 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
         </table>
       </div>
 
-      {/* Footer */}
-      <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <p className="text-sm text-[#64748B]">
-          Showing {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} tasks
-        </p>
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="w-9 h-9 rounded-lg border border-[#E5E7EB] grid place-items-center disabled:opacity-40">‹</button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <button key={p} type="button" onClick={() => setPage(p)} className={`w-9 h-9 rounded-lg grid place-items-center text-sm ${p === page ? "bg-blue-600 text-white" : "border border-[#E5E7EB] text-[#111827]"}`}>{p}</button>
-          ))}
-          <button type="button" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || totalPages === 0} className="w-9 h-9 rounded-lg border border-[#E5E7EB] grid place-items-center disabled:opacity-40">›</button>
-        </div>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        itemName="tasks"
+        onPageChange={changePage}
+      />
 
-      <TaskViewModal 
-      open={!!viewId} 
-      onClose={() => setViewId(null)} 
-      onEdit={onEdit} 
+      <TaskViewModal
+      open={!!viewId}
+      onClose={() => setViewId(null)}
+      onEdit={onEdit}
       taskId={viewId} />
     </div>
   );

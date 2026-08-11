@@ -1,8 +1,7 @@
 import { Mail, Shield, Tag, Users, Pencil, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 import Modal from "../ui/Modal";
-
-const BASE_URL = "http://127.0.0.1:8000/api/admin";
+import api from "../../api/Api";
 
 const statusConfig = {
   Active:  { style: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200", dot: "bg-emerald-500" },
@@ -83,10 +82,14 @@ export default function StaffViewModal({ open, onClose, onEdit, staffId = null }
     setLoading(true);
     setData(null);
     setError(false);
-    fetch(`${BASE_URL}/staff/single/view/${staffId}/`)
-      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
-      .then((d) => setData(d))
-      .catch(() => setError(true))
+
+    api
+      .get(`/staff/single/view/${staffId}/`)
+      .then((res) => setData(res.data))
+      .catch((err) => {
+        console.error("Failed to load staff:", err);
+        setError(true);
+      })
       .finally(() => setLoading(false));
   }, [open, staffId]);
 
