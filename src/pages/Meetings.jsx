@@ -5,7 +5,7 @@ import useMeeting from "../hooks/useMeeting";
 
 import MeetingsTable from "../components/Meeting/MeetingsTable";
 import AddMeeting from "../components/Meeting/AddMeeting";
-import MeetingViewModal from "../components/Meeting/MeetingViewModal";
+import MeetingViewModal from "../components/Meeting/Meetingviewmodal";
 
 import { getLeads, getStaff } from "../api/lead";
 import { getCustomers } from "../api/customer";
