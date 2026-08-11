@@ -1,44 +1,24 @@
-// import React from "react";
-// import { Navigate } from "react-router-dom";
+import axios from "axios";
 
-// const ProtectedRoute = ({ children }) => {
-//     const token = localStorage.getItem("access_token");
+const api = axios.create({
+  baseURL: "https://crm-backend-ejfr.onrender.com/api/admin/",
+});
 
-//     if (!token) {
-//         return <Navigate to="/login" replace />;
-//     }
-
-//     return children;
-// };
-
-// export default ProtectedRoute;
-
-
-import React from "react";
-import { Navigate } from "react-router-dom";
-
-function isTokenExpired(token) {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    if (!payload.exp) return false;
-    // exp is in seconds; Date.now() is in ms
-    return payload.exp * 1000 < Date.now();
-  } catch (err) {
-    // Malformed token — treat as expired/invalid
-    return true;
+api.interceptors.request.use((config) => {
+  if (
+    config.url === "staff/login/" ||
+    config.url === "staff/signup/"
+  ) {
+    return config;
   }
-}
 
-const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("access_token");
 
-  if (!token || isTokenExpired(token)) {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    return <Navigate to="/login" replace />;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
 
-  return children;
-};
+  return config;
+});
 
-export default ProtectedRoute;
+export default api;
