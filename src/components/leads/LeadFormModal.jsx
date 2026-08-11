@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
 import { usePicklist } from "../../hooks/usePicklist";
-import api from "../../api/api";
 
 const defaultCountryCodes = ["+91", "+1", "+44", "+65", "+971"];
 
