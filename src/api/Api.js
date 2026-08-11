@@ -4,7 +4,11 @@ const api = axios.create({ baseURL: "https://crm-backend-ejfr.onrender.com/api/a
 // const api = axios.create({ baseURL: "http://127.0.0.1:8000/", });
 
 api.interceptors.request.use((config) => {
-  // Skip auth header for public endpoints
+   console.log("🔥 API REQUEST:", {
+                  method: config.method,
+                  url: config.url,
+                  baseURL: config.baseURL,
+                });
   if (config.url === "staff/login/" || config.url === "staff/signup/") {
     return config;
   }
