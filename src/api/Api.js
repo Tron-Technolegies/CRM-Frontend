@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// const api = axios.create({ baseURL: "https://crm-backend-ejfr.onrender.com/api/admin/", });
-const api = axios.create({ baseURL: "http://127.0.0.1:8000/", });
+const api = axios.create({ baseURL: "https://crm-backend-ejfr.onrender.com/api/admin/", });
+// const api = axios.create({ baseURL: "http://127.0.0.1:8000/", });
 
 api.interceptors.request.use((config) => {
   // Skip auth header for public endpoints
