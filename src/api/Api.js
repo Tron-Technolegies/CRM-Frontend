@@ -57,6 +57,8 @@ api.interceptors.request.use((config) => {
     method: config.method,
     url: config.url,
     baseURL: config.baseURL,
+    fullURL: `${config.baseURL}${config.url || ""}`,
+    stack: new Error().stack,
   });
 
   if (
