@@ -1,15 +1,22 @@
 // import axios from "axios";
 
-// const api = axios.create({ baseURL: "https://crm-backend-ejfr.onrender.com/api/admin/", });
-// // const api = axios.create({ baseURL: "http://127.0.0.1:8000/", });
+// const api = axios.create({
+//   baseURL: "https://crm-backend-ejfr.onrender.com/api/admin/",
+// });
 
 // api.interceptors.request.use((config) => {
-//    console.log("🔥 API REQUEST:", {
-//                   method: config.method,
-//                   url: config.url,
-//                   baseURL: config.baseURL,
-//                 });
-//   if (config.url === "staff/login/" || config.url === "staff/signup/") {
+//   console.log("🔥 API REQUEST:", {
+//     method: config.method,
+//     url: config.url,
+//     baseURL: config.baseURL,
+//     fullURL: `${config.baseURL}${config.url || ""}`,
+//     stack: new Error().stack,
+//   });
+
+//   if (
+//     config.url === "staff/login/" ||
+//     config.url === "staff/signup/"
+//   ) {
 //     return config;
 //   }
 
@@ -26,11 +33,11 @@
 //   (response) => response,
 //   (error) => {
 //     const status = error.response?.status;
-//     const isAuthEndpoint =
-//       error.config?.url === "staff/login/" || error.config?.url === "staff/signup/";
 
-//     // A 401 on the login/signup endpoints just means bad credentials —
-//     // don't treat that as "session expired" and redirect.
+//     const isAuthEndpoint =
+//       error.config?.url === "staff/login/" ||
+//       error.config?.url === "staff/signup/";
+
 //     if (status === 401 && !isAuthEndpoint) {
 //       localStorage.removeItem("access_token");
 //       localStorage.removeItem("refresh_token");
@@ -48,21 +55,17 @@
 
 import axios from "axios";
 
+const BASE_URL = "https://crm-backend-ejfr.onrender.com/api/admin/";
+const REFRESH_URL = "https://crm-backend-ejfr.onrender.com/api/token/refresh/";
+
 const api = axios.create({
-  baseURL: "https://crm-backend-ejfr.onrender.com/api/admin/",
+  baseURL: BASE_URL,
 });
 
-api.interceptors.request.use((config) => {
-  console.log("🔥 API REQUEST:", {
-    method: config.method,
-    url: config.url,
-    baseURL: config.baseURL,
-  });
+const AUTH_ENDPOINTS = ["staff/login/", "staff/signup/"];
 
-  if (
-    config.url === "staff/login/" ||
-    config.url === "staff/signup/"
-  ) {
+api.interceptors.request.use((config) => {
+  if (AUTH_ENDPOINTS.includes(config.url)) {
     return config;
   }
 
@@ -75,21 +78,79 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+let isRefreshing = false;
+let pendingQueue = [];
+
+const processQueue = (error, token = null) => {
+  pendingQueue.forEach(({ resolve, reject }) => {
+    if (error) reject(error);
+    else resolve(token);
+  });
+  pendingQueue = [];
+};
+
+const forceLogout = () => {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("user");
+
+  if (window.location.pathname !== "/login") {
+    window.location.href = "/login";
+  }
+};
+
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
     const status = error.response?.status;
+    const isAuthEndpoint = AUTH_ENDPOINTS.includes(originalRequest?.url);
 
-    const isAuthEndpoint =
-      error.config?.url === "staff/login/" ||
-      error.config?.url === "staff/signup/";
+    // Bad credentials on login/signup itself — not a session issue, just reject.
+    if (status === 401 && isAuthEndpoint) {
+      return Promise.reject(error);
+    }
 
-    if (status === 401 && !isAuthEndpoint) {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
+    if (status === 401 && !originalRequest._retry) {
+      const refreshToken = localStorage.getItem("refresh_token");
 
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
+      // No refresh token to try — nothing to do but log out.
+      if (!refreshToken) {
+        forceLogout();
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        // Another request already triggered a refresh; wait for it.
+        return new Promise((resolve, reject) => {
+          pendingQueue.push({ resolve, reject });
+        })
+          .then((newToken) => {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const { data } = await axios.post(REFRESH_URL, {
+          refresh: refreshToken,
+        });
+
+        localStorage.setItem("access_token", data.access);
+        processQueue(null, data.access);
+
+        originalRequest.headers.Authorization = `Bearer ${data.access}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        forceLogout();
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 

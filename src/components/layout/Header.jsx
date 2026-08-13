@@ -31,7 +31,7 @@ export default function Header({ setSidebarOpen }) {
 
   const loadUnreadCount = async () => {
     try {
-      const res = await api.get("/notifications/unread-count/");
+      const res = await api.get("notifications/unread-count/");
       setUnreadCount(res.data.count);
     } catch (err) {
       console.error("Failed to load unread count:", err);
@@ -54,7 +54,7 @@ export default function Header({ setSidebarOpen }) {
 
     if (nextState) {
       try {
-        const res = await api.get("/notifications/");
+        const res = await api.get("notifications/");
         setRecentNotes(res.data.filter((note) => !note.is_read));
         loadUnreadCount();
       } catch (err) {
@@ -82,7 +82,7 @@ export default function Header({ setSidebarOpen }) {
 
   const markNotificationRead = async (id) => {
     try {
-      await api.put(`/notifications/${id}/read/`);
+      await api.put(`notifications/${id}/read/`);
 
       setRecentNotes((prev) => prev.filter((note) => note.id !== id));
 
@@ -94,7 +94,7 @@ export default function Header({ setSidebarOpen }) {
 
   const handleMarkAllRead = async () => {
     try {
-      await api.put("/notifications/read-all/");
+      await api.put("notifications/read-all/");
 
       setUnreadCount(0);
       setRecentNotes([]);
