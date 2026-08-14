@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getMetaConnectUrl, getMetaStatus } from "../../../api/meta";
 import { Link2 } from "lucide-react";
 
