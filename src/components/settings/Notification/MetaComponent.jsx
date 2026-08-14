@@ -26,9 +26,15 @@ export default function MetaComponent() {
       .finally(() => setLoading(false));
   }, []);
 
-  const connectMeta = () => {
-    window.location.href = getMetaConnectUrl();
-  };
+  const connectMeta = async () => {
+    try {
+        const response = await getMetaConnectUrl();
+
+        window.location.href = response.data.auth_url;
+    } catch (error) {
+        console.error("Failed to connect Meta:", error);
+    }
+    };
 
   return (
     <div className="rounded-2xl bg-white px-20 py-10 shadow-lg mb-5">
