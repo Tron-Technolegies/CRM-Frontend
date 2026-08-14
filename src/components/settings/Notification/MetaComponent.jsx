@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { getMetaConnectUrl, getMetaStatus } from "../../../api/meta";
 import { Link2 } from "lucide-react";
-import { getMetaConnectUrl, getMetaStatus } from "../../../api/Meta";
-// import { getMetaConnectUrl, getMetaStatus } from "../../api/Meta";
 
-const MetaIntegration = () => {
+export default function MetaComponent() {
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -76,6 +75,4 @@ const MetaIntegration = () => {
       </div>
     </div>
   );
-};
-
-export default MetaIntegration;
+}
