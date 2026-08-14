@@ -3,9 +3,9 @@ import Notifications from './Notifications';
 import PushNotifications from './PushNotifications';
 import AppNotifications from './AppNotifications';
 import DesktopAlert from './DesktopAlert';
-import MetaIntegration from './Metaintegration';
 import useNotificationSettings from '../../../hooks/useNotificationSettings';
 import BackButton from "../../common/BackButton";
+import MetaIntegration from './MetaIntegration';
 
 const statusText = {
     saving: 'Saving...',
@@ -42,7 +42,7 @@ const Notification = () => {
             )}
             <Notifications settings={settings} toggleSetting={toggleSetting} />
             <PushNotifications settings={settings} toggleSetting={toggleSetting} />
-            <Metaintegration />
+            <MetaIntegration />
             {/* <AppNotifications settings={settings} toggleSetting={toggleSetting} /> */}
             {/* <DesktopAlert settings={settings} toggleSetting={toggleSetting} /> */}
         </div>
