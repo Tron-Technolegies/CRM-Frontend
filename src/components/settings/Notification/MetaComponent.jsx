@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link2 } from "lucide-react";
-import { getMetaConnectUrl, getMetaStatus } from "../../../api/meta";
+import { getMetaConnectUrl, getMetaStatus } from "../../../api/Meta";
 
 export default function MetaComponent() {
   const [isConnected, setIsConnected] = useState(false);
