@@ -3,6 +3,7 @@ import Notifications from './Notifications';
 import PushNotifications from './PushNotifications';
 import AppNotifications from './AppNotifications';
 import DesktopAlert from './DesktopAlert';
+import MetaIntegration from './MetaIntegration';
 import useNotificationSettings from '../../../hooks/useNotificationSettings';
 import BackButton from "../../common/BackButton";
 
@@ -41,6 +42,7 @@ const Notification = () => {
             )}
             <Notifications settings={settings} toggleSetting={toggleSetting} />
             <PushNotifications settings={settings} toggleSetting={toggleSetting} />
+            <MetaIntegration />
             {/* <AppNotifications settings={settings} toggleSetting={toggleSetting} /> */}
             {/* <DesktopAlert settings={settings} toggleSetting={toggleSetting} /> */}
         </div>
