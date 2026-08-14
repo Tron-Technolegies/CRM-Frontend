@@ -6,6 +6,7 @@ import DesktopAlert from './DesktopAlert';
 import useNotificationSettings from '../../../hooks/useNotificationSettings';
 import BackButton from "../../common/BackButton";
 import MetaIntegration from './MetaIntegration';
+// import MetaIntegration from './MetaIntegration';
 
 const statusText = {
     saving: 'Saving...',
