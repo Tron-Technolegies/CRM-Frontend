@@ -5,3 +5,6 @@ export const getMetaConnectUrl = () =>
 
 export const getMetaStatus = () =>
   api.get("/integrations/meta/status/");
+
+export const disconnectMeta = () =>
+  api.post("/integrations/meta/disconnect/");

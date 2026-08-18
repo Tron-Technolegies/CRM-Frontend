@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Link2 } from "lucide-react";
-import { getMetaConnectUrl, getMetaStatus } from "../../../api/Meta";
+import { getMetaConnectUrl, getMetaStatus, disconnectMeta } from "../../../api/Meta";
 
 export default function MetaComponent() {
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false); // covers both connect + disconnect clicks
 
   useEffect(() => {
-    // Right after the OAuth round-trip, the backend redirects here with
-    // ?meta=connected — show that instantly instead of waiting on the
-    // status fetch below, and clean the param out of the URL.
     const params = new URLSearchParams(window.location.search);
     if (params.get("meta") === "connected") {
       setIsConnected(true);
@@ -28,13 +26,29 @@ export default function MetaComponent() {
 
   const connectMeta = async () => {
     try {
-        const response = await getMetaConnectUrl();
-
-        window.location.href = response.data.auth_url;
+      setActionLoading(true);
+      const response = await getMetaConnectUrl();
+      window.location.href = response.data.auth_url;
     } catch (error) {
-        console.error("Failed to connect Meta:", error);
+      console.error("Failed to connect Meta:", error);
+      setActionLoading(false);
     }
-    };
+  };
+
+  const disconnect = async () => {
+    if (!window.confirm("Disconnect your Meta account? Lead syncing will stop.")) {
+      return;
+    }
+    try {
+      setActionLoading(true);
+      await disconnectMeta();
+      setIsConnected(false);
+    } catch (error) {
+      console.error("Failed to disconnect Meta:", error);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   return (
     <div className="rounded-2xl bg-white px-20 py-10 shadow-lg mb-5">
@@ -54,7 +68,7 @@ export default function MetaComponent() {
         </div>
       </div>
 
-      {/* Connect row */}
+      {/* Connect/Disconnect row */}
       <div className="flex items-center justify-between py-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-800">
@@ -67,17 +81,23 @@ export default function MetaComponent() {
           </p>
         </div>
 
-        <button
-          onClick={connectMeta}
-          disabled={loading || isConnected}
-          className={`rounded-lg px-5 py-2 text-sm font-semibold transition ${
-            isConnected
-              ? "cursor-not-allowed bg-green-100 text-green-700"
-              : "bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-          }`}
-        >
-          {loading ? "Checking..." : isConnected ? "Connected" : "Connect Meta"}
-        </button>
+        {isConnected ? (
+          <button
+            onClick={disconnect}
+            disabled={loading || actionLoading}
+            className="rounded-lg px-5 py-2 text-sm font-semibold text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 transition disabled:opacity-50"
+          >
+            {actionLoading ? "Disconnecting..." : "Disconnect"}
+          </button>
+        ) : (
+          <button
+            onClick={connectMeta}
+            disabled={loading || actionLoading}
+            className="rounded-lg px-5 py-2 text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50"
+          >
+            {loading ? "Checking..." : actionLoading ? "Redirecting..." : "Connect Meta"}
+          </button>
+        )}
       </div>
     </div>
   );
