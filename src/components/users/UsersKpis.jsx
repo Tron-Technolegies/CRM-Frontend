@@ -6,11 +6,48 @@ export default function UsersKpis({ users = [] }) {
   const admins = users.filter((u) => u.role?.toLowerCase() === "admin").length;
   const pendingInvites = users.filter((u) => u.status === "Invited").length;
 
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  const newThisWeek = users.filter(
+    (u) => u.invitedAt && new Date(u.invitedAt) >= oneWeekAgo
+  ).length;
+
+  const activePercent = total ? Math.round((active / total) * 100) : 0;
+
   const kpis = [
-    { label: "Total Users", value: total, subtext: "+ 2 added this week", icon: Users, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
-    { label: "Active Users", value: active, subtext: "↑ 90% engagement", icon: UserCheck, iconBg: "bg-emerald-50", iconColor: "text-emerald-600" },
-    { label: "Admins", value: admins, subtext: "↑ No change", icon: Shield, iconBg: "bg-violet-50", iconColor: "text-violet-600" },
-    { label: "Pending Invites", value: pendingInvites, subtext: "↑ 1 expired", icon: Mail, iconBg: "bg-amber-50", iconColor: "text-amber-600" },
+    {
+      label: "Total Users",
+      value: total,
+      subtext: `+ ${newThisWeek} added this week`,
+      icon: Users,
+      iconBg: "bg-blue-50",
+      iconColor: "text-blue-600",
+    },
+    {
+      label: "Active Users",
+      value: active,
+      subtext: `${activePercent}% active`,
+      icon: UserCheck,
+      iconBg: "bg-emerald-50",
+      iconColor: "text-emerald-600",
+    },
+    {
+      label: "Admins",
+      value: admins,
+      subtext: `${admins} admin${admins !== 1 ? "s" : ""}`,
+      icon: Shield,
+      iconBg: "bg-violet-50",
+      iconColor: "text-violet-600",
+    },
+    {
+      label: "Pending Invites",
+      value: pendingInvites,
+      subtext: pendingInvites > 0 ? "Awaiting response" : "All resolved",
+      icon: Mail,
+      iconBg: "bg-amber-50",
+      iconColor: "text-amber-600",
+    },
   ];
 
   return (
