@@ -23,18 +23,20 @@ export default function Dashboard() {
     <div className="space-y-6">
       <DashboardKpis report={report} />
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-stretch">
+      <div>
+        {/* className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-stretch" */}
         <div className="xl:col-span-2">
           <DashboardGrowth report={report} />
         </div>
 
-        <div className="xl:col-span-1">
-          <DashboardLeadsBySource />
-        </div>
+        
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
-        <DashboardRecentActivities />
+        {/* <DashboardRecentActivities /> */}
+        <div className="xl:col-span-1">
+          <DashboardLeadsBySource />
+        </div>
         <DashboardTasksDueToday />
       </div>
     </div>
