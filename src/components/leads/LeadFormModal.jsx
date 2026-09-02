@@ -5,6 +5,30 @@ import { usePicklist } from "../../hooks/usePicklist";
 
 const defaultCountryCodes = ["+91", "+1", "+44", "+65", "+971"];
 
+function parsePhoneNumber(rawPhone) {
+  if (!rawPhone) return { countryCode: "+91", phoneNumber: "" };
+  let str = String(rawPhone).trim();
+  let matchedCode = "+91";
+
+  for (const code of defaultCountryCodes) {
+    if (str.startsWith(code)) {
+      matchedCode = code;
+      break;
+    }
+  }
+
+  // Strip any duplicate country codes from the phone number
+  for (const code of defaultCountryCodes) {
+    const regex = new RegExp(`^(\\${code}\\s*)+`, "i");
+    str = str.replace(regex, "");
+  }
+
+  return {
+    countryCode: matchedCode,
+    phoneNumber: str.trim(),
+  };
+}
+
 function validateLead(form) {
   const errors = {};
   if (!form.fullName.trim()) errors.fullName = "Full name is required";
@@ -23,27 +47,6 @@ export default function LeadFormModal({
   const sourceOptions = usePicklist("lead_source");
   const priorityOptions = usePicklist("lead_priority");
   const statusOptions = usePicklist("lead_status");
-
-  // useEffect(() => {
-  //   let mounted = true;
-
-  //   const fetchStaff = async () => {
-  //     try {
-  //       const { data } = await api.get("/staff/view/");
-  //       if (mounted) {
-  //         setStaff(Array.isArray(data) ? data : []);
-  //       }
-  //     } catch (error) {
-  //       console.error("Failed to fetch staff:", error);
-  //     }
-  //   };
-
-  //   fetchStaff();
-
-  //   return () => {
-  //     mounted = false;
-  //   };
-  // }, []);
 
   const blankForm = useMemo(
     () => ({
@@ -67,24 +70,28 @@ export default function LeadFormModal({
 
   useEffect(() => {
     if (initialData) {
+      const { countryCode, phoneNumber } = parsePhoneNumber(
+        initialData.phone || initialData.phoneNumber || initialData.phone_number || ""
+      );
+
       setForm({
-        fullName: initialData.name || "",
-        countryCode: "+91",
-        phoneNumber: initialData.phone || "",
+        fullName: initialData.name || initialData.fullName || initialData.full_name || "",
+        countryCode,
+        phoneNumber,
         email: initialData.email || "",
-        companyName: initialData.companyName || "",
-        leadSource: initialData.source || "Website",
-        assignedTo: initialData.assignedToId || "",
+        companyName: initialData.companyName || initialData.company_name || "",
+        leadSource: initialData.source || initialData.leadSource || initialData.lead_source || "Website",
+        assignedTo: initialData.assignedToId || initialData.assignedTo || initialData.assigned_to || "",
         priority: initialData.priority || "Medium",
-        expectedClosingDate: "",
-        description: initialData.description || "",
-        status: initialData.status?.toLowerCase() || "new",
+        expectedClosingDate: initialData.expectedClosingDate || initialData.expected_closing_date || "",
+        description: initialData.description || initialData.leadDescription || initialData.lead_description || "",
+        status: (initialData.status || "new").toLowerCase(),
       });
     } else {
       setForm(blankForm);
     }
     setTouched({});
-  }, [initialData]);
+  }, [initialData, blankForm]);
 
   const errors = validateLead(form);
   const hasErrors = Object.keys(errors).length > 0;
