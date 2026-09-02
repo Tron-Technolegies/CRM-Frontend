@@ -314,7 +314,7 @@ export default function AddCall({
                     >
                       <option value="">Select contact</option>
                       {customers.map((c) => (
-                        <option key={c.id} value={c.id}>{c.companyName}</option>
+                        <option key={c.id} value={c.id}>{c.contactName || c.name || c.contact_name || c.companyName}</option>
                       ))}
                     </select>
                   </div>

@@ -16,13 +16,13 @@ export default function CustomersKpis({ customers = [] }) {
     const d = new Date(c.createdAt);
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
   }).length;
-  const totalRevenue = customers.reduce((sum, c) => sum + Number(c.lifetimeValue || 0), 0);
+  const inactive = customers.filter((c) => c.status?.toLowerCase() === "inactive").length;
 
   const kpis = [
     { label: "Total Customers", value: total, subtext: "All Time", icon: Users, iconBg: "bg-blue-50", iconColor: "text-blue-600" },
     { label: "Active", value: active, subtext: "Current", icon: UserCheck, iconBg: "bg-emerald-50", iconColor: "text-emerald-600" },
+    { label: "Inactive", value: inactive, subtext: "Current", icon: Users, iconBg: "bg-slate-50", iconColor: "text-slate-600" },
     { label: "New This Month", value: newThisMonth, subtext: "This Month", icon: TrendingUp, iconBg: "bg-violet-50", iconColor: "text-violet-600" },
-    { label: "Total Revenue", value: formatCurrency(totalRevenue), subtext: "Lifetime", icon: DollarSign, iconBg: "bg-amber-50", iconColor: "text-amber-600" },
   ];
 
   return (

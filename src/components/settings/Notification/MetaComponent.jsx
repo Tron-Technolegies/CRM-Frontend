@@ -19,7 +19,7 @@ export default function MetaComponent() {
     }
 
     getMetaStatus()
-      .then((res) => setIsConnected(res.data.connected))
+      .then((res) => setIsConnected(Boolean(res?.data?.connected ?? res?.connected)))
       .catch((err) => console.error("Failed to fetch Meta status:", err))
       .finally(() => setLoading(false));
   }, []);

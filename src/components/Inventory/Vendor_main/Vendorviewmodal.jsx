@@ -18,11 +18,11 @@ function Badge({ children, dot, dotColor }) {
 
 function DetailField({ label, value }) {
   return (
-    <div>
+    <div className="min-w-0">
       <div className="text-[11px] font-semibold tracking-wide text-[#9CA3AF] uppercase mb-1">
         {label}
       </div>
-      <div className="text-sm font-semibold text-[#111827]">
+      <div className="text-sm font-semibold text-[#111827] break-words">
         {value || "-"}
       </div>
     </div>
@@ -84,7 +84,7 @@ export default function VendorViewModal({ vendorId, onClose, onEdit }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl border border-[#E5E7EB] w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-xl">
+      <div className="bg-white rounded-2xl border border-[#E5E7EB] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
         {/* Header */}
         <div className="flex items-start justify-between px-6 py-5 border-b border-[#E5E7EB]">
           <div>
@@ -98,7 +98,7 @@ export default function VendorViewModal({ vendorId, onClose, onEdit }) {
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#6B7280] hover:bg-gray-100"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#6B7280] hover:bg-gray-100 cursor-pointer"
             aria-label="Close"
           >
             <X size={18} />
@@ -106,7 +106,7 @@ export default function VendorViewModal({ vendorId, onClose, onEdit }) {
         </div>
 
         <div className="p-6">
-          {loading && <div className="text-[#6B7280] text-sm">Loading...</div>}
+          {loading && <div className="text-[#6B7280] text-sm py-8 text-center">Loading vendor details...</div>}
 
           {error && (
             <div className="px-4 py-3 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm">
@@ -117,12 +117,12 @@ export default function VendorViewModal({ vendorId, onClose, onEdit }) {
           {!loading && !error && vendor && (
             <>
               {/* Highlight card */}
-              <div className="flex items-center gap-4 p-4 rounded-xl border border-blue-100 bg-blue-50/50">
-                <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-                  <Building2 size={20} className="text-white" />
+              <div className="flex items-center gap-4 p-5 rounded-2xl border border-blue-100 bg-blue-50/50">
+                <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <Building2 size={22} className="text-white" />
                 </div>
-                <div className="min-w-0">
-                  <div className="font-semibold text-[#111827] text-base truncate">
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold text-[#111827] text-lg truncate">
                     {vendor.vendorName}
                   </div>
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -141,11 +141,11 @@ export default function VendorViewModal({ vendorId, onClose, onEdit }) {
               </div>
 
               {/* Vendor details grid */}
-              <div className="mt-5 p-4 rounded-xl bg-[#F9FAFB]">
-                <div className="text-[11px] font-semibold tracking-wide text-[#9CA3AF] uppercase mb-3">
-                  Vendor Details
+              <div className="mt-5 p-5 rounded-2xl bg-[#F9FAFB] border border-[#EEF2F7]">
+                <div className="text-[11px] font-bold tracking-wider text-[#9CA3AF] uppercase mb-4">
+                  General Information
                 </div>
-                <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 mb-5">
                   <DetailField
                     label="Status"
                     value={isActive ? "Active" : "Inactive"}
@@ -153,7 +153,7 @@ export default function VendorViewModal({ vendorId, onClose, onEdit }) {
                   <DetailField label="Vendor Code" value={vendor.vendorCode} />
                   <DetailField label="GST Number" value={vendor.gstNumber} />
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                   <DetailField label="Email" value={vendor.email} />
                   <DetailField label="Phone" value={vendor.phone} />
                   <DetailField label="Mobile" value={vendor.mobile} />
@@ -161,24 +161,26 @@ export default function VendorViewModal({ vendorId, onClose, onEdit }) {
               </div>
 
               {/* Address */}
-              <div className="mt-5 p-4 rounded-xl bg-[#F9FAFB]">
-                <div className="text-[11px] font-semibold tracking-wide text-[#9CA3AF] uppercase mb-2">
+              <div className="mt-5 p-5 rounded-2xl bg-[#F9FAFB] border border-[#EEF2F7]">
+                <div className="text-[11px] font-bold tracking-wider text-[#9CA3AF] uppercase mb-2">
                   Address
                 </div>
-                <div className="text-sm text-[#111827]">
+                <div className="text-sm font-medium text-[#111827] leading-relaxed break-words">
                   {addressLine || "No address added."}
                 </div>
               </div>
 
               {/* Notes */}
-              <div className="mt-5 p-4 rounded-xl bg-[#F9FAFB]">
-                <div className="text-[11px] font-semibold tracking-wide text-[#9CA3AF] uppercase mb-2">
-                  Notes
+              {vendor.notes && (
+                <div className="mt-5 p-5 rounded-2xl bg-[#F9FAFB] border border-[#EEF2F7]">
+                  <div className="text-[11px] font-bold tracking-wider text-[#9CA3AF] uppercase mb-2">
+                    Notes
+                  </div>
+                  <div className="text-sm text-[#374151] leading-relaxed break-words whitespace-pre-wrap">
+                    {vendor.notes}
+                  </div>
                 </div>
-                <div className="text-sm text-[#111827]">
-                  {vendor.notes || "No notes added."}
-                </div>
-              </div>
+              )}
             </>
           )}
         </div>

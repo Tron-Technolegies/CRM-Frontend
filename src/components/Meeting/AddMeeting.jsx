@@ -492,7 +492,7 @@ export default function AddMeeting({
                   <option value="">Select Customer</option>
                   {customers.map((customer) => (
                     <option key={customer.id} value={customer.id}>
-                      {customer.contactName}
+                      {customer.contactName || customer.name || customer.contact_name || customer.companyName}
                     </option>
                   ))}
                 </select>

@@ -38,7 +38,11 @@ export default function Header({ setSidebarOpen }) {
   const loadUnreadCount = async () => {
     try {
       const res = await api.get("notifications/unread-count/");
-      setUnreadCount(res.data.count);
+      const count =
+        typeof res.data === "number"
+          ? res.data
+          : res.data?.count ?? res.data?.unread_count ?? 0;
+      setUnreadCount(Number(count) || 0);
     } catch (err) {
       console.error("Failed to load unread count:", err);
     }
@@ -47,8 +51,8 @@ export default function Header({ setSidebarOpen }) {
   const loadProfilePicture = async () => {
     try {
       const res = await api.get("profile/view/");
-      setProfilePicture(res.data.profilePicture);
-      setFullName(res.data.fullName || "");
+      setProfilePicture(res.data?.profilePicture);
+      setFullName(res.data?.fullName || "");
     } catch (err) {
       console.error("Failed to load profile picture:", err);
     }
@@ -58,11 +62,32 @@ export default function Header({ setSidebarOpen }) {
     loadUnreadCount();
     loadProfilePicture();
 
+    const handleProfileUpdated = (e) => {
+      if (e.detail?.profilePicture) {
+        setProfilePicture(e.detail.profilePicture);
+      }
+      if (e.detail?.fullName) {
+        setFullName(e.detail.fullName);
+      }
+      loadProfilePicture();
+    };
+
+    const handleNotificationUpdated = () => {
+      loadUnreadCount();
+    };
+
+    window.addEventListener("profileUpdated", handleProfileUpdated);
+    window.addEventListener("notificationUpdated", handleNotificationUpdated);
+
     const interval = setInterval(() => {
       loadUnreadCount();
-    }, 30000); // check every 30s
+    }, 10000); // check every 10s
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("profileUpdated", handleProfileUpdated);
+      window.removeEventListener("notificationUpdated", handleNotificationUpdated);
+    };
   }, []);
 
   const handleBellClick = async () => {
@@ -72,10 +97,17 @@ export default function Header({ setSidebarOpen }) {
     if (nextState) {
       try {
         const res = await api.get("notifications/");
-        setRecentNotes(res.data.filter((note) => !note.is_read));
+        const list = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data?.notifications)
+          ? res.data.notifications
+          : Array.isArray(res.data?.data)
+          ? res.data.data
+          : [];
+        setRecentNotes(list.slice(0, 10));
         loadUnreadCount();
       } catch (err) {
-        // silent fail, dropdown just shows empty state
+        console.error("Failed to load notifications dropdown:", err);
       }
     }
   };
@@ -101,11 +133,13 @@ export default function Header({ setSidebarOpen }) {
     try {
       await api.put(`notifications/${id}/read/`);
 
-      setRecentNotes((prev) => prev.filter((note) => note.id !== id));
+      setRecentNotes((prev) =>
+        prev.map((note) => (note.id === id ? { ...note, is_read: true } : note))
+      );
 
       loadUnreadCount();
     } catch (err) {
-      // non-critical, list already reflects optimistic state where relevant
+      // non-critical
     }
   };
 
@@ -114,9 +148,9 @@ export default function Header({ setSidebarOpen }) {
       await api.put("notifications/read-all/");
 
       setUnreadCount(0);
-      setRecentNotes([]);
+      setRecentNotes((prev) => prev.map((note) => ({ ...note, is_read: true })));
     } catch (err) {
-      // non-critical, badge already cleared optimistically
+      // non-critical
     }
   };
 
@@ -176,11 +210,25 @@ export default function Header({ setSidebarOpen }) {
                   recentNotes.map((note) => (
                     <div
                       key={note.id}
-                      onClick={() => markNotificationRead(note.id)}
-                      className="px-4 py-3 border-b border-gray-50 last:border-0 cursor-pointer bg-blue-50 hover:bg-blue-100"
+                      onClick={() => !note.is_read && markNotificationRead(note.id)}
+                      className={`px-4 py-3 border-b border-gray-100 last:border-0 cursor-pointer transition ${
+                        note.is_read
+                          ? "bg-white hover:bg-gray-50 opacity-80"
+                          : "bg-blue-50/70 hover:bg-blue-100/70"
+                      }`}
                     >
-                      <p className="text-sm font-medium text-gray-800">{note.title}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{note.message}</p>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-semibold text-gray-800">{note.title}</p>
+                        {!note.is_read && (
+                          <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0 mt-1.5" />
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-600 mt-0.5 leading-relaxed">{note.message}</p>
+                      {note.created_at && (
+                        <p className="text-[10px] text-gray-400 mt-1">
+                          {new Date(note.created_at).toLocaleDateString()}
+                        </p>
+                      )}
                     </div>
                   ))
                 )}

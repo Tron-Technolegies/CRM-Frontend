@@ -72,7 +72,6 @@ export default function Customers() {
         email: form.email.trim(),
         industry: form.industry,
         status: form.status.toLowerCase(),
-        lifetime_value: Number(form.lifetimeValue || 0),
         lead_id: form.leadId || null,
       });
 
@@ -109,7 +108,6 @@ export default function Customers() {
         email: form.email.trim(),
         industry: form.industry,
         status: form.status.toLowerCase(),
-        lifetime_value: Number(form.lifetimeValue || 0),
       });
 
       pushToast({
