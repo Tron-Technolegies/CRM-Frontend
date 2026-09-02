@@ -197,20 +197,25 @@ export default function DealFormModal({
   };
 
   const submit = () => {
-    setTouched({
-      dealName: true,
-      companyName: true,
-      dealAmount: true,
-      stage: true,
-      assignedTo: true,
-      expectedCloseDate: true,
-      related: true,
-    });
+  setTouched({
+    dealName: true,
+    companyName: true,
+    dealAmount: true,
+    stage: true,
+    assignedTo: true,
+    expectedCloseDate: true,
+    related: true,
+  });
 
-    if (hasErrors) return;
+  if (hasErrors) return;
 
-    onSubmit(form);
-  };
+  onSubmit({
+    ...form,
+    relatedType: form.relatedType,
+    relatedId: form.relatedId ? String(form.relatedId) : "",
+  });
+};
+
 
   return (
     <Modal

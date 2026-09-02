@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   getLeads,
   getLead,
-  addLead,
+  addLead as addLeadApi,
   updateLead,
   deleteLead,
   getStaff,
@@ -16,7 +16,7 @@ export default function useLead() {
   const fetchLeads = async () => {
     try {
       const data = await getLeads();
-      setLeads(data);
+      setLeads(data || []);
     } finally {
       setLoading(false);
     }
@@ -25,7 +25,7 @@ export default function useLead() {
   const fetchStaff = async () => {
     try {
       const data = await getStaff();
-      setStaff(data);
+      setStaff(data || []);
     } catch (err) {
       console.error(err);
     }
@@ -36,18 +36,21 @@ export default function useLead() {
   };
 
   const addLead = async (leadData) => {
-    await createLead(leadData);
-    await fetchLeads();
+    const res = await addLeadApi(leadData);
+    fetchLeads();
+    return res;
   };
 
   const editLead = async (id, leadData) => {
-    await updateLead(id, leadData);
-    await fetchLeads();
+    const res = await updateLead(id, leadData);
+    fetchLeads();
+    return res;
   };
 
   const removeLead = async (id) => {
-    await deleteLead(id);
-    await fetchLeads();
+    const res = await deleteLead(id);
+    setLeads((prev) => prev.filter((l) => l.id !== id));
+    return res;
   };
 
   const refresh = async () => {

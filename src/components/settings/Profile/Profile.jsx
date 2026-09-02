@@ -15,6 +15,10 @@ const Profile = () => {
     fetchProfile();
   }, [fetchProfile]);
 
+  const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    profile?.fullName || "User"
+  )}&background=e5e7eb&color=6b7280&size=200`;
+
   return (
     <div className="min-h-screen p-6">
 
@@ -26,7 +30,7 @@ const Profile = () => {
       <div className="bg-white rounded-2xl shadow-lg p-15 mb-5">
         <div className="flex flex-col md:flex-row gap-6 items-start">
           <img
-            src="https://i.pravatar.cc/150?img=12"
+            src={profile?.profilePicture || avatarFallback}
             alt="Profile"
             className="w-28 h-28 rounded-full object-cover"
           />

@@ -6,6 +6,7 @@ export const getProfile = async () => {
 };
 
 export const updateProfile = async (payload) => {
-  const { data } = await api.patch("/profile/update/", payload);
+  const config = payload instanceof FormData ? { headers: { "Content-Type": "multipart/form-data" } } : {};
+  const { data } = await api.patch("/profile/update/", payload, config);
   return data;
 };

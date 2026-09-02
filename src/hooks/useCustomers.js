@@ -33,18 +33,21 @@ export default function useCustomers() {
   };
 
   const addCustomer = async (customerData) => {
-    await createCustomer(customerData);
-    await fetchCustomers();
+    const res = await createCustomer(customerData);
+    fetchCustomers();
+    return res;
   };
 
   const editCustomer = async (id, customerData) => {
-    await updateCustomer(id, customerData);
-    await fetchCustomers();
+    const res = await updateCustomer(id, customerData);
+    fetchCustomers();
+    return res;
   };
 
   const removeCustomer = async (id) => {
-    await deleteCustomer(id);
-    await fetchCustomers();
+    const res = await deleteCustomer(id);
+    setCustomers((prev) => prev.filter((c) => c.id !== id));
+    return res;
   };
 
   return {

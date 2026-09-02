@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import Spinner from "../ui/Spinner";
+
 
 const callTypeOptions = ["inbound", "outbound"];
 const statusOptions = ["scheduled", "follow up", "completed", "missed", "cancelled"];
@@ -173,18 +175,18 @@ export default function AddCall({
               />
             </div>
 
-            {/* <div>
+            <div>
               <label className="text-sm text-[#111827] font-medium">Call Type <span className="text-red-500">*</span></label>
               <select
                 value={form.call_type}
                 onChange={(e) => setField("call_type", e.target.value)}
-                className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+                className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
               >
                 {callTypeOptions.map((c) => (
-                  <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
+                  <option key={c} value={c}>{c === "outbound" ? "Outbound (Outgoing call to lead/client)" : "Inbound (Incoming call from lead/client)"}</option>
                 ))}
               </select>
-            </div> */}
+            </div>
 
             <div>
               <label className="text-sm text-[#111827] font-medium">Status</label>
@@ -365,11 +367,12 @@ export default function AddCall({
         </div>
 
         <div className="flex items-center justify-end gap-3 p-6 border-t border-[#EEF2F7]">
-          <button type="button" onClick={onClose} disabled={loading} className="h-11 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] disabled:opacity-60">
+          <button type="button" onClick={onClose} disabled={loading} className="h-11 px-5 rounded-xl border border-[#E5E7EB] text-sm font-medium text-[#111827] hover:bg-gray-50 transition cursor-pointer disabled:opacity-60">
             Cancel
           </button>
-          <button type="button" onClick={handleSubmit} disabled={loading} className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium disabled:opacity-60">
-            Create
+          <button type="button" onClick={handleSubmit} disabled={loading} className="h-11 px-6 rounded-xl bg-[#2B61FF] hover:bg-blue-700 active:scale-[0.98] transition text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 shadow-sm">
+            {loading && <Spinner size={16} className="text-white" />}
+            <span>{loading ? "Creating..." : "Create"}</span>
           </button>
         </div>
       </div>

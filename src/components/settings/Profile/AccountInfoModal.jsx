@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, Camera } from "lucide-react";
 
 const emptyForm = {
   fullName: "",
@@ -8,7 +8,6 @@ const emptyForm = {
   website: "",
   fax: "",
   alias: "",
-  profileType: "",
   dateOfBirth: "",
   street: "",
   city: "",
@@ -19,6 +18,8 @@ const emptyForm = {
 
 const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
   const [form, setForm] = useState(emptyForm);
+  const [preview, setPreview] = useState(null);
+  const [pictureFile, setPictureFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -31,7 +32,6 @@ const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
         website: profile.website || "",
         fax: profile.fax || "",
         alias: profile.alias || "",
-        profileType: profile.profileType || "",
         dateOfBirth: profile.dateOfBirth || "",
         street: profile.street || "",
         city: profile.city || "",
@@ -39,6 +39,8 @@ const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
         zipCode: profile.zipCode || "",
         country: profile.country || "",
       });
+      setPreview(profile.profilePicture || null);
+      setPictureFile(null);
     }
   }, [profile, isOpen]);
 
@@ -46,11 +48,29 @@ const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
 
   const setField = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
+  const handlePictureChange = (e) => {
+    const selected = e.target.files[0];
+    if (selected) {
+      setPictureFile(selected);
+      setPreview(URL.createObjectURL(selected));
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setError("");
     try {
-      await onSave(form);
+      const formData = new FormData();
+
+      Object.entries(form).forEach(([key, value]) => {
+        formData.append(key, value ?? "");
+      });
+
+      if (pictureFile) {
+        formData.append("profilePicture", pictureFile);
+      }
+
+      await onSave(formData);
       onClose();
     } catch (err) {
       console.error("SAVE PROFILE ERROR:", err);
@@ -77,25 +97,41 @@ const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
             </div>
           )}
 
+          {/* Profile picture */}
+          <div className="mb-8 flex items-center gap-5">
+            <div className="relative">
+              <img
+                src={preview || `https://ui-avatars.com/api/?name=${encodeURIComponent(form.fullName || "User")}&background=e5e7eb&color=6b7280&size=200`}
+                alt="profile"
+                className="h-20 w-20 rounded-full object-cover border border-gray-200"
+              />
+              <label
+                htmlFor="profilePictureInput"
+                className="absolute -bottom-1 -right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-[#2B61FF] text-white shadow hover:bg-blue-700"
+              >
+                <Camera className="h-4 w-4" />
+              </label>
+              <input
+                id="profilePictureInput"
+                type="file"
+                accept="image/*"
+                onChange={handlePictureChange}
+                className="hidden"
+              />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-700">Profile Picture</p>
+              <p className="text-xs text-gray-400">Click the icon to upload a new photo</p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h1 className="font-semibold pb-7">User Information</h1>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Name</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">First / Full Name</label>
               <input
                 type="text"
                 value={form.fullName}
                 onChange={setField("fullName")}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
-              />
-            </div>
-
-            <div>
-              <h1 className="font-semibold pb-7">Address Information</h1>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Street</label>
-              <input
-                type="text"
-                value={form.street}
-                onChange={setField("street")}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
               />
             </div>
@@ -108,6 +144,20 @@ const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
                 onChange={setField("lastName")}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
               />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Alias / Preferred Name
+              </label>
+              <input
+                type="text"
+                value={form.alias}
+                onChange={setField("alias")}
+                placeholder="e.g. Nickname or internal handle"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
+              />
+              <p className="mt-1 text-xs text-gray-400">An optional handle or nickname used for internal identification.</p>
             </div>
 
             <div>
@@ -141,16 +191,6 @@ const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Profile</label>
-              <input
-                type="text"
-                value={form.profileType}
-                onChange={setField("profileType")}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
-              />
-            </div>
-
-            <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">Country</label>
               <input
                 type="text"
@@ -162,16 +202,7 @@ const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
           </div>
 
           <div className="mt-10">
-            <div className="space-y-9 md:grid-cols-2 w-1/2">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Alias</label>
-                <input
-                  type="text"
-                  value={form.alias}
-                  onChange={setField("alias")}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
-                />
-              </div>
+            <div className="space-y-6 md:grid-cols-2 w-full">
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">Mobile</label>
                 <input
@@ -190,7 +221,7 @@ const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
                 />
               </div>
-              <div>
+              {/* <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">Fax</label>
                 <input
                   type="text"
@@ -198,7 +229,7 @@ const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
                   onChange={setField("fax")}
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
                 />
-              </div>
+              </div> */}
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">Date Of Birth</label>
                 <input

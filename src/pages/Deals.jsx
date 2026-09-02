@@ -72,7 +72,7 @@ export default function Deals() {
     setAddLoading(true);
 
     try {
-      await addDeal({
+      const newDeal = await addDeal({
         deal_name: form.dealName.trim(),
         company_name: form.companyName.trim(),
         deal_amount: Number(form.dealAmount),
@@ -82,8 +82,8 @@ export default function Deals() {
         deal_source: form.dealSource,
         priority: form.priority,
         deal_description: form.description.trim(),
-        related_type: form.relatedType || null,
-        related_id: form.relatedId || null,
+        related_type: form.relatedType,
+        related_id: form.relatedId,
       });
 
       await fetchDeals();
@@ -93,6 +93,8 @@ export default function Deals() {
         message: `${form.dealName} added successfully`,
         variant: "success",
       });
+
+      setAddOpen(false);
     } catch (err) {
       console.error(err);
 
@@ -102,7 +104,6 @@ export default function Deals() {
       });
     } finally {
       setAddLoading(false);
-      setAddOpen(false);
     }
   };
 
@@ -122,8 +123,8 @@ export default function Deals() {
         deal_source: form.dealSource,
         priority: form.priority,
         deal_description: form.description.trim(),
-        related_type: form.relatedType || null,
-        related_id: form.relatedId || null,
+        related_type: form.relatedType,
+        related_id: form.relatedId,
       });
 
       await fetchDeals();
@@ -133,6 +134,8 @@ export default function Deals() {
         message: `${form.dealName} updated successfully`,
         variant: "success",
       });
+
+      setEditDeal(null);
     } catch (err) {
       console.error(err);
 
@@ -142,7 +145,6 @@ export default function Deals() {
       });
     } finally {
       setAddLoading(false);
-      setEditDeal(null);
     }
   };
 
