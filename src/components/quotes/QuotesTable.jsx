@@ -89,11 +89,6 @@ const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete })
                   </button>
                 ))}
               </div>
-
-              <button className="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-5 py-2 text-md font-semibold text-[#5A5F68] hover:bg-gray-100 transition">
-                <Funnel size={18} />
-                Filters
-              </button>
             </div>
           </div>
         </div>

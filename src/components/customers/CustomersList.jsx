@@ -96,10 +96,6 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
           <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="h-11 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] bg-white cursor-pointer">
             {industryOptions.map((o) => <option key={o} value={o}>Industry: {o}</option>)}
           </select>
-          <button type="button" onClick={() => openNotImplemented("More filters")} className="h-11 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] bg-white flex items-center gap-2 hover:bg-[#F8FAFC] transition cursor-pointer">
-            <SlidersHorizontal size={16} className="text-[#64748B]" />
-            More Filters
-          </button>
         </div>
       </div>
 

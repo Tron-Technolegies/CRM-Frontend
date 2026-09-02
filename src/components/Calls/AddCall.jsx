@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import Spinner from "../ui/Spinner";
+
 
 const callTypeOptions = ["inbound", "outbound"];
 const statusOptions = ["scheduled", "follow up", "completed", "missed", "cancelled"];
@@ -369,6 +371,7 @@ export default function AddCall({
             Cancel
           </button>
           <button type="button" onClick={handleSubmit} disabled={loading} className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium disabled:opacity-60">
+            {loading && <Spinner size={16} className="text-white" />}
             Create
           </button>
         </div>

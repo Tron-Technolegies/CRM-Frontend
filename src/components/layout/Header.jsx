@@ -10,6 +10,8 @@ export default function Header({ setSidebarOpen }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [recentNotes, setRecentNotes] = useState([]);
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [fullName, setFullName] = useState("");
 
   const dropdownRef = useRef(null);
 
@@ -29,6 +31,10 @@ export default function Header({ setSidebarOpen }) {
 
   const title = titleByPath[location.pathname] ?? "CRM";
 
+  const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    fullName || "User"
+  )}&background=e5e7eb&color=6b7280&size=200`;
+
   const loadUnreadCount = async () => {
     try {
       const res = await api.get("notifications/unread-count/");
@@ -38,8 +44,19 @@ export default function Header({ setSidebarOpen }) {
     }
   };
 
+  const loadProfilePicture = async () => {
+    try {
+      const res = await api.get("profile/view/");
+      setProfilePicture(res.data.profilePicture);
+      setFullName(res.data.fullName || "");
+    } catch (err) {
+      console.error("Failed to load profile picture:", err);
+    }
+  };
+
   useEffect(() => {
     loadUnreadCount();
+    loadProfilePicture();
 
     const interval = setInterval(() => {
       loadUnreadCount();
@@ -186,12 +203,12 @@ export default function Header({ setSidebarOpen }) {
         <Link to="/settings/profile">
           <div className="flex items-center gap-3 cursor-pointer">
             <img
-              src="https://i.pravatar.cc/100?img=12"
+              src={profilePicture || avatarFallback}
               alt="profile"
               className="w-10 h-10 rounded-full object-cover border border-[#e5e7eb]"
             />
             <div className="hidden sm:block">
-              <p className="text-sm font-semibold text-[#111827]">Admin</p>
+              <p className="text-sm font-semibold text-[#111827]">{fullName || "Admin"}</p>
             </div>
           </div>
         </Link>
