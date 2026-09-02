@@ -29,18 +29,22 @@ export default function usePreferences(field) {
   }, [field]);
 
   const addOption = async (payload) => {
-    await createPicklistOption(payload);
-    await fetchOptions();
+    const res = await createPicklistOption(payload);
+    fetchOptions();
+    return res;
   };
 
   const editOption = async (id, payload) => {
-    await updatePicklistOption(id, payload);
-    await fetchOptions();
+    const res = await updatePicklistOption(id, payload);
+    fetchOptions();
+    return res;
   };
 
   const removeOption = async (id) => {
-    await deletePicklistOption(id);
-    await fetchOptions();
+    const res = await deletePicklistOption(id);
+    setOptions((prev) => prev.filter((o) => o.id !== id));
+    fetchOptions();
+    return res;
   };
 
   return {

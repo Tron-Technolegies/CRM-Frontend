@@ -127,8 +127,7 @@ const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h1 className="font-semibold pb-7">User Information</h1>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Name</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">First / Full Name</label>
               <input
                 type="text"
                 value={form.fullName}
@@ -138,17 +137,6 @@ const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
             </div>
 
             <div>
-              <h1 className="font-semibold pb-7">Address Information</h1>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Street</label>
-              <input
-                type="text"
-                value={form.street}
-                onChange={setField("street")}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
-              />
-            </div>
-
-            {/* <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">Last Name</label>
               <input
                 type="text"
@@ -156,7 +144,21 @@ const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
                 onChange={setField("lastName")}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
               />
-            </div> */}
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Alias / Preferred Name
+              </label>
+              <input
+                type="text"
+                value={form.alias}
+                onChange={setField("alias")}
+                placeholder="e.g. Nickname or internal handle"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
+              />
+              <p className="mt-1 text-xs text-gray-400">An optional handle or nickname used for internal identification.</p>
+            </div>
 
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">City</label>
@@ -200,16 +202,7 @@ const AccountInfoModal = ({ isOpen, onClose, profile, onSave }) => {
           </div>
 
           <div className="mt-10">
-            <div className="space-y-9 md:grid-cols-2 w-1/2">
-              {/* <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Alias</label>
-                <input
-                  type="text"
-                  value={form.alias}
-                  onChange={setField("alias")}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
-                />
-              </div> */}
+            <div className="space-y-6 md:grid-cols-2 w-full">
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">Mobile</label>
                 <input

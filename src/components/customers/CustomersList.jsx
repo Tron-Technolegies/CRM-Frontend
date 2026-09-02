@@ -40,6 +40,12 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
   const [status, setStatus] = useState("All");
   const [industry, setIndustry] = useState("All");
 
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const [minLtv, setMinLtv] = useState("");
+  const [maxLtv, setMaxLtv] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   const [viewId, setViewId] = useState(null);
 
   const statusOptions = useMemo(() => {
@@ -54,13 +60,32 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const minVal = minLtv !== "" ? Number(minLtv) : null;
+    const maxVal = maxLtv !== "" ? Number(maxLtv) : null;
+
     return customers.filter((c) => {
       const matchesQuery = !q || [c.companyName, c.contactName, c.email, c.phone].filter(Boolean).some((v) => v.toLowerCase().includes(q));
       const matchesStatus = status === "All" || c.status === status;
       const matchesIndustry = industry === "All" || c.industry === industry;
-      return matchesQuery && matchesStatus && matchesIndustry;
+      
+      const ltvNum = Number(c.lifetimeValue || 0);
+      const matchesMinLtv = minVal === null || ltvNum >= minVal;
+      const matchesMaxLtv = maxVal === null || ltvNum <= maxVal;
+
+      let matchesDate = true;
+      if (c.joinDate) {
+        const cDate = new Date(c.joinDate).getTime();
+        if (startDate) {
+          matchesDate = matchesDate && cDate >= new Date(startDate).getTime();
+        }
+        if (endDate) {
+          matchesDate = matchesDate && cDate <= new Date(endDate).getTime() + 86400000;
+        }
+      }
+
+      return matchesQuery && matchesStatus && matchesIndustry && matchesMinLtv && matchesMaxLtv && matchesDate;
     });
-  }, [customers, query, status, industry]);
+  }, [customers, query, status, industry, minLtv, maxLtv, startDate, endDate]);
 
   const {
     currentPage,
@@ -74,11 +99,16 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
 
   useEffect(() => {
     resetPage();
-  }, [query, status, industry]);
+  }, [query, status, industry, minLtv, maxLtv, startDate, endDate]);
 
-  const openNotImplemented = (label) => {
-    pushToast({ title: `${label} not implemented`, message: "Wire this to your backend later.", variant: "info" });
+  const resetMoreFilters = () => {
+    setMinLtv("");
+    setMaxLtv("");
+    setStartDate("");
+    setEndDate("");
   };
+
+  const hasActiveMoreFilters = minLtv !== "" || maxLtv !== "" || startDate !== "" || endDate !== "";
 
   return (
     <div className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden">
@@ -96,8 +126,74 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
           <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="h-11 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] bg-white cursor-pointer">
             {industryOptions.map((o) => <option key={o} value={o}>Industry: {o}</option>)}
           </select>
+          <button
+            type="button"
+            onClick={() => setShowMoreFilters(!showMoreFilters)}
+            className={`h-11 px-4 rounded-xl border border-[#E5E7EB] text-sm font-medium flex items-center gap-2 transition cursor-pointer ${
+              hasActiveMoreFilters ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-[#111827] hover:bg-gray-50"
+            }`}
+          >
+            <SlidersHorizontal size={16} />
+            More Filters
+            {hasActiveMoreFilters && <span className="w-2 h-2 rounded-full bg-blue-600" />}
+          </button>
         </div>
       </div>
+
+      {/* Expanded More Filters panel */}
+      {showMoreFilters && (
+        <div className="p-5 border-b border-[#EEF2F7] bg-[#FAFAFA] grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+          <div>
+            <label className="block text-xs font-medium text-[#64748B] mb-1">Min LTV ($)</label>
+            <input
+              type="number"
+              placeholder="0"
+              value={minLtv}
+              onChange={(e) => setMinLtv(e.target.value)}
+              className="h-10 w-full rounded-xl border border-[#E5E7EB] px-3 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#64748B] mb-1">Max LTV ($)</label>
+            <input
+              type="number"
+              placeholder="10000"
+              value={maxLtv}
+              onChange={(e) => setMaxLtv(e.target.value)}
+              className="h-10 w-full rounded-xl border border-[#E5E7EB] px-3 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#64748B] mb-1">Join Date From</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="h-10 w-full rounded-xl border border-[#E5E7EB] px-3 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-[#64748B] mb-1">Join Date To</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="h-10 w-full rounded-xl border border-[#E5E7EB] px-3 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
+              />
+            </div>
+            {hasActiveMoreFilters && (
+              <button
+                type="button"
+                onClick={resetMoreFilters}
+                className="h-10 px-3 rounded-xl text-xs font-medium text-rose-600 hover:bg-rose-50 transition cursor-pointer self-end"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Table */}
       <div className="overflow-x-auto">

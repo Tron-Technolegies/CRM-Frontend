@@ -45,12 +45,12 @@ const callTypeConfig = {
   inbound: {
     style: "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200",
     dot: "bg-indigo-500",
-    label: "Inbound",
+    label: "Inbound (Received Call)",
   },
   outbound: {
     style: "bg-purple-50 text-purple-700 ring-1 ring-purple-200",
     dot: "bg-purple-500",
-    label: "Outbound",
+    label: "Outbound (Outgoing Call)",
   },
 };
 

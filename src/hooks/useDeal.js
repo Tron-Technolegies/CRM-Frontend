@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   getDeals,
   getDeal,
-  addDeal,
+  addDeal as addDealApi,
   updateDeal,
   deleteDeal,
 } from "../api/deal";
@@ -14,7 +14,7 @@ export default function useDeal() {
   const fetchDeals = async () => {
     try {
       const data = await getDeals();
-      setDeals(data);
+      setDeals(data || []);
     } finally {
       setLoading(false);
     }
@@ -29,18 +29,21 @@ export default function useDeal() {
   };
 
   const addDeal = async (dealData) => {
-    await createDeal(dealData);
-    await fetchDeals();
+    const res = await addDealApi(dealData);
+    fetchDeals();
+    return res;
   };
 
   const editDeal = async (id, dealData) => {
-    await updateDeal(id, dealData);
-    await fetchDeals();
+    const res = await updateDeal(id, dealData);
+    fetchDeals();
+    return res;
   };
 
   const removeDeal = async (id) => {
-    await deleteDeal(id);
-    await fetchDeals();
+    const res = await deleteDeal(id);
+    setDeals((prev) => prev.filter((d) => d.id !== id));
+    return res;
   };
 
   return {

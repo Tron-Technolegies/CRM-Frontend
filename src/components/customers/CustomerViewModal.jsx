@@ -1,4 +1,4 @@
-import { Building2, Calendar, Mail, Phone, Tag, TrendingUp, User, Pencil, ArrowRightLeft } from "lucide-react";
+import { Building2, Calendar, Mail, Phone, Tag, TrendingUp, User, Pencil, ArrowRightLeft, HelpCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Modal from "../ui/Modal";
 import { getCustomer } from "../../api/customer";
@@ -127,7 +127,7 @@ export default function CustomerViewModal({ open, onClose, onEdit, customerId = 
     try {
       await addDeal({
         deal_name: dealForm.dealName,
-        company_name: dealForm.companyName,
+        company_name: dealForm.companyName || data.companyName,
         deal_amount: Number(dealForm.dealAmount),
         stage: dealForm.stage,
         assigned_to: dealForm.assignedTo || null,
@@ -135,7 +135,9 @@ export default function CustomerViewModal({ open, onClose, onEdit, customerId = 
         deal_source: dealForm.dealSource,
         priority: dealForm.priority,
         description: dealForm.description,
-        customer_id: data.id, // NOTE: confirm this field name matches your backend
+        related_type: "customer",
+        related_id: data.id,
+        customer_id: data.id,
       });
 
       pushToast({
@@ -155,7 +157,6 @@ export default function CustomerViewModal({ open, onClose, onEdit, customerId = 
         title: "Failed to create deal",
         variant: "error",
       });
-      // Keep the deal form open on failure so the user doesn't lose their input.
     } finally {
       setConvertLoading(false);
     }
@@ -176,8 +177,13 @@ export default function CustomerViewModal({ open, onClose, onEdit, customerId = 
                   <p className="text-sm text-[#6B7280] truncate mt-0.5 font-medium">{data.contactName || "No contact"}</p>
                   <div className="flex flex-wrap items-center gap-2 mt-3">
                     <Badge value={data.status} config={statusConfig} />
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
-                      <TrendingUp size={11} />LTV: {formattedLTV}
+                    <span 
+                      title="Customer Lifetime Value (LTV): Total estimated revenue generated from this customer over their entire relationship with your business." 
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 cursor-help"
+                    >
+                      <TrendingUp size={11} />
+                      LTV: {formattedLTV}
+                      <HelpCircle size={10} className="text-emerald-500" />
                     </span>
                     {data.industry && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-slate-200">
