@@ -288,7 +288,7 @@ export default function DealFormModal({
                   <option value="">Select customer</option>
                   {customers.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.contactName} — {c.companyName}
+                      {c.contactName || c.name || c.contact_name || c.companyName}
                     </option>
                   ))}
                 </select>

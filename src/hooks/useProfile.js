@@ -23,6 +23,7 @@ export default function useProfile() {
   const saveProfile = useCallback(async (payload) => {
     const data = await updateProfile(payload);
     setProfile(data);
+    window.dispatchEvent(new CustomEvent("profileUpdated", { detail: data }));
     return data;
   }, []);
 

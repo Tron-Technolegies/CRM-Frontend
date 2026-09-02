@@ -236,7 +236,7 @@ export default function TaskFormModal({ open, onClose, onSubmit, loading = false
               className="mt-2 h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-100"
             >
               <option value="">Select contact</option>
-              {customers.map((c) => (<option key={c.id} value={c.id}>{c.companyName}</option>))}
+              {customers.map((c) => (<option key={c.id} value={c.id}>{c.contactName || c.name || c.contact_name || c.companyName}</option>))}
             </select>
           </div>
         )}

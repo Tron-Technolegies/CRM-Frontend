@@ -17,18 +17,12 @@ const Notification = () => {
   const { settings, loading, error, saveStatus, toggleSetting } =
     useNotificationSettings();
 
-  if (loading) return <div className="p-6">Loading...</div>;
-  if (!settings)
-    return (
-      <div className="p-6 text-red-500">{error || "Something went wrong."}</div>
-    );
-
   return (
     <div className="min-h-screen p-6">
       <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-4 mb-6">
           <BackButton />
-          <h1 className="text-3xl font-bold text-gray-800">Notification</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Notification Settings</h1>
         </div>
 
         {saveStatus !== "idle" && (

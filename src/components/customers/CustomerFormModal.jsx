@@ -36,7 +36,6 @@ export default function CustomerFormModal({
     phone: "",
     industry: "Technology",
     status: "Active",
-    lifetimeValue: "",
     dealId: "",
     leadId: "",
   }), []);
@@ -63,7 +62,6 @@ export default function CustomerFormModal({
         phone: initialData.phone || "",
         industry: initialData.industry || "Technology",
         status: initialData.status || "Active",
-        lifetimeValue: initialData.lifetimeValue || "",
         dealId: "",
         leadId: leadId,
       });
@@ -87,7 +85,6 @@ export default function CustomerFormModal({
           phone: data.phone_number || "",
           industry: data.industry || "Technology",
           status: "Active",
-          lifetimeValue: "",
           dealId: "",
           leadId: "",
         });
@@ -122,7 +119,6 @@ export default function CustomerFormModal({
       phone: true,
       industry: true,
       status: true,
-      lifetimeValue: true,
     });
 
     if (hasErrors) return;

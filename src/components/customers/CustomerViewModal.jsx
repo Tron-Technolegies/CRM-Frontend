@@ -112,10 +112,6 @@ export default function CustomerViewModal({ open, onClose, onEdit, customerId = 
       });
   }, [open, customerId]);
 
-  const formattedLTV = data?.lifetimeValue
-    ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(data.lifetimeValue)
-    : "—";
-
   // Prefill the Deal step from this customer's data.
   const dealPrefill = data
     ? { companyName: data.companyName || "" }
@@ -131,6 +127,7 @@ export default function CustomerViewModal({ open, onClose, onEdit, customerId = 
         deal_amount: Number(dealForm.dealAmount),
         stage: dealForm.stage,
         assigned_to: dealForm.assignedTo || null,
+        expected_close_date: dealForm.expectedCloseDate || null,
         expected_closing_date: dealForm.expectedCloseDate || null,
         deal_source: dealForm.dealSource,
         priority: dealForm.priority,
@@ -177,14 +174,6 @@ export default function CustomerViewModal({ open, onClose, onEdit, customerId = 
                   <p className="text-sm text-[#6B7280] truncate mt-0.5 font-medium">{data.contactName || "No contact"}</p>
                   <div className="flex flex-wrap items-center gap-2 mt-3">
                     <Badge value={data.status} config={statusConfig} />
-                    <span 
-                      title="Customer Lifetime Value (LTV): Total estimated revenue generated from this customer over their entire relationship with your business." 
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 cursor-help"
-                    >
-                      <TrendingUp size={11} />
-                      LTV: {formattedLTV}
-                      <HelpCircle size={10} className="text-emerald-500" />
-                    </span>
                     {data.industry && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 ring-1 ring-slate-200">
                         <Tag size={11} />{data.industry}

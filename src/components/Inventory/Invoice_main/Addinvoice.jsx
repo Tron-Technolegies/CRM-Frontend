@@ -256,7 +256,7 @@ export default function AddInvoice({ invoiceId, onCancel, onSaved }) {
             <select className={inputClass} value={form.customerId} onChange={updateField("customerId")}>
               <option value="">None</option>
               {customers.map((c) => (
-                <option key={c.id} value={c.id}>{c.companyName || c.company_name}</option>
+                <option key={c.id} value={c.id}>{c.contactName || c.contact_name || c.name || c.companyName || c.company_name}</option>
               ))}
             </select>
           </div>

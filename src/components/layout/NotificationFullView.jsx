@@ -16,10 +16,10 @@ export default function NotificationFullView() {
   const loadNotifications = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/notifications/");
-      setNotifications(res.data);
+      const res = await api.get("notifications/");
+      setNotifications(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      // silent fail, empty state will show
+      console.error("Failed to load notifications:", err);
     } finally {
       setLoading(false);
     }
@@ -31,7 +31,7 @@ export default function NotificationFullView() {
 
   const markNotificationRead = async (id) => {
     try {
-      await api.put(`/notifications/${id}/read/`);
+      await api.put(`notifications/${id}/read/`);
       setNotifications((prev) =>
         prev.map((note) =>
           note.id === id ? { ...note, is_read: true } : note
@@ -44,7 +44,7 @@ export default function NotificationFullView() {
 
   const handleMarkAllRead = async () => {
     try {
-      await api.put("/notifications/read-all/");
+      await api.put("notifications/read-all/");
       setNotifications((prev) =>
         prev.map((note) => ({ ...note, is_read: true }))
       );
