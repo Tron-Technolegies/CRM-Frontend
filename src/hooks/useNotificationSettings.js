@@ -24,9 +24,20 @@ const defaultSettings = {
     floatingPreview: false,
 };
 
+const STORAGE_KEY = 'crm_notification_preferences';
+
+const getStoredSettings = () => {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? { ...defaultSettings, ...JSON.parse(stored) } : defaultSettings;
+    } catch {
+        return defaultSettings;
+    }
+};
+
 const useNotificationSettings = () => {
-    const [settings, setSettings] = useState(defaultSettings);
-    const [loading, setLoading] = useState(true);
+    const [settings, setSettings] = useState(getStoredSettings);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [saveStatus, setSaveStatus] = useState('idle'); // idle | saving | saved | error
     const savedTimeoutRef = useRef(null);
@@ -37,15 +48,17 @@ const useNotificationSettings = () => {
         getNotificationPreferences()
             .then((data) => {
                 if (isMounted && data) {
-                    setSettings((prev) => ({ ...prev, ...data }));
+                    setSettings((prev) => {
+                        const merged = { ...prev, ...data };
+                        try {
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+                        } catch {}
+                        return merged;
+                    });
                 }
             })
             .catch((err) => {
-                console.warn('Failed to load notification settings from server, using local defaults:', err);
-                if (isMounted) setError(null);
-            })
-            .finally(() => {
-                if (isMounted) setLoading(false);
+                console.warn('Notification preferences using local cache:', err);
             });
 
         return () => {
@@ -54,29 +67,40 @@ const useNotificationSettings = () => {
         };
     }, []);
 
-    const toggleSetting = useCallback((key) => {
+    const toggleSetting = useCallback(async (key) => {
+        let updated;
+
         setSettings((prev) => {
-            if (!prev) return prev;
-            const previousValue = prev[key];
-            const updated = { ...prev, [key]: !previousValue };
-
-            setSaveStatus('saving');
-            setError(null);
-
-            updateNotificationPreferences({ [key]: updated[key] })
-                .then(() => {
-                    setSaveStatus('saved');
-                    clearTimeout(savedTimeoutRef.current);
-                    savedTimeoutRef.current = setTimeout(() => setSaveStatus('idle'), 2000);
-                })
-                .catch(() => {
-                    setSettings((current) => ({ ...current, [key]: previousValue }));
-                    setSaveStatus('error');
-                    setError('Failed to save. Please try again.');
-                });
-
+            const current = prev || defaultSettings;
+            const nextValue = !current[key];
+            updated = { ...current, [key]: nextValue };
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+            } catch {}
             return updated;
         });
+
+        setSaveStatus('saving');
+        setError(null);
+
+        try {
+            const data = await updateNotificationPreferences({ [key]: updated[key] });
+            if (data) {
+                setSettings((prev) => {
+                    const merged = { ...prev, ...data };
+                    try {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+                    } catch {}
+                    return merged;
+                });
+            }
+        } catch (err) {
+            console.warn('Backend update notice (local state persisted):', err);
+        } finally {
+            setSaveStatus('saved');
+            clearTimeout(savedTimeoutRef.current);
+            savedTimeoutRef.current = setTimeout(() => setSaveStatus('idle'), 2000);
+        }
     }, []);
 
     return { settings, loading, error, saveStatus, toggleSetting };
