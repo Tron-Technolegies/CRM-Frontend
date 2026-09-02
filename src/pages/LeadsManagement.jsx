@@ -190,13 +190,23 @@ export default function LeadsManagement() {
   };
 
 
+  const formatPhoneNumber = (countryCode, phone) => {
+    let cleaned = String(phone || "").trim();
+    for (const code of ["+91", "+1", "+44", "+65", "+971"]) {
+      const regex = new RegExp(`^(\\${code}\\s*)+`, "i");
+      cleaned = cleaned.replace(regex, "");
+    }
+    cleaned = cleaned.trim();
+    return countryCode ? `${countryCode} ${cleaned}` : cleaned;
+  };
+
   const handleAddLead = async form => {
     setAddLoading(true);
 
     try {
       await addLead({
         full_name: form.fullName.trim(),
-        phone_number: `${form.countryCode} ${form.phoneNumber.trim()}`,
+        phone_number: formatPhoneNumber(form.countryCode, form.phoneNumber),
         email: form.email.trim(),
         company_name: form.companyName.trim(),
         lead_source: form.leadSource,
@@ -236,9 +246,7 @@ export default function LeadsManagement() {
     try {
       await updateLead(editLead.id, {
         full_name: form.fullName.trim(),
-        phone_number: form.countryCode
-          ? `${form.countryCode} ${form.phoneNumber.trim()}`
-          : form.phoneNumber.trim(),
+        phone_number: formatPhoneNumber(form.countryCode, form.phoneNumber),
         email: form.email.trim(),
         company_name: form.companyName.trim(),
         lead_source: form.leadSource,
