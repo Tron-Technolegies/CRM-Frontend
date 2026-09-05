@@ -3,6 +3,7 @@ import {
   Calendar,
   Mail,
   Phone,
+  PhoneCall,
   Tag,
   Users,
   Pencil,
@@ -17,6 +18,7 @@ import Modal from "../ui/Modal";
 import { getLead } from "../../api/lead";
 
 import AddCall from "../Calls/AddCall";
+import CallModal from "../Calls/CallModal";
 import { createCall } from "../../api/call";
 import { createTask } from "../../api/task";
 
@@ -147,7 +149,7 @@ export default function LeadViewModal({
   const requestIdRef = useRef(0);
 
   const [callOpen, setCallOpen] = useState(false);
-
+  const [twilioCallOpen, setTwilioCallOpen] = useState(false);
   const [callLoading, setCallLoading] = useState(false);
 
   const handleCreateCall = async (callPayload, taskPayload) => {
@@ -258,7 +260,26 @@ export default function LeadViewModal({
               p-5 border rounded-2xl
             "
           >
-            <Field label="Phone" icon={Phone} value={data.phone} />
+            <div>
+              <p className="flex items-center gap-2 text-xs text-gray-400 uppercase">
+                <Phone size={12} />
+                Phone
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-sm font-medium">{data.phone || "—"}</p>
+                {data.phone && (
+                  <button
+                    type="button"
+                    onClick={() => setTwilioCallOpen(true)}
+                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition cursor-pointer"
+                    title="Call with Twilio"
+                  >
+                    <PhoneCall size={12} />
+                    Call
+                  </button>
+                )}
+              </div>
+            </div>
             <Field label="Email" icon={Mail} value={data.email} />
             <Field label="Company" icon={Building2} value={data.companyName} />
             <Field label="Assigned" icon={Users} value={data.assignedTo} />
@@ -276,70 +297,92 @@ export default function LeadViewModal({
               </p>
           </div>
 
-          {normalize(data.status) !== "converted" && (
-            <div
-              className="
-                p-4 rounded-2xl
-                bg-emerald-50
-                flex flex-col gap-3
-              "
-            >
-              <div className="flex gap-3 flex-wrap">
-                <button
-                  onClick={() => onConvert(data.id, "customer")}
-                  className="
-                    px-4 py-2
-                    bg-blue-600
-                    text-white
-                    rounded-xl
-                    text-sm
-                  "
-                >
-                  Convert Customer
-                </button>
-
-                <button
-                  onClick={() => onConvert(data.id, "account")}
-                  className="
-                    px-4 py-2
-                    bg-purple-600
-                    text-white
-                    rounded-xl
-                    text-sm
-                  "
-                >
-                  Convert Account
-                </button>
-
-                <button
-                  onClick={() => onConvert(data.id, "deal")}
-                  className="
-                    px-4 py-2
-                    bg-green-600
-                    text-white
-                    rounded-xl
-                    text-sm
-                    flex gap-2 items-center
-                  "
-                >
-                  Convert Deal
-                </button>
-
-                <button
-                    onClick={() => setCallOpen(true)}
+          <div
+            className="
+              p-4 rounded-2xl
+              bg-slate-50 border border-slate-100
+              flex flex-col gap-3
+            "
+          >
+            <div className="flex gap-3 flex-wrap items-center justify-between">
+              {normalize(data.status) !== "converted" && (
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => onConvert(data.id, "customer")}
                     className="
                       px-4 py-2
-                      bg-indigo-600
+                      bg-blue-600 hover:bg-blue-700
                       text-white
                       rounded-xl
-                      text-sm
+                      text-sm font-medium transition
                     "
                   >
-                    Add Call
+                    Convert Customer
+                  </button>
+
+                  <button
+                    onClick={() => onConvert(data.id, "account")}
+                    className="
+                      px-4 py-2
+                      bg-purple-600 hover:bg-purple-700
+                      text-white
+                      rounded-xl
+                      text-sm font-medium transition
+                    "
+                  >
+                    Convert Account
+                  </button>
+
+                  <button
+                    onClick={() => onConvert(data.id, "deal")}
+                    className="
+                      px-4 py-2
+                      bg-green-600 hover:bg-green-700
+                      text-white
+                      rounded-xl
+                      text-sm font-medium
+                      flex gap-2 items-center transition
+                    "
+                  >
+                    Convert Deal
+                  </button>
+                </div>
+              )}
+
+              <div className="flex gap-2 flex-wrap items-center">
+                <button
+                  type="button"
+                  onClick={() => setTwilioCallOpen(true)}
+                  className="
+                    px-4 py-2
+                    bg-emerald-600 hover:bg-emerald-700
+                    text-white
+                    rounded-xl
+                    text-sm font-semibold
+                    flex items-center gap-1.5 transition
+                    shadow-sm cursor-pointer
+                  "
+                >
+                  <PhoneCall size={14} />
+                  Call Lead
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCallOpen(true)}
+                  className="
+                    px-4 py-2
+                    bg-indigo-600 hover:bg-indigo-700
+                    text-white
+                    rounded-xl
+                    text-sm font-medium transition
+                  "
+                >
+                  Log Call
                 </button>
               </div>
             </div>
-          )}
+          </div>
 
           <div
             className="
@@ -347,7 +390,7 @@ export default function LeadViewModal({
               border-t pt-4
             "
           >
-            <button onClick={onClose} className="px-5 py-2 border rounded-xl">
+            <button onClick={onClose} className="px-5 py-2 border rounded-xl hover:bg-gray-50 transition cursor-pointer">
               Close
             </button>
 
@@ -359,10 +402,10 @@ export default function LeadViewModal({
                 }}
                 className="
                   px-5 py-2
-                  bg-blue-600
+                  bg-blue-600 hover:bg-blue-700
                   text-white
                   rounded-xl
-                  flex gap-2
+                  flex gap-2 items-center transition cursor-pointer
                 "
               >
                 <Pencil size={14} />
@@ -384,6 +427,12 @@ export default function LeadViewModal({
         lockedRelatedType="lead"
         lockedRelatedId={data?.id || ""}
         lockedRelatedName={data?.name || ""}
+      />
+
+      <CallModal
+        open={twilioCallOpen}
+        onClose={() => setTwilioCallOpen(false)}
+        lead={data}
       />
     </Modal>
   );
