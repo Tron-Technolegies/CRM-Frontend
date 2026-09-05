@@ -11,6 +11,7 @@ export default function CallModal({
   onSuccess,
 }) {
   const { pushToast } = useToast();
+  const [countryCode, setCountryCode] = useState("+91");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [subject, setSubject] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,9 +19,35 @@ export default function CallModal({
   const [statusMessage, setStatusMessage] = useState("");
   const [callSid, setCallSid] = useState("");
 
+  const COUNTRY_CODES = [
+    { code: "+91", label: "🇮🇳 India (+91)" },
+    { code: "+1", label: "🇺🇸/🇨🇦 USA/Canada (+1)" },
+    { code: "+44", label: "🇬🇧 UK (+44)" },
+    { code: "+971", label: "🇦🇪 UAE (+971)" },
+    { code: "+966", label: "🇸🇦 Saudi Arabia (+966)" },
+    { code: "+61", label: "🇦🇺 Australia (+61)" },
+    { code: "+65", label: "🇸🇬 Singapore (+65)" },
+    { code: "+49", label: "🇩🇪 Germany (+49)" },
+    { code: "+33", label: "🇫🇷 France (+33)" },
+    { code: "+81", label: "🇯🇵 Japan (+81)" },
+  ];
+
   useEffect(() => {
     if (open && lead) {
-      setPhoneNumber(lead.phone || "");
+      let rawPhone = (lead.phone || "").trim();
+      let matchedCode = "+91";
+      let localNumber = rawPhone;
+
+      if (rawPhone.startsWith("+")) {
+        const found = COUNTRY_CODES.find((c) => rawPhone.startsWith(c.code));
+        if (found) {
+          matchedCode = found.code;
+          localNumber = rawPhone.slice(found.code.length).trim();
+        }
+      }
+
+      setCountryCode(matchedCode);
+      setPhoneNumber(localNumber);
       setSubject(`Call to ${lead.name || "Lead"}`);
       setCallStatus("idle");
       setStatusMessage("");
@@ -32,12 +59,17 @@ export default function CallModal({
 
   const handleInitiateCall = async (e) => {
     if (e) e.preventDefault();
-    const cleanPhone = phoneNumber.trim();
+    let cleanPhone = phoneNumber.replace(/[^\d+]/g, "").trim();
 
     if (!cleanPhone) {
       setCallStatus("error");
       setStatusMessage("Please provide a valid destination phone number.");
       return;
+    }
+
+    // Auto-attach country code if not present
+    if (!cleanPhone.startsWith("+")) {
+      cleanPhone = `${countryCode}${cleanPhone}`;
     }
 
     setLoading(true);
@@ -136,21 +168,35 @@ export default function CallModal({
               <label className="block text-xs font-semibold text-[#374151] uppercase tracking-wider mb-1.5">
                 Destination Phone Number <span className="text-red-500">*</span>
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#64748B]">
-                  <Phone size={16} />
-                </div>
-                <input
-                  type="text"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+919876543210"
+              <div className="flex gap-2">
+                <select
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
                   disabled={loading || callStatus === "calling"}
-                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition bg-white"
-                />
+                  className="h-11 px-3 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] bg-white outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition cursor-pointer font-medium"
+                >
+                  {COUNTRY_CODES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="relative flex-1">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#64748B]">
+                    <Phone size={16} />
+                  </div>
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="9876543210"
+                    disabled={loading || callStatus === "calling"}
+                    className="w-full h-11 pl-10 pr-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] placeholder-[#9CA3AF] outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition bg-white"
+                  />
+                </div>
               </div>
               <p className="text-[11px] text-[#64748B] mt-1">
-                Include country code (e.g. <span className="font-mono text-[#374151]">+91XXXXXXXXXX</span> or <span className="font-mono text-[#374151]">+1XXXXXXXXXX</span>).
+                Enter local phone number (e.g. <span className="font-mono text-[#374151]">9876543210</span>) or full international format.
               </p>
             </div>
 
