@@ -19,3 +19,12 @@ export const dialOut = (data) =>
 
 export const getCallHistory = (params) =>
   api.get("/calls/history/", { params });
+
+export const getTwilioSettings = () =>
+  api.get("/calls/twilio-settings/");
+
+export const saveTwilioSettings = (data) =>
+  api.post("/calls/twilio-settings/save/", data);
+
+export const disconnectTwilio = () =>
+  api.delete("/calls/twilio-settings/disconnect/");

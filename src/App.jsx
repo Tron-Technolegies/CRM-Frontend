@@ -1,4 +1,3 @@
-import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import HomeLayout from "./components/layout/HomeLayout";
@@ -29,6 +28,7 @@ import Service from "./components/Inventory/Service";
 // Settings
 import Profile from "./components/settings/Profile/Profile";
 import Notification from "./components/settings/Notification/Notification";
+import TwilioSettings from "./components/settings/Twilio/TwilioSettings";
 import Preferences from "./components/settings/Preferences";
 import Security from "./components/settings/Security/Security";
 import Billing from "./components/settings/Billing/Billing";
@@ -177,6 +177,10 @@ const router = createBrowserRouter([
       {
         path: "settings/notifications",
         element: <Notification />,
+      },
+      {
+        path: "settings/twilio",
+        element: <TwilioSettings />,
       },
       {
         path: "settings/preferences",
