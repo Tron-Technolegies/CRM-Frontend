@@ -13,3 +13,9 @@ export const updateCall = (id, data) =>
 
 export const deleteCall = (id) =>
   api.delete(`/call/delete/${id}/`);
+
+export const dialOut = (data) =>
+  api.post("/calls/dial-out/", data);
+
+export const getCallHistory = (params) =>
+  api.get("/calls/history/", { params });

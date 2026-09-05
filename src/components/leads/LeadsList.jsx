@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Pencil, Search, Trash2 } from "lucide-react";
+import { Eye, Pencil, PhoneCall, Search, Trash2 } from "lucide-react";
 import LeadViewModal from "./LeadViewModal";
+import CallModal from "../Calls/CallModal";
 import Pagination from "../Pagination";
 import usePagination from "../../api/usePagination";
 
@@ -42,6 +43,7 @@ export default function LeadsList({
   const [source, setSource] = useState("All");
   const [assignedTo, setAssignedTo] = useState("All");
   const [viewId, setViewId] = useState(null);
+  const [callLead, setCallLead] = useState(null);
 
   const statusOptions = useMemo(() => {
     const unique = Array.from(new Set(leads.map((l) => l.status))).filter(Boolean);
@@ -144,6 +146,13 @@ export default function LeadsList({
             </div>
 
             <div className="mt-4 flex items-center gap-3 text-[#64748B]">
+              <button
+                type="button"
+                className="h-10 px-3.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-sm font-medium flex items-center gap-1.5 transition"
+                onClick={() => setCallLead(lead)}
+              >
+                <PhoneCall size={14} /> Call
+              </button>
               <button type="button" className="h-10 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827]" onClick={() => setViewId(lead.id)}>View</button>
               <button type="button" className="h-10 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827]" onClick={() => onEdit(lead)}>Edit</button>
               <button type="button" className="h-10 px-4 rounded-xl bg-red-50 text-red-600 text-sm font-medium" onClick={() => onDelete(lead.id)}>Delete</button>
@@ -154,7 +163,7 @@ export default function LeadsList({
       </div>
 
       {/* Desktop table */}
-      <div  className="hidden md:block overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full min-w-[980px]">
           <thead className="border-b border-[#EEF2F7]">
             <tr className="text-left">
@@ -170,12 +179,27 @@ export default function LeadsList({
 
           <tbody className="divide-y divide-[#EEF2F7]">
             {paginated.map((lead) => (
-              <tr key={lead.id} onClick={() => setViewId(lead.id)} className="hover:bg-[#FAFAFA]">
+              <tr key={lead.id} onClick={() => setViewId(lead.id)} className="hover:bg-[#FAFAFA] cursor-pointer">
                 <td className="px-6 py-5">
                   <p className="text-sm font-medium text-[#111827]">{lead.name}</p>
                 </td>
                 <td className="px-6 py-5">
-                  <p className="text-sm text-[#111827]">{lead.phone}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-[#111827]">{lead.phone || "—"}</p>
+                    {lead.phone && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCallLead(lead);
+                        }}
+                        title={`Call ${lead.name}`}
+                        className="p-1 rounded-lg text-emerald-600 hover:bg-emerald-50 transition"
+                      >
+                        <PhoneCall size={14} />
+                      </button>
+                    )}
+                  </div>
                   <p className="text-sm text-[#64748B]">{lead.email || "—"}</p>
                 </td>
                 <td className="px-6 py-5">
@@ -194,6 +218,18 @@ export default function LeadsList({
                 </td>
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-3 text-[#64748B]">
+                    <button
+                      type="button"
+                      className="hover:text-emerald-600 transition"
+                      aria-label="Call Lead"
+                      title="Call with Twilio"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCallLead(lead);
+                      }}
+                    >
+                      <PhoneCall size={18} />
+                    </button>
                     <button type="button" className="hover:text-[#111827]" aria-label="View" onClick={(e) => {e.stopPropagation();setViewId(lead.id);}}><Eye size={18} /></button>
                     <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={(e) => {e.stopPropagation();onEdit(lead);}}><Pencil size={18} /></button>
                     <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={(e) => {e.stopPropagation();onDelete(lead.id);}}><Trash2 size={18} /></button>
@@ -234,6 +270,16 @@ export default function LeadsList({
           setViewId(null);
           onConvert(id, type);
         }}
+        onCall={(lead) => {
+          setCallLead(lead);
+        }}
+      />
+
+      {/* Twilio Call Modal */}
+      <CallModal
+        open={!!callLead}
+        onClose={() => setCallLead(null)}
+        lead={callLead}
       />
     </div>
   );
