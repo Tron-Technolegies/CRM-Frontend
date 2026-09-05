@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Bell, ChevronRight, CreditCard, Database, Globe, Lock, User } from "lucide-react";
+import { Bell, ChevronRight, Globe, Lock, PhoneCall, User } from "lucide-react";
 
 const sections = [
   {
@@ -13,6 +13,12 @@ const sections = [
     description: "Manage your email and in-app notifications.",
     icon: Bell,
     path: "/settings/notifications",
+  },
+  {
+    title: "Twilio Settings",
+    description: "Configure Twilio credentials and caller ID for outbound calling.",
+    icon: PhoneCall,
+    path: "/settings/twilio",
   },
   {
     title: "Security",
