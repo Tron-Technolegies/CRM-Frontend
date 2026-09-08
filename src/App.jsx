@@ -45,6 +45,7 @@ import AccessDenied from "./pages/AccessDenied";
 import QuoteFormPage from "./components/quotes/QuoteFormPage";
 import SalesOrderFormPage from "./components/Inventory/SalesOrder_main/SalesOrderFormPage";
 import PurchaseOrderFormPage from "./components/Inventory/purchaseOrder_main/PurchaseOrderFormPage";
+import MeetingRoom from "./pages/MeetingRoom";
 
 const router = createBrowserRouter([
   {
@@ -140,6 +141,10 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "meetings/:id/room",
+        element: <MeetingRoom/>,
+      },
+            {
         path: "calls",
         element: (
           <ProtectedRoute permission="call.view">

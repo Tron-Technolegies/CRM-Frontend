@@ -6,6 +6,7 @@ import {
   createMeeting,
   updateMeeting,
   deleteMeeting,
+  joinMeeting
 } from "../api/meeting";
 
 export default function useMeeting() {
@@ -41,6 +42,9 @@ export default function useMeeting() {
     await deleteMeeting(id);
     await fetchMeetings();
   };
+  const handleJoinMeeting = async (id) => {
+  return await joinMeeting(id);
+};
 
   useEffect(() => {
     fetchMeetings();
@@ -54,5 +58,6 @@ export default function useMeeting() {
     addMeeting,
     editMeeting,
     removeMeeting,
+    handleJoinMeeting,
   };
 }

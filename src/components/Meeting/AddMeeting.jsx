@@ -82,7 +82,7 @@ export default function AddMeeting({
     () => ({
       title: "",
       meetingVenue: "online",
-      provider: "",
+      provider: "jitsi",
       location: "",
       allDay: false,
       fromDatetime: "",
@@ -168,7 +168,7 @@ export default function AddMeeting({
     const payload = {
       title: form.title,
       meeting_venue: form.meetingVenue,
-      provider: form.meetingVenue === "online" ? form.provider : "",
+      provider: form.meetingVenue === "online" ? "jitsi" : "",
       location: form.meetingVenue === "offline" ? form.location : "",
       all_day: form.meetingVenue === "offline" ? form.allDay : false,
       from_datetime: form.fromDatetime,
@@ -251,10 +251,18 @@ export default function AddMeeting({
             <div>
               <label className={labelClass}>Meeting Venue</label>
               <select
-                value={form.meetingVenue}
-                onChange={(e) => setField("meetingVenue", e.target.value)}
-                className={`${inputClass} bg-white`}
-              >
+                  value={form.meetingVenue}
+                  onChange={(e) => {
+                    const venue = e.target.value;
+
+                    setForm((prev) => ({
+                      ...prev,
+                      meetingVenue: venue,
+                      provider: venue === "online" ? "jitsi" : "",
+                    }));
+                  }}
+                  className={`${inputClass} bg-white`}
+                >
                 {venueOptions.map((item) => (
                   <option key={item.value} value={item.value}>
                     {item.label}
@@ -267,10 +275,9 @@ export default function AddMeeting({
               <div>
                 <label className={labelClass}>Provider</label>
                 <input
-                  value={form.provider}
-                  onChange={(e) => setField("provider", e.target.value)}
-                  className={inputClass}
-                  placeholder="Google Meet / Zoom"
+                  value="Jitsi"
+                  readOnly
+                  className={`${inputClass} bg-gray-50 text-gray-600 cursor-not-allowed`}
                 />
               </div>
             ) : (

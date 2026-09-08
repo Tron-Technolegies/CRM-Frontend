@@ -7,6 +7,7 @@ import MeetingsTable from "../components/Meeting/MeetingsTable";
 import AddMeeting from "../components/Meeting/AddMeeting";
 import MeetingViewModal from "../components/Meeting/Meetingviewmodal";
 
+
 import { getLeads, getStaff } from "../api/lead";
 import { getCustomers } from "../api/customer";
 import { getAccounts } from "../api/account";
@@ -18,7 +19,9 @@ export default function Meetings() {
     addMeeting,
     editMeeting,
     removeMeeting,
+    handleJoinMeeting,
     fetchMeeting,
+    
   } = useMeeting();
 
   const [showModal, setShowModal] = useState(false);
@@ -104,6 +107,23 @@ export default function Meetings() {
       console.error(err);
     }
   };
+  const handleJoin = async (id) => {
+    try {
+      const data = await handleJoinMeeting(id);
+
+      console.log("JOIN MEETING RESPONSE:", data);
+
+      window.location.href = `/meetings/${id}/room`;
+    } catch (err) {
+      console.error("JOIN MEETING ERROR:", err);
+
+      const message =
+        err.response?.data?.message ||
+        "Could not join this meeting.";
+
+      alert(message);
+    }
+  };
 
   if (loading) {
     return (
@@ -135,6 +155,7 @@ export default function Meetings() {
           onView={openViewModal}
           onEdit={openEditModal}
           onDelete={handleDelete}
+          onJoin={handleJoin}
         />
       </div>
 
