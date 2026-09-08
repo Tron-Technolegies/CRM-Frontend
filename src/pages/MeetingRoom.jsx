@@ -27,8 +27,6 @@ export default function MeetingRoom() {
     meetingIdRef.current = id;
   }, [id]);
 
-
-
   useEffect(() => {
     const handlePageExit = () => {
       const meetingId = meetingIdRef.current;
@@ -97,15 +95,9 @@ export default function MeetingRoom() {
     try {
       const result = await startAttendance(id);
 
-      console.log(
-        "CRM ATTENDANCE RECORDED: JOINED",
-        result
-      );
+      console.log("CRM ATTENDANCE RECORDED: JOINED", result);
     } catch (err) {
-      console.error(
-        "Failed to record meeting attendance:",
-        err
-      );
+      console.error("Failed to record meeting attendance:", err);
 
       // Allow retry if the API failed
       attendanceStartedRef.current = false;
@@ -118,10 +110,7 @@ export default function MeetingRoom() {
    * -----------------------------------------
    */
   const handleConferenceLeft = useCallback(async () => {
-    if (
-      attendanceEndedRef.current ||
-      attendanceEndingRef.current
-    ) {
+    if (attendanceEndedRef.current || attendanceEndingRef.current) {
       console.log("Attendance leave already handled.");
       return;
     }
@@ -133,15 +122,9 @@ export default function MeetingRoom() {
     try {
       const result = await endAttendance(id);
 
-      console.log(
-        "CRM ATTENDANCE RECORDED: LEFT",
-        result
-      );
+      console.log("CRM ATTENDANCE RECORDED: LEFT", result);
     } catch (err) {
-      console.error(
-        "Failed to record meeting leave:",
-        err
-      );
+      console.error("Failed to record meeting leave:", err);
     } finally {
       attendanceEndedRef.current = true;
       navigate("/meetings");
@@ -159,18 +142,15 @@ export default function MeetingRoom() {
         try {
           apiRef.current.removeListener(
             "videoConferenceJoined",
-            handleConferenceJoined
+            handleConferenceJoined,
           );
 
           apiRef.current.removeListener(
             "videoConferenceLeft",
-            handleConferenceLeft
+            handleConferenceLeft,
           );
         } catch (err) {
-          console.error(
-            "Failed to remove JaaS listeners:",
-            err
-          );
+          console.error("Failed to remove JaaS listeners:", err);
         }
       }
     };
@@ -202,9 +182,7 @@ export default function MeetingRoom() {
             Unable to Join Meeting
           </h2>
 
-          <p className="text-sm text-gray-500 mt-2">
-            {error}
-          </p>
+          <p className="text-sm text-gray-500 mt-2">{error}</p>
 
           <button
             type="button"
@@ -238,17 +216,12 @@ export default function MeetingRoom() {
    */
   return (
     <div className="fixed inset-0 z-[9999] bg-gray-900 flex flex-col">
-
       {/* Header */}
       <div className="h-16 bg-gray-950 text-white flex items-center justify-between px-6 shrink-0">
         <div>
-          <h1 className="font-semibold">
-            {meeting.title}
-          </h1>
+          <h1 className="font-semibold">{meeting.title}</h1>
 
-          <p className="text-xs text-gray-400">
-            Role: {meeting.role}
-          </p>
+          <p className="text-xs text-gray-400">Role: {meeting.role}</p>
         </div>
 
         <button
@@ -272,13 +245,11 @@ export default function MeetingRoom() {
           domain={meeting.jaasDomain}
           roomName={meeting.jaasRoomName}
           jwt={meeting.jwt}
-
           configOverwrite={{
             startWithAudioMuted: false,
             startWithVideoMuted: false,
             disableModeratorIndicator: false,
           }}
-
           interfaceConfigOverwrite={{
             MIRROR_LOCAL_VIDEO: true,
 
@@ -292,13 +263,11 @@ export default function MeetingRoom() {
               "fullscreen",
             ],
           }}
-
           getIFrameRef={(iframeRef) => {
             iframeRef.style.width = "100%";
             iframeRef.style.height = "100%";
             iframeRef.style.border = "0";
           }}
-
           onApiReady={(externalApi) => {
             apiRef.current = externalApi;
 
@@ -306,15 +275,14 @@ export default function MeetingRoom() {
 
             externalApi.addListener(
               "videoConferenceJoined",
-              handleConferenceJoined
+              handleConferenceJoined,
             );
 
             externalApi.addListener(
               "videoConferenceLeft",
-              handleConferenceLeft
+              handleConferenceLeft,
             );
           }}
-
           onReadyToClose={() => {
             if (!attendanceEndedRef.current) {
               handleConferenceLeft();
