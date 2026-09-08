@@ -55,8 +55,10 @@
 
 import axios from "axios";
 
-const BASE_URL = "https://crm-backend-ejfr.onrender.com/api/admin/";
-const REFRESH_URL = "https://crm-backend-ejfr.onrender.com/api/token/refresh/";
+// const BASE_URL = "https://crm-backend-ejfr.onrender.com/api/admin/";
+// const REFRESH_URL = "https://crm-backend-ejfr.onrender.com/api/token/refresh/";
+const BASE_URL = "http://127.0.0.1:8000/api/admin/";
+const REFRESH_URL = "http://127.0.0.1:8000/api/token/refresh/";
 
 const api = axios.create({
   baseURL: BASE_URL,

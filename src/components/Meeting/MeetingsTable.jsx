@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Pencil, Search, Trash2, X } from "lucide-react";
+import { Eye, Pencil, Search, Trash2, X, Video} from "lucide-react";
 import Pagination from "../Pagination";
 import usePagination from "../../api/usePagination";
 
@@ -65,7 +65,7 @@ function relatedName(meeting) {
   return "—";
 }
 
-export default function MeetingsTable({ meetings, onView, onEdit, onDelete }) {
+export default function MeetingsTable({ meetings, onView, onEdit, onDelete, onJoin, }) {
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [query, setQuery] = useState("");
@@ -186,6 +186,15 @@ export default function MeetingsTable({ meetings, onView, onEdit, onDelete }) {
 
                   <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-3 text-[#64748B]">
+
+                        <button
+                          type="button"
+                          onClick={() => onJoin(meeting.id)}
+                          className="hover:text-green-600"
+                          title="Join Meeting"
+                        >
+                          <Video size={18} />
+                        </button>
                       <button
                         type="button"
                         onClick={() => onView(meeting.id)}

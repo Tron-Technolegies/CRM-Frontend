@@ -44,6 +44,7 @@ import Signup from "./components/auth/Signup";
 import QuoteFormPage from "./components/quotes/QuoteFormPage";
 import SalesOrderFormPage from "./components/Inventory/SalesOrder_main/SalesOrderFormPage";
 import PurchaseOrderFormPage from "./components/Inventory/purchaseOrder_main/PurchaseOrderFormPage";
+import MeetingRoom from "./pages/MeetingRoom";
 
 const router = createBrowserRouter([
   {
@@ -103,6 +104,10 @@ const router = createBrowserRouter([
         element: <Meetings />,
       },
       {
+        path: "meetings/:id/room",
+        element: <MeetingRoom/>,
+      },
+            {
         path: "calls",
         element: <Calls />,
       },

@@ -5,6 +5,7 @@ import {
   MapPin,
   Pencil,
   Repeat,
+  Timer,
   Users,
   Video,
 } from "lucide-react";
@@ -20,6 +21,39 @@ function formatDateTime(value) {
     dateStyle: "medium",
     timeStyle: "short",
   });
+}
+
+function formatDuration(seconds) {
+  if (!seconds || seconds <= 0) return "0 sec";
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  if (minutes > 0) {
+    return `${minutes}m ${secs}s`;
+  }
+
+  return `${secs}s`;
+}
+function getMeetingDuration(start, end) {
+  if (!start || !end) return 0;
+
+  const startTime = new Date(start).getTime();
+  const endTime = new Date(end).getTime();
+
+  if (Number.isNaN(startTime) || Number.isNaN(endTime)) {
+    return 0;
+  }
+
+  return Math.max(
+    0,
+    Math.floor((endTime - startTime) / 1000)
+  );
 }
 
 function Field({ label, icon: Icon, value }) {
@@ -200,6 +234,61 @@ export default function MeetingViewModal({
               </div>
             </div>
 
+{/* Meeting Summary */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="rounded-2xl border border-[#EAECF0] bg-white p-4">
+              <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest">
+                Status
+              </p>
+              <p className="mt-2 text-sm font-semibold text-[#111827] capitalize">
+                {data.status || "—"}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#EAECF0] bg-white p-4">
+              <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest">
+                Participants
+              </p>
+              <p className="mt-2 text-sm font-semibold text-[#111827]">
+                {data.attendance?.length || data.participants?.length || 0}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#EAECF0] bg-white p-4">
+              <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest">
+                Started
+              </p>
+              <p className="mt-2 text-sm font-semibold text-[#111827]">
+                {formatDateTime(data.startedAt)}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#EAECF0] bg-white p-4">
+              <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest">
+                Ended
+              </p>
+              <p className="mt-2 text-sm font-semibold text-[#111827]">
+                {formatDateTime(data.endedAt)}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#EAECF0] bg-white p-4">
+              <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest">
+                Duration
+              </p>
+              <p className="mt-2 text-sm font-semibold text-[#111827]">
+                {formatDuration(
+                  getMeetingDuration(
+                    data.startedAt,
+                    data.endedAt
+                  )
+                )}
+              </p>
+            </div>
+          </div>
+
+
+
             <Section title="Date & Time">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
                 <Field
@@ -250,6 +339,79 @@ export default function MeetingViewModal({
                 </div>
               </Section>
             )}
+
+            {data.attendance && data.attendance.length > 0 && (
+        <Section title="Attendance">
+          <div className="space-y-3">
+            {data.attendance.map((person) => (
+              <div
+                key={person.participantId}
+                className="rounded-xl border border-[#EAECF0] bg-white p-4"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                      <Users size={15} className="text-blue-600" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[#111827] truncate">
+                        {person.name || "Unknown"}
+                      </p>
+
+                      <p className="text-xs text-[#9CA3AF] truncate">
+                        {person.email || "—"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold capitalize ${
+                      person.status === "left"
+                        ? "bg-slate-100 text-slate-600"
+                        : person.status === "joined"
+                        ? "bg-green-50 text-green-700"
+                        : "bg-blue-50 text-blue-700"
+                    }`}
+                  >
+                    {person.status}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 pt-3 border-t border-[#F0F2F5]">
+                  <Field
+                    label="Role"
+                    icon={Users}
+                    value={
+                      person.role === "host"
+                        ? "Host"
+                        : person.role
+                    }
+                  />
+
+                  <Field
+                    label="Joined"
+                    icon={Clock}
+                    value={formatDateTime(person.joinedAt)}
+                  />
+
+                  <Field
+                    label="Left"
+                    icon={Clock}
+                    value={formatDateTime(person.leftAt)}
+                  />
+
+                  <Field
+                    label="Duration"
+                    icon={Timer}
+                    value={formatDuration(person.durationSeconds)}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
 
             {hasRelated && (
               <Section title="Related To">

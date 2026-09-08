@@ -24,3 +24,18 @@ export const deleteMeeting = async (id) => {
   const { data } = await api.delete(`/meeting/delete/${id}/`);
   return data;
 };
+
+export const joinMeeting = async (id) => {
+  const { data } = await api.get(`/meeting/join/${id}/`);
+  return data;
+};
+
+export const joinMeetingAttendance = async (id) => {
+  const { data } = await api.post(`/meeting/attendance/join/${id}/`);
+  return data;
+};
+
+export const leaveMeetingAttendance = async (id) => {
+  const { data } = await api.post(`/meeting/attendance/leave/${id}/`);
+  return data;
+};
