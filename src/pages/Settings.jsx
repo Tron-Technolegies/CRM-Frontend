@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Bell, ChevronRight, Globe, Lock, PhoneCall, User } from "lucide-react";
+import usePermissions from "../permissions/usePermissions";
 
 const sections = [
   {
@@ -19,6 +20,7 @@ const sections = [
     description: "Configure Twilio credentials and caller ID for outbound calling.",
     icon: PhoneCall,
     path: "/settings/twilio",
+    permission: "twilio.view",
   },
   {
     title: "Security",
@@ -31,6 +33,7 @@ const sections = [
     description: "Set your language, timezone, and other preferences.",
     icon: Globe,
     path: "/settings/preferences",
+    permission: "picklist.view",
   },
   // {
   //   title: "Billing",
@@ -47,19 +50,25 @@ const sections = [
 ];
 
 export default function Settings() {
+  const { hasPermission } = usePermissions();
+
+  const visibleSections = sections.filter(
+    (section) => !section.permission || hasPermission(section.permission)
+  );
+
   return (
     <div className="space-y-6">
       <h1 className="text-[28px] font-semibold text-[#111827]">Settings</h1>
 
       <div className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden">
-        {sections.map((section, idx) => {
+        {visibleSections.map((section, idx) => {
           const Icon = section.icon;
           return (
             <Link
               key={section.title}
               to={section.path}
               className={`flex items-center gap-4 p-5 hover:bg-[#FAFAFA] transition cursor-pointer ${
-                idx !== sections.length - 1 ? "border-b border-[#EEF2F7]" : ""
+                idx !== visibleSections.length - 1 ? "border-b border-[#EEF2F7]" : ""
               }`}
             >
               <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">

@@ -22,26 +22,27 @@ import {
   Wrench
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useState } from "react";
-
+import { useState, useMemo } from "react";
+import usePermissions from "../../permissions/usePermissions";
 
 export default function Sidebar({ sidebarOpen }) {
   const navigate = useNavigate();
+  const { hasPermission } = usePermissions();
 
   const [inventoryOpen, setInventoryOpen] = useState(false);
 
-  const menus = [
+  const menus = useMemo(() => [
     { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/" },
 
-    { name: "Leads", icon: <Users size={18} />, path: "/leads" },
+    { name: "Leads", icon: <Users size={18} />, path: "/leads", permission: "lead.view" },
 
-    { name: "Customers", icon: <UserRound size={18} />, path: "/customers" },
+    { name: "Customers", icon: <UserRound size={18} />, path: "/customers", permission: "customer.view" },
 
-    { name: "Accounts", icon: <Building2 size={18} />, path: "/accounts" },
+    { name: "Accounts", icon: <Building2 size={18} />, path: "/accounts", permission: "account.view" },
 
-    { name: "Deals", icon: <Handshake size={18} />, path: "/deals" },
+    { name: "Deals", icon: <Handshake size={18} />, path: "/deals", permission: "deal.view" },
 
-    { name: "Quotes", icon: <FileText size={18} />, path: "/quotes" },
+    { name: "Quotes", icon: <FileText size={18} />, path: "/quotes", permission: "quote.view" },
 
     {
       name: "Inventory",
@@ -51,48 +52,69 @@ export default function Sidebar({ sidebarOpen }) {
         {
           icon: <Store size={18} />,
           name: "Vendor",
-          path: "/inventory/vendor"
+          path: "/inventory/vendor",
+          permission: "vendor.view",
         },
         {
           icon: <Handbag size={18} />,
           name: "Products",
-          path: "/inventory/products"
+          path: "/inventory/products",
+          permission: "product.view",
         },
         {
           icon: <Wrench size={18} />,
           name: "Service",
-          path: "/inventory/service"
+          path: "/inventory/service",
+          permission: "service.view",
         },
         {
           icon: <Tag size={18} />,
           name: "Sales",
-          path: "/inventory/salesOrder"
+          path: "/inventory/salesOrder",
+          permission: "salesorder.view",
         },
         {
           icon: <Tag size={18} />,
           name: "Purchase",
-          path: "/inventory/purchase"
+          path: "/inventory/purchase",
+          permission: "purchaseorder.view",
         },
         {
           icon: <NotepadText size={18} />,
           name: "Invoices",
-          path: "/inventory/invoices"
+          path: "/inventory/invoices",
+          permission: "invoice.view",
         },
-      ]
+      ],
     },
 
-    { name: "Tasks", icon: <ClipboardList size={18} />, path: "/tasks" },
+    { name: "Tasks", icon: <ClipboardList size={18} />, path: "/tasks", permission: "task.view" },
 
-    { name: "Meetings", icon: <CalendarDays size={18} />, path: "/meetings" },
+    { name: "Meetings", icon: <CalendarDays size={18} />, path: "/meetings", permission: "meeting.view" },
 
-    { name: "Calls", icon: <Phone size={18} />, path: "/calls" },
+    { name: "Calls", icon: <Phone size={18} />, path: "/calls", permission: "call.view" },
 
-    { name: "Reports", icon: <BarChart3 size={18} />, path: "/reports" },
+    { name: "Reports", icon: <BarChart3 size={18} />, path: "/reports", permission: "report.view" },
 
-    { name: "Users", icon: <User size={18} />, path: "/users" },
+    { name: "Users", icon: <User size={18} />, path: "/users", permission: "staff.view" },
 
     { name: "Settings", icon: <Settings size={18} />, path: "/settings" },
-  ];
+  ], []);
+
+  const visibleMenus = useMemo(() => {
+    return menus
+      .filter((item) => !item.permission || hasPermission(item.permission))
+      .map((item) => {
+        if (item.dropdown && item.children) {
+          const visibleChildren = item.children.filter(
+            (child) => !child.permission || hasPermission(child.permission)
+          );
+          return { ...item, children: visibleChildren };
+        }
+        return item;
+      })
+      .filter((item) => !item.dropdown || (item.children && item.children.length > 0));
+  }, [menus, hasPermission]);
 
   const handleLogout = () => {
 
@@ -139,7 +161,7 @@ export default function Sidebar({ sidebarOpen }) {
         <div className="space-y-1">
 
 
-          {menus.map((item) => (
+          {visibleMenus.map((item) => (
 
             item.dropdown ? (
 
