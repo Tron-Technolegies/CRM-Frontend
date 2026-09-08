@@ -156,6 +156,17 @@ api.interceptors.response.use(
       }
     }
 
+    // Handle 403 Forbidden without expiring session
+    if (status === 403) {
+      const errorData = error.response?.data;
+      window.dispatchEvent(
+        new CustomEvent("rbacForbidden", {
+          detail: errorData || { message: "You do not have permission to perform this action." },
+        })
+      );
+      return Promise.reject(error);
+    }
+
     return Promise.reject(error);
   }
 );

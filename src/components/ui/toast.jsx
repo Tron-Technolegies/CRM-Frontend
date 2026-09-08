@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect  } from "react";
 import { CheckCircle2, Info, TriangleAlert, X } from "lucide-react";
 import { ToastContext } from "./toastContext";
 
@@ -62,6 +62,25 @@ export function ToastProvider({ children }) {
   );
 
   const value = useMemo(() => ({ pushToast, removeToast }), [pushToast, removeToast]);
+
+  useEffect(() => {
+    const handleForbidden = (e) => {
+      const detail = e.detail;
+      const message =
+        detail?.detail ||
+        detail?.message ||
+        "You do not have permission to perform this action.";
+      pushToast({
+        title: "Access Denied",
+        message,
+        variant: "error",
+        durationMs: 4000,
+      });
+    };
+
+    window.addEventListener("rbacForbidden", handleForbidden);
+    return () => window.removeEventListener("rbacForbidden", handleForbidden);
+  }, [pushToast]);
 
   return (
     <ToastContext.Provider value={value}>

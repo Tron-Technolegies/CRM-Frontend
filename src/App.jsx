@@ -41,6 +41,7 @@ import DataSecurity from "./components/settings/DataPrivacy/DataSecurity";
 import Login from "./components/auth/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Signup from "./components/auth/Signup";
+import AccessDenied from "./pages/AccessDenied";
 import QuoteFormPage from "./components/quotes/QuoteFormPage";
 import SalesOrderFormPage from "./components/Inventory/SalesOrder_main/SalesOrderFormPage";
 import PurchaseOrderFormPage from "./components/Inventory/purchaseOrder_main/PurchaseOrderFormPage";
@@ -54,6 +55,10 @@ const router = createBrowserRouter([
   {
     path: "/signup",
     element: <Signup />,
+  },
+  {
+    path: "/403",
+    element: <AccessDenied />,
   },
   {
     path: "/",
@@ -73,35 +78,67 @@ const router = createBrowserRouter([
       },
       {
         path: "leads",
-        element: <LeadsManagement />,
+        element: (
+          <ProtectedRoute permission="lead.view">
+            <LeadsManagement />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "accounts",
-        element: <Accounts />,
+        element: (
+          <ProtectedRoute permission="account.view">
+            <Accounts />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "quotes",
-        element: <Quotes />,
+        element: (
+          <ProtectedRoute permission="quote.view">
+            <Quotes />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "quotes/add",
-        element: <QuoteFormPage />,
+        element: (
+          <ProtectedRoute permission="quote.create">
+            <QuoteFormPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "quotes/edit/:id",
-        element: <QuoteFormPage />,
+        element: (
+          <ProtectedRoute permission="quote.edit">
+            <QuoteFormPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "deals",
-        element: <Deals />,
+        element: (
+          <ProtectedRoute permission="deal.view">
+            <Deals />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "customers",
-        element: <Customers />,
+        element: (
+          <ProtectedRoute permission="customer.view">
+            <Customers />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "meetings",
-        element: <Meetings />,
+        element: (
+          <ProtectedRoute permission="meeting.view">
+            <Meetings />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "meetings/:id/room",
@@ -109,19 +146,35 @@ const router = createBrowserRouter([
       },
             {
         path: "calls",
-        element: <Calls />,
+        element: (
+          <ProtectedRoute permission="call.view">
+            <Calls />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "tasks",
-        element: <Tasks />,
+        element: (
+          <ProtectedRoute permission="task.view">
+            <Tasks />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "reports",
-        element: <Reports />,
+        element: (
+          <ProtectedRoute permission="report.view">
+            <Reports />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "users",
-        element: <Users />,
+        element: (
+          <ProtectedRoute permission="staff.view">
+            <Users />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "notifications",
@@ -131,43 +184,83 @@ const router = createBrowserRouter([
       // Inventory
       {
         path: "inventory/products",
-        element: <Product />,
+        element: (
+          <ProtectedRoute permission="product.view">
+            <Product />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "inventory/salesOrder",
-        element: <SalesOrders />,
+        element: (
+          <ProtectedRoute permission="salesorder.view">
+            <SalesOrders />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "inventory/salesOrder/add",
-        element: <SalesOrderFormPage />,
+        element: (
+          <ProtectedRoute permission="salesorder.create">
+            <SalesOrderFormPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "inventory/salesOrder/edit/:id",
-        element: <SalesOrderFormPage />,
+        element: (
+          <ProtectedRoute permission="salesorder.edit">
+            <SalesOrderFormPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "inventory/purchase",
-        element: <PurchaseOrders />,
+        element: (
+          <ProtectedRoute permission="purchaseorder.view">
+            <PurchaseOrders />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "inventory/purchase/add",
-        element: <PurchaseOrderFormPage />,
+        element: (
+          <ProtectedRoute permission="purchaseorder.create">
+            <PurchaseOrderFormPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "inventory/purchase/edit/:id",
-        element: <PurchaseOrderFormPage />,
+        element: (
+          <ProtectedRoute permission="purchaseorder.edit">
+            <PurchaseOrderFormPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "inventory/invoices",
-        element: <Invoice />,
+        element: (
+          <ProtectedRoute permission="invoice.view">
+            <Invoice />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "inventory/vendor",
-        element: <Vendor />,
+        element: (
+          <ProtectedRoute permission="vendor.view">
+            <Vendor />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "inventory/service",
-        element: <Service />,
+        element: (
+          <ProtectedRoute permission="service.view">
+            <Service />
+          </ProtectedRoute>
+        ),
       },
 
       // Settings
@@ -185,11 +278,19 @@ const router = createBrowserRouter([
       },
       {
         path: "settings/twilio",
-        element: <TwilioSettings />,
+        element: (
+          <ProtectedRoute permission="twilio.view">
+            <TwilioSettings />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "settings/preferences",
-        element: <Preferences />,
+        element: (
+          <ProtectedRoute permission="picklist.view">
+            <Preferences />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "settings/security",
