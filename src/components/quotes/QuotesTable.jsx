@@ -2,6 +2,7 @@ import { Eye, Pencil, Funnel, Search, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Pagination from "../Pagination";
 import usePagination from "../../api/usePagination";
+import usePermissions from "../../permissions/usePermissions";
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value || 0);
@@ -17,6 +18,7 @@ const STAGE_LABELS = {
 };
 
 const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete }) => {
+  const { hasPermission } = usePermissions();
   const [search, setSearch] = useState("");
   const [stage, setStage] = useState("all");
   const searchText = search.trim().toLowerCase();
@@ -136,8 +138,12 @@ const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete })
                     <td className="border-b border-gray-200 px-5 py-4">
                       <div className="flex justify-center gap-3">
                         <Eye size={18} className="cursor-pointer text-gray-700" onClick={() => onView?.(quote.id)} />
-                        <Pencil size={18} className="cursor-pointer text-gray-700" onClick={() => onEdit?.(quote.id)} />
-                        <Trash2 size={18} className="cursor-pointer text-gray-700" onClick={() => onDelete?.(quote.id)} />
+                        {hasPermission("quote.edit") && (
+                          <Pencil size={18} className="cursor-pointer text-gray-700" onClick={() => onEdit?.(quote.id)} />
+                        )}
+                        {hasPermission("quote.delete") && (
+                          <Trash2 size={18} className="cursor-pointer text-gray-700" onClick={() => onDelete?.(quote.id)} />
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Wrench, Pencil } from "lucide-react";
 import { getService } from "../../../api/service";
+import usePermissions from "../../../permissions/usePermissions";
 
 function Badge({ children, dot, dotColor }) {
   return (
@@ -49,6 +50,7 @@ const billingTypeLabels = {
 };
 
 export default function ServiceViewModal({ serviceId, onClose, onEdit }) {
+  const { hasPermission } = usePermissions();
   const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -200,14 +202,16 @@ export default function ServiceViewModal({ serviceId, onClose, onEdit }) {
               >
                 Close
               </button>
-              <button
-                type="button"
-                onClick={() => onEdit(service.id)}
-                className="px-4 h-11 rounded-xl bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
-              >
-                <Pencil size={16} />
-                Edit Service
-              </button>
+              {hasPermission("service.edit") && (
+                <button
+                  type="button"
+                  onClick={() => onEdit(service.id)}
+                  className="px-4 h-11 rounded-xl bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+                >
+                  <Pencil size={16} />
+                  Edit Service
+                </button>
+              )}
             </div>
           </div>
         )}

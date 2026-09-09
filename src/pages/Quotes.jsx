@@ -6,8 +6,10 @@ import QuoteViewModal from "../components/quotes/QuoteViewModal";
 import QuotesKpis from "../components/quotes/QuotesKpis";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import useQuotes from "../hooks/useQuotes";
+import usePermissions from "../permissions/usePermissions";
 
 const Quotes = () => {
+  const { hasPermission } = usePermissions();
   const navigate = useNavigate();
   const { quotes, loading, fetchQuotes, removeQuote } = useQuotes();
 
@@ -52,14 +54,16 @@ const Quotes = () => {
     <div className="mt-5 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-[28px] font-bold text-[#111827]">Quotes</h1>
-        <button
-          type="button"
-          onClick={handleAdd}
-          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2"
-        >
-          <Plus size={18} />
-          Add Quote
-        </button>
+        {hasPermission("quote.create") && (
+          <button
+            type="button"
+            onClick={handleAdd}
+            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2"
+          >
+            <Plus size={18} />
+            Add Quote
+          </button>
+        )}
       </div>
 
       <QuotesKpis quotes={quotes} />

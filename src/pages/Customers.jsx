@@ -8,9 +8,11 @@ import CustomersList from "../components/customers/CustomersList";
 import CustomerFormModal from "../components/customers/CustomerFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { useToast } from "../components/ui/toastContext";
+import usePermissions from "../permissions/usePermissions";
 
 export default function Customers() {
   const { pushToast } = useToast();
+  const { hasPermission } = usePermissions();
 
   const {
     customers,
@@ -145,14 +147,16 @@ export default function Customers() {
           Customers
         </h1>
 
-        <button
-          type="button"
-          onClick={() => setAddOpen(true)}
-          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 cursor-pointer"
-        >
-          <Plus size={18} />
-          Add Customer
-        </button>
+        {hasPermission("customer.create") && (
+          <button
+            type="button"
+            onClick={() => setAddOpen(true)}
+            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 cursor-pointer"
+          >
+            <Plus size={18} />
+            Add Customer
+          </button>
+        )}
       </div>
 
       <CustomersKpis customers={customers} />

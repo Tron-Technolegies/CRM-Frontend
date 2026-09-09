@@ -11,8 +11,10 @@ import MeetingViewModal from "../components/Meeting/Meetingviewmodal";
 import { getLeads, getStaff } from "../api/lead";
 import { getCustomers } from "../api/customer";
 import { getAccounts } from "../api/account";
+import usePermissions from "../permissions/usePermissions";
 
 export default function Meetings() {
+  const { hasPermission } = usePermissions();
   const {
     meetings,
     loading,
@@ -141,13 +143,15 @@ export default function Meetings() {
             Meetings
           </h1>
 
-          <button
-            onClick={openAddModal}
-            className="flex items-center gap-2 h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Plus size={18} />
-            Create Meeting
-          </button>
+          {hasPermission("meeting.create") && (
+            <button
+              onClick={openAddModal}
+              className="flex items-center gap-2 h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus size={18} />
+              Create Meeting
+            </button>
+          )}
         </div>
 
         <MeetingsTable

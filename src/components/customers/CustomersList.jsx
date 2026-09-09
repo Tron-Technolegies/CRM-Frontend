@@ -4,6 +4,7 @@ import { useToast } from "../ui/toastContext.js";
 import CustomerViewModal from "./CustomerViewModal.jsx";
 import Pagination from "../Pagination";
 import usePagination from "../../api/usePagination";
+import usePermissions from "../../permissions/usePermissions";
 
 function formatCurrency(value) {
   const n = Number(value || 0);
@@ -36,6 +37,7 @@ function statusStyles(status) {
 
 export default function CustomersList({ customers, onDelete, onEdit }) {
   const { pushToast } = useToast();
+  const { hasPermission } = usePermissions();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [industry, setIndustry] = useState("All");
@@ -134,8 +136,12 @@ export default function CustomersList({ customers, onDelete, onEdit }) {
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-3 text-[#64748B]">
                     <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="View" onClick={(e) => {e.stopPropagation();setViewId(c.id);}}><Eye size={18} /></button>
-                    <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="Edit" onClick={(e) => {e.stopPropagation();onEdit(c);}}><Pencil size={18} /></button>
-                    <button type="button" className="hover:text-red-600 cursor-pointer" aria-label="Delete" onClick={(e) => {e.stopPropagation();onDelete(c.id);}}><Trash2 size={18} /></button>
+                    {hasPermission("customer.edit") && (
+                      <button type="button" className="hover:text-[#111827] cursor-pointer" aria-label="Edit" onClick={(e) => {e.stopPropagation();onEdit(c);}}><Pencil size={18} /></button>
+                    )}
+                    {hasPermission("customer.delete") && (
+                      <button type="button" className="hover:text-red-600 cursor-pointer" aria-label="Delete" onClick={(e) => {e.stopPropagation();onDelete(c.id);}}><Trash2 size={18} /></button>
+                    )}
                   </div>
                 </td>
               </tr>

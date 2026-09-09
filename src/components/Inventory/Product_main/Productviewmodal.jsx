@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Package, Pencil } from "lucide-react";
 import { getProduct } from "../../../api/products";
+import usePermissions from "../../../permissions/usePermissions";
 
 function Badge({ children, dot, dotColor }) {
   return (
@@ -41,6 +42,7 @@ function formatDate(iso) {
 }
 
 export default function ProductViewModal({ productId, onClose, onEdit }) {
+  const { hasPermission } = usePermissions();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -191,14 +193,16 @@ export default function ProductViewModal({ productId, onClose, onEdit }) {
               >
                 Close
               </button>
-              <button
-                type="button"
-                onClick={() => onEdit(product.id)}
-                className="px-4 h-11 rounded-xl bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
-              >
-                <Pencil size={16} />
-                Edit Product
-              </button>
+              {hasPermission("product.edit") && (
+                <button
+                  type="button"
+                  onClick={() => onEdit(product.id)}
+                  className="px-4 h-11 rounded-xl bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
+                >
+                  <Pencil size={16} />
+                  Edit Product
+                </button>
+              )}
             </div>
           </div>
         )}

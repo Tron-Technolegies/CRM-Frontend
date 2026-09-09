@@ -5,6 +5,7 @@ import AddCall from "../components/Calls/AddCall";
 import CallViewModal from "../components/Calls/CallViewModal";
 import { useToast } from "../components/ui/toastContext";
 import { Plus } from "lucide-react";
+import usePermissions from "../permissions/usePermissions";
 
 import {
   getCalls,
@@ -23,6 +24,7 @@ import { getAccounts } from "../api/account";
 
 export default function Calls() {
   const { pushToast } = useToast();
+  const { hasPermission } = usePermissions();
 
   const [calls, setCalls] = useState([]);
   const [staff, setStaff] = useState([]);
@@ -170,13 +172,15 @@ export default function Calls() {
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-[28px] font-bold text-[#111827]">Calls</h1>
 
-          <button
-            onClick={() => setAddOpen(true)}
-            className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            <Plus size={18} />
-            Log Call
-          </button>
+          {hasPermission("call.create") && (
+            <button
+              onClick={() => setAddOpen(true)}
+              className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              <Plus size={18} />
+              Log Call
+            </button>
+          )}
         </div>
 
         <CallsTable

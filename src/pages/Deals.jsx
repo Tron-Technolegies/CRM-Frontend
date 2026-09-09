@@ -6,6 +6,7 @@ import DealsList from "../components/deals/DealsList";
 import DealFormModal from "../components/deals/DealFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { useToast } from "../components/ui/toastContext";
+import usePermissions from "../permissions/usePermissions";
 
 import useDeal from "../hooks/useDeal";
 
@@ -17,6 +18,7 @@ import {
 
 export default function Deals() {
   const { pushToast } = useToast();
+  const { hasPermission } = usePermissions();
 
   const {
     deals,
@@ -165,14 +167,16 @@ export default function Deals() {
           Deals
         </h1>
 
-        <button
-          type="button"
-          onClick={() => setAddOpen(true)}
-          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 cursor-pointer"
-        >
-          <Plus size={18} />
-          Add Deal
-        </button>
+        {hasPermission("deal.create") && (
+          <button
+            type="button"
+            onClick={() => setAddOpen(true)}
+            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 cursor-pointer"
+          >
+            <Plus size={18} />
+            Add Deal
+          </button>
+        )}
       </div>
 
       <DealsKpis deals={deals} />

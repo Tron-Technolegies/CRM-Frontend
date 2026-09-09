@@ -3,6 +3,7 @@ import { Pencil, Plus, Trash2, X, Check } from "lucide-react";
 import { useToast } from "../ui/toastContext.js";
 import usePreferences from "../../hooks/usePreferences";
 import BackButton from "../common/BackButton";
+import usePermissions from "../../permissions/usePermissions";
 
 const fieldGroups = [
   { key: "lead_status", label: "Lead Status" },
@@ -18,6 +19,7 @@ const fieldGroups = [
 ];
 
 export default function Preferences() {
+  const { hasPermission } = usePermissions();
   const { pushToast } = useToast();
   const [activeField, setActiveField] = useState("lead_status");
   const [newLabel, setNewLabel] = useState("");
@@ -125,23 +127,25 @@ export default function Preferences() {
             {fieldGroups.find((f) => f.key === activeField)?.label} Options
           </h2>
 
-          <div className="flex items-center gap-2 mb-6">
-            <input
-              value={newLabel}
-              onChange={(e) => setNewLabel(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-              placeholder="Enter new option label"
-              className="h-11 flex-1 rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
-            />
-            <button
-              type="button"
-              onClick={handleAdd}
-              disabled={saving}
-              className="h-11 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 disabled:opacity-60 cursor-pointer"
-            >
-              <Plus size={16} /> Add
-            </button>
-          </div>
+          {hasPermission("picklist.create") && (
+            <div className="flex items-center gap-2 mb-6">
+              <input
+                value={newLabel}
+                onChange={(e) => setNewLabel(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                placeholder="Enter new option label"
+                className="h-11 flex-1 rounded-xl border border-[#E5E7EB] px-4 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+              />
+              <button
+                type="button"
+                onClick={handleAdd}
+                disabled={saving}
+                className="h-11 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 disabled:opacity-60 cursor-pointer"
+              >
+                <Plus size={16} /> Add
+              </button>
+            </div>
+          )}
 
           {loading && <p className="text-sm text-[#94A3B8] text-center py-6">Loading options...</p>}
 
@@ -171,12 +175,16 @@ export default function Preferences() {
                     <>
                       <span className="text-sm text-[#111827]">{o.label}</span>
                       <div className="flex items-center gap-3">
-                        <button type="button" onClick={() => startEdit(o)} className="text-[#94A3B8] hover:text-blue-600 transition cursor-pointer">
-                          <Pencil size={15} />
-                        </button>
-                        <button type="button" onClick={() => handleDelete(o.id, o.label)} className="text-[#94A3B8] hover:text-rose-500 transition cursor-pointer">
-                          <Trash2 size={16} />
-                        </button>
+                        {hasPermission("picklist.edit") && (
+                          <button type="button" onClick={() => startEdit(o)} className="text-[#94A3B8] hover:text-blue-600 transition cursor-pointer">
+                            <Pencil size={15} />
+                          </button>
+                        )}
+                        {hasPermission("picklist.delete") && (
+                          <button type="button" onClick={() => handleDelete(o.id, o.label)} className="text-[#94A3B8] hover:text-rose-500 transition cursor-pointer">
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
                     </>
                   )}

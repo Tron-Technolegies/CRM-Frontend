@@ -4,6 +4,7 @@ import { useToast } from "../ui/toastContext.js";
 import StaffViewModal from "./StaffViewModal.jsx";
 import Pagination from "../Pagination";
 import usePagination from "../../api/usePagination";
+import usePermissions from "../../permissions/usePermissions";
 
 function initials(name) {
   const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
@@ -44,6 +45,7 @@ function formatDate(value) {
 
 export default function UsersList({ users, onDelete, onEdit }) {
   const { pushToast } = useToast();
+  const { hasPermission } = usePermissions();
   const [query, setQuery] = useState("");
   const [role, setRole] = useState("All");
   const [status, setStatus] = useState("All");
@@ -174,8 +176,12 @@ export default function UsersList({ users, onDelete, onEdit }) {
                 <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-3 text-[#64748B]">
                     <button type="button" className="hover:text-[#111827]" aria-label="View" onClick={() => setViewId(u.id)}><Eye size={18} /></button>
-                    <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={() => onEdit(u)}><Pencil size={18} /></button>
-                    <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={() => onDelete(u.id)}><Trash2 size={18} /></button>
+                    {hasPermission("staff.edit") && (
+                      <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={() => onEdit(u)}><Pencil size={18} /></button>
+                    )}
+                    {hasPermission("staff.delete") && (
+                      <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={() => onDelete(u.id)}><Trash2 size={18} /></button>
+                    )}
                   </div>
                 </td>
               </tr>
