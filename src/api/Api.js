@@ -1,64 +1,9 @@
-// import axios from "axios";
-
-// const api = axios.create({
-//   baseURL: "https://crm-backend-ejfr.onrender.com/api/admin/",
-// });
-
-// api.interceptors.request.use((config) => {
-//   console.log("🔥 API REQUEST:", {
-//     method: config.method,
-//     url: config.url,
-//     baseURL: config.baseURL,
-//     fullURL: `${config.baseURL}${config.url || ""}`,
-//     stack: new Error().stack,
-//   });
-
-//   if (
-//     config.url === "staff/login/" ||
-//     config.url === "staff/signup/"
-//   ) {
-//     return config;
-//   }
-
-//   const token = localStorage.getItem("access_token");
-
-//   if (token) {
-//     config.headers.Authorization = `Bearer ${token}`;
-//   }
-
-//   return config;
-// });
-
-// api.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     const status = error.response?.status;
-
-//     const isAuthEndpoint =
-//       error.config?.url === "staff/login/" ||
-//       error.config?.url === "staff/signup/";
-
-//     if (status === 401 && !isAuthEndpoint) {
-//       localStorage.removeItem("access_token");
-//       localStorage.removeItem("refresh_token");
-
-//       if (window.location.pathname !== "/login") {
-//         window.location.href = "/login";
-//       }
-//     }
-
-//     return Promise.reject(error);
-//   }
-// );
-
-// export default api;
-
 import axios from "axios";
 
-// const BASE_URL = "https://crm-backend-ejfr.onrender.com/api/admin/";
-// const REFRESH_URL = "https://crm-backend-ejfr.onrender.com/api/token/refresh/";
-const BASE_URL = "http://127.0.0.1:8000/api/admin/";
-const REFRESH_URL = "http://127.0.0.1:8000/api/token/refresh/";
+const API_ROOT = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
+const BASE_URL = `${API_ROOT}/api/admin/`;
+const REFRESH_URL = `${API_ROOT}/api/token/refresh/`;
 
 const api = axios.create({
   baseURL: BASE_URL,
