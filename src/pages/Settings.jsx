@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
-import { Bell, ChevronRight, Globe, Lock, PhoneCall, User } from "lucide-react";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Bell, ChevronRight, Globe, Lock, Mail, PhoneCall, User } from "lucide-react";
 import usePermissions from "../permissions/usePermissions";
 
 const sections = [
@@ -14,6 +15,13 @@ const sections = [
     description: "Manage your email and in-app notifications.",
     icon: Bell,
     path: "/settings/notifications",
+  },
+  {
+    title: "Email Integration",
+    description: "Connect your Gmail account to send CRM emails from your company email.",
+    icon: Mail,
+    path: "/settings/email",
+    permission: "integration.view",
   },
   {
     title: "Twilio Settings",
@@ -50,7 +58,15 @@ const sections = [
 ];
 
 export default function Settings() {
+  const navigate = useNavigate();
   const { hasPermission } = usePermissions();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("gmail") || params.get("error")) {
+      navigate(`/settings/email${window.location.search}`, { replace: true });
+    }
+  }, [navigate]);
 
   const visibleSections = sections.filter(
     (section) => !section.permission || hasPermission(section.permission)

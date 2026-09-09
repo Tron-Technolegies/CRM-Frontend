@@ -28,6 +28,7 @@ import Service from "./components/Inventory/Service";
 // Settings
 import Profile from "./components/settings/Profile/Profile";
 import Notification from "./components/settings/Notification/Notification";
+import EmailIntegration from "./components/settings/EmailIntegration";
 import TwilioSettings from "./components/settings/Twilio/TwilioSettings";
 import Preferences from "./components/settings/Preferences";
 import Security from "./components/settings/Security/Security";
@@ -275,6 +276,14 @@ const router = createBrowserRouter([
       {
         path: "settings/notifications",
         element: <Notification />,
+      },
+      {
+        path: "settings/email",
+        element: (
+          <ProtectedRoute permission="integration.view">
+            <EmailIntegration />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "settings/twilio",
