@@ -27,7 +27,7 @@ export default function MeetingRoom() {
     meetingIdRef.current = id;
   }, [id]);
 
-  useEffect(() => {
+    useEffect(() => {
     const handlePageExit = () => {
       const meetingId = meetingIdRef.current;
 
@@ -40,7 +40,8 @@ export default function MeetingRoom() {
 
       if (!token) return;
 
-      const url = `http://127.0.0.1:8000/api/admin/meeting/attendance/leave/${meetingId}/`;
+      const apiRoot = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const url = `${apiRoot}/api/admin/meeting/attendance/leave/${meetingId}/`;
 
       fetch(url, {
         method: "POST",
