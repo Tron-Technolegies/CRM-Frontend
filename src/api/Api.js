@@ -1,6 +1,12 @@
 import axios from "axios";
 
-const API_ROOT = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const RAW_API_ROOT =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD
+    ? "https://crm-backend-ejfr.onrender.com"
+    : "http://127.0.0.1:8000");
+
+const API_ROOT = RAW_API_ROOT.replace(/\/+$/, "");
 
 const BASE_URL = `${API_ROOT}/api/admin/`;
 const REFRESH_URL = `${API_ROOT}/api/token/refresh/`;

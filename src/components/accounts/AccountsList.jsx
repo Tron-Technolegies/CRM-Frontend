@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Eye, Pencil, Search, Trash2 } from "lucide-react";
 import Pagination from "../Pagination";
 import usePagination from "../../api/usePagination";
+import usePermissions from "../../permissions/usePermissions";
 
 const AccountsList = ({
   accounts = [],
@@ -9,6 +10,7 @@ const AccountsList = ({
   onEdit,
   onView,
 }) => {
+  const { hasPermission } = usePermissions();
   const [query, setQuery] = useState("");
   const [industry, setIndustry] = useState("All");
   const [assignedTo, setAssignedTo] = useState("All");
@@ -198,12 +200,16 @@ const AccountsList = ({
                       <button onClick={() => onView(account)}>
                         <Eye size={18} />
                       </button>
-                      <button onClick={() => onEdit(account)}>
-                        <Pencil size={18} />
-                      </button>
-                      <button onClick={() => onDelete(account.id)}>
-                        <Trash2 size={18} />
-                      </button>
+                      {hasPermission("account.edit") && (
+                        <button onClick={() => onEdit(account)}>
+                          <Pencil size={18} />
+                        </button>
+                      )}
+                      {hasPermission("account.delete") && (
+                        <button onClick={() => onDelete(account.id)}>
+                          <Trash2 size={18} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

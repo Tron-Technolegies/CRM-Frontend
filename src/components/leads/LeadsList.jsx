@@ -4,6 +4,7 @@ import LeadViewModal from "./LeadViewModal";
 import CallModal from "../Calls/CallModal";
 import Pagination from "../Pagination";
 import usePagination from "../../api/usePagination";
+import usePermissions from "../../permissions/usePermissions";
 
 // Normalize so status comparisons don't depend on backend casing.
 function normalize(value) {
@@ -38,6 +39,7 @@ export default function LeadsList({
   onEdit,
   onConvert
 }) {
+  const { hasPermission } = usePermissions();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [source, setSource] = useState("All");
@@ -154,8 +156,12 @@ export default function LeadsList({
                 <PhoneCall size={14} /> Call
               </button>
               <button type="button" className="h-10 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827]" onClick={() => setViewId(lead.id)}>View</button>
-              <button type="button" className="h-10 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827]" onClick={() => onEdit(lead)}>Edit</button>
-              <button type="button" className="h-10 px-4 rounded-xl bg-red-50 text-red-600 text-sm font-medium" onClick={() => onDelete(lead.id)}>Delete</button>
+              {hasPermission("lead.edit") && (
+                <button type="button" className="h-10 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827]" onClick={() => onEdit(lead)}>Edit</button>
+              )}
+              {hasPermission("lead.delete") && (
+                <button type="button" className="h-10 px-4 rounded-xl bg-red-50 text-red-600 text-sm font-medium" onClick={() => onDelete(lead.id)}>Delete</button>
+              )}
             </div>
           </div>
         ))}
@@ -231,8 +237,12 @@ export default function LeadsList({
                       <PhoneCall size={18} />
                     </button>
                     <button type="button" className="hover:text-[#111827]" aria-label="View" onClick={(e) => {e.stopPropagation();setViewId(lead.id);}}><Eye size={18} /></button>
-                    <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={(e) => {e.stopPropagation();onEdit(lead);}}><Pencil size={18} /></button>
-                    <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={(e) => {e.stopPropagation();onDelete(lead.id);}}><Trash2 size={18} /></button>
+                    {hasPermission("lead.edit") && (
+                      <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={(e) => {e.stopPropagation();onEdit(lead);}}><Pencil size={18} /></button>
+                    )}
+                    {hasPermission("lead.delete") && (
+                      <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={(e) => {e.stopPropagation();onDelete(lead.id);}}><Trash2 size={18} /></button>
+                    )}
                   </div>
                 </td>
               </tr>

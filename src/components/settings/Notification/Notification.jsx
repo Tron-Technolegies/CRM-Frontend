@@ -6,6 +6,7 @@ import DesktopAlert from "./DesktopAlert";
 import useNotificationSettings from "../../../hooks/useNotificationSettings";
 import BackButton from "../../common/BackButton";
 import MetaComponent from "./MetaComponent";
+import usePermissions from "../../../permissions/usePermissions";
 
 const statusText = {
   saving: "Saving...",
@@ -14,6 +15,7 @@ const statusText = {
 };
 
 const Notification = () => {
+  const { hasPermission } = usePermissions();
   const { settings, loading, error, saveStatus, toggleSetting } =
     useNotificationSettings();
 
@@ -40,7 +42,7 @@ const Notification = () => {
       )}
       <Notifications settings={settings} toggleSetting={toggleSetting} />
       <PushNotifications settings={settings} toggleSetting={toggleSetting} />
-      <MetaComponent />
+      {hasPermission("integration.view") && <MetaComponent />}
       {/* <AppNotifications settings={settings} toggleSetting={toggleSetting} /> */}
       {/* <DesktopAlert settings={settings} toggleSetting={toggleSetting} /> */}
     </div>

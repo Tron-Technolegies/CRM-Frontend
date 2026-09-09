@@ -4,6 +4,7 @@ import { useToast } from "../ui/toastContext.js";
 import TaskViewModal from "./TaskViewModal.jsx";
 import Pagination from "../Pagination";
 import usePagination from "../../api/usePagination";
+import usePermissions from "../../permissions/usePermissions";
 
 function priorityStyles(priority) {
   switch (priority?.toLowerCase()) {
@@ -65,6 +66,7 @@ function isOverdue(dueDate, status) {
 
 export default function TasksList({ tasks, onDelete, onEdit }) {
   const { pushToast } = useToast();
+  const { hasPermission } = usePermissions();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [priority, setPriority] = useState("All");
@@ -184,8 +186,12 @@ export default function TasksList({ tasks, onDelete, onEdit }) {
                 <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-3 text-[#64748B]">
                     <button type="button" className="hover:text-[#111827]" aria-label="View" onClick={() => setViewId(task.id)}><Eye size={18} /></button>
-                    <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={() => onEdit(task)}><Pencil size={18} /></button>
-                    <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={() => onDelete(task.id)}><Trash2 size={18} /></button>
+                    {hasPermission("task.edit") && (
+                      <button type="button" className="hover:text-[#111827]" aria-label="Edit" onClick={() => onEdit(task)}><Pencil size={18} /></button>
+                    )}
+                    {hasPermission("task.delete") && (
+                      <button type="button" className="hover:text-red-600" aria-label="Delete" onClick={() => onDelete(task.id)}><Trash2 size={18} /></button>
+                    )}
                   </div>
                 </td>
               </tr>

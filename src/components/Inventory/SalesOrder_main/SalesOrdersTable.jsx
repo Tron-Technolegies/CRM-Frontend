@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Pagination from "../../Pagination";
 import usePagination from "../../../api/usePagination";
 import { lineTotal } from "../../../utils/salesOrderMapping";
+import usePermissions from "../../../permissions/usePermissions";
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value || 0);
@@ -18,6 +19,7 @@ const computeGrandTotal = (order) =>
   (order.items || []).reduce((sum, item) => sum + lineTotal(item), 0);
 
 const SalesOrdersTable = ({ orders = [], loading = false, error = null, onEdit, onView, onDelete }) => {
+  const { hasPermission } = usePermissions();
   const [search, setSearch] = useState("");
   const searchText = search.trim().toLowerCase();
 
@@ -128,22 +130,26 @@ const SalesOrdersTable = ({ orders = [], loading = false, error = null, onEdit, 
                       >
                         <Eye size={18} />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => onEdit?.(order.id)}
-                        className="text-blue-600 hover:text-blue-700"
-                        aria-label="Edit sales order"
-                      >
-                        <Pencil size={18} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete?.(order.id)}
-                        className="text-red-600 hover:text-red-700"
-                        aria-label="Delete sales order"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      {hasPermission("salesorder.edit") && (
+                        <button
+                          type="button"
+                          onClick={() => onEdit?.(order.id)}
+                          className="text-blue-600 hover:text-blue-700"
+                          aria-label="Edit sales order"
+                        >
+                          <Pencil size={18} />
+                        </button>
+                      )}
+                      {hasPermission("salesorder.delete") && (
+                        <button
+                          type="button"
+                          onClick={() => onDelete?.(order.id)}
+                          className="text-red-600 hover:text-red-700"
+                          aria-label="Delete sales order"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

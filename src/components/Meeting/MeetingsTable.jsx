@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Eye, Pencil, Search, Trash2, X, Video} from "lucide-react";
 import Pagination from "../Pagination";
 import usePagination from "../../api/usePagination";
+import usePermissions from "../../permissions/usePermissions";
 
 function formatDateTime(value) {
   if (!value) return "—";
@@ -66,6 +67,7 @@ function relatedName(meeting) {
 }
 
 export default function MeetingsTable({ meetings, onView, onEdit, onDelete, onJoin, }) {
+  const { hasPermission } = usePermissions();
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [query, setQuery] = useState("");
@@ -203,21 +205,25 @@ export default function MeetingsTable({ meetings, onView, onEdit, onDelete, onJo
                         <Eye size={18} />
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => onEdit(meeting.id)}
-                        className="hover:text-[#111827]"
-                      >
-                        <Pencil size={18} />
-                      </button>
+                      {hasPermission("meeting.edit") && (
+                        <button
+                          type="button"
+                          onClick={() => onEdit(meeting.id)}
+                          className="hover:text-[#111827]"
+                        >
+                          <Pencil size={18} />
+                        </button>
+                      )}
 
-                      <button
-                        type="button"
-                        onClick={() => setDeleteTargetId(meeting.id)}
-                        className="hover:text-red-600"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      {hasPermission("meeting.delete") && (
+                        <button
+                          type="button"
+                          onClick={() => setDeleteTargetId(meeting.id)}
+                          className="hover:text-red-600"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

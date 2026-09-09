@@ -5,6 +5,7 @@ import { Eye, Pencil, Trash2, X, Search, Download } from "lucide-react";
 import { Plus } from "lucide-react";
 import Pagination from "../../Pagination";
 import usePagination from "../../../api/usePagination";
+import usePermissions from "../../../permissions/usePermissions";
 
 function DeleteConfirmModal({ onCancel, onConfirm, deleting }) {
   return (
@@ -48,6 +49,7 @@ function DeleteConfirmModal({ onCancel, onConfirm, deleting }) {
 }
 
 export default function InvoiceList({ onAdd, onEdit, onView }) {
+  const { hasPermission } = usePermissions();
   const { invoices, loading, error, removeInvoice } = useInvoices();
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState(null);
@@ -115,14 +117,16 @@ export default function InvoiceList({ onAdd, onEdit, onView }) {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-[#111827]">Invoices</h1>
-        <button
-          type="button"
-          onClick={() => onAdd?.()}
-          className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          <Plus size={18} />
-          Create Invoice
-        </button>
+        {hasPermission("invoice.create") && (
+          <button
+            type="button"
+            onClick={() => onAdd?.()}
+            className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            <Plus size={18} />
+            Create Invoice
+          </button>
+        )}
       </div>
 
       <div className="mb-4 flex h-11 w-full max-w-sm items-center gap-3 rounded-xl border border-[#E5E7EB] px-4">
@@ -203,12 +207,16 @@ export default function InvoiceList({ onAdd, onEdit, onView }) {
                       >
                         <Download size={18} />
                       </button>
-                      <button type="button" onClick={() => onEdit?.(inv.id)} className="text-blue-600 hover:text-blue-700" aria-label="Edit invoice">
-                        <Pencil size={18} />
-                      </button>
-                      <button type="button" onClick={() => setDeleteTargetId(inv.id)} className="text-red-600 hover:text-red-700" aria-label="Delete invoice">
-                        <Trash2 size={18} />
-                      </button>
+                      {hasPermission("invoice.edit") && (
+                        <button type="button" onClick={() => onEdit?.(inv.id)} className="text-blue-600 hover:text-blue-700" aria-label="Edit invoice">
+                          <Pencil size={18} />
+                        </button>
+                      )}
+                      {hasPermission("invoice.delete") && (
+                        <button type="button" onClick={() => setDeleteTargetId(inv.id)} className="text-red-600 hover:text-red-700" aria-label="Delete invoice">
+                          <Trash2 size={18} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

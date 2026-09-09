@@ -4,8 +4,10 @@ import { Plus } from "lucide-react";
 import PurchaseOrdersTable from "./purchaseOrder_main/PurchaseOrdersTable";
 import PurchaseOrderViewModal from "./purchaseOrder_main/PurchaseOrderViewModal";
 import usePurchaseOrders from "../../hooks/usePurchaseOrders";
+import usePermissions from "../../permissions/usePermissions";
 
 const PurchaseOrders = () => {
+  const { hasPermission } = usePermissions();
   const navigate = useNavigate();
   const { purchaseOrders, loading, fetchPurchaseOrders, removePurchaseOrder } =
     usePurchaseOrders();
@@ -37,14 +39,16 @@ const PurchaseOrders = () => {
         <h1 className="text-[28px] font-bold text-[#111827]">
           Purchase Orders
         </h1>
-        <button
-          type="button"
-          onClick={handleAdd}
-          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2"
-        >
-          <Plus size={18} />
-          Create Purchase Order
-        </button>
+        {hasPermission("purchaseorder.create") && (
+          <button
+            type="button"
+            onClick={handleAdd}
+            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2"
+          >
+            <Plus size={18} />
+            Create Purchase Order
+          </button>
+        )}
       </div>
 
       <PurchaseOrdersTable
@@ -59,10 +63,10 @@ const PurchaseOrders = () => {
         open={viewOpen}
         onClose={() => setViewOpen(false)}
         orderId={viewOrderId}
-        onEdit={(order) => {
+        onEdit={hasPermission("purchaseorder.edit") ? (order) => {
           setViewOpen(false);
           handleEdit(order.id);
-        }}
+        } : undefined}
       />
     </div>
   );

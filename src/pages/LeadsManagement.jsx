@@ -12,12 +12,14 @@ import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { useToast } from "../components/ui/toastContext";
 
 import useLead from "../hooks/useLead";
+import usePermissions from "../permissions/usePermissions";
 
 import { addLead, updateLead, deleteLead, convertLead } from "../api/lead";
 
 
 export default function LeadsManagement() {
   const { pushToast } = useToast();
+  const { hasPermission } = usePermissions();
 
   const { leads, staff, loading, fetchLeads, setLeads } = useLead();
 
@@ -293,17 +295,19 @@ export default function LeadsManagement() {
       <div className="flex justify-between items-center">
         <h1 className="text-[28px] font-semibold">Leads</h1>
 
-        <button
-          onClick={() => setAddOpen(true)}
-          className="
-            h-11 px-5 rounded-xl
-            bg-blue-600 text-white
-            flex items-center gap-2
-          "
-        >
-          <Plus size={18} />
-          Add Lead
-        </button>
+        {hasPermission("lead.create") && (
+          <button
+            onClick={() => setAddOpen(true)}
+            className="
+              h-11 px-5 rounded-xl
+              bg-blue-600 text-white
+              flex items-center gap-2
+            "
+          >
+            <Plus size={18} />
+            Add Lead
+          </button>
+        )}
       </div>
 
       <LeadsKpis leads={leads} />

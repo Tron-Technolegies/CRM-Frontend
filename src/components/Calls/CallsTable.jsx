@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Eye, Pencil, Search, Trash2 } from "lucide-react";
 import Pagination from "../Pagination";
 import usePagination from "../../api/usePagination";
+import usePermissions from "../../permissions/usePermissions";
 
 function statusStyles(status) {
   switch (status) {
@@ -30,6 +31,7 @@ function relatedName(call) {
 }
 
 export default function CallsTable({ calls = [], loading, onDelete, onEdit, onView }) {
+  const { hasPermission } = usePermissions();
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -130,12 +132,16 @@ export default function CallsTable({ calls = [], loading, onDelete, onEdit, onVi
                     <button type="button" onClick={() => onView(call.id)} className="hover:text-blue-600">
                       <Eye size={18} />
                     </button>
-                    <button type="button" onClick={() => onEdit(call)} className="hover:text-[#111827]">
-                      <Pencil size={18} />
-                    </button>
-                    <button type="button" className="hover:text-red-600" onClick={() => onDelete(call.id)}>
-                      <Trash2 size={18} />
-                    </button>
+                    {hasPermission("call.edit") && (
+                      <button type="button" onClick={() => onEdit(call)} className="hover:text-[#111827]">
+                        <Pencil size={18} />
+                      </button>
+                    )}
+                    {hasPermission("call.delete") && (
+                      <button type="button" className="hover:text-red-600" onClick={() => onDelete(call.id)}>
+                        <Trash2 size={18} />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

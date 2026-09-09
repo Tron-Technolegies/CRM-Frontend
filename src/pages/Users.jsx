@@ -8,10 +8,12 @@ import UsersList from "../components/users/UsersList";
 import UserFormModal from "../components/users/UserFormModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { useToast } from "../components/ui/toastContext.js";
+import usePermissions from "../permissions/usePermissions";
 
 
 export default function Users() {
   const { pushToast } = useToast();
+  const { hasPermission } = usePermissions();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
@@ -152,14 +154,16 @@ export default function Users() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-[28px] font-semibold text-[#111827]">Users</h1>
-        <button
-          type="button"
-          onClick={() => setAddOpen(true)}
-          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 cursor-pointer"
-        >
-          <Plus size={18} />
-          Invite User
-        </button>
+        {hasPermission("staff.create") && (
+          <button
+            type="button"
+            onClick={() => setAddOpen(true)}
+            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 cursor-pointer"
+          >
+            <Plus size={18} />
+            Invite User
+          </button>
+        )}
       </div>
 
       <UsersKpis users={users} />

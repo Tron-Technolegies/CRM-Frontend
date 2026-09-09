@@ -6,8 +6,10 @@ import AccountFormModal from "../components/accounts/AccountFormModal";
 import AccountViewModal from "../components/accounts/AccountViewModal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import useAccount from "../hooks/useAccount";
+import usePermissions from "../permissions/usePermissions";
 
 const Accounts = () => {
+  const { hasPermission } = usePermissions();
 
   const [addOpen, setAddOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
@@ -44,14 +46,16 @@ const Accounts = () => {
           Accounts
         </h1>
 
-        <button
-          type="button"
-          onClick={() => setAddOpen(true)}
-          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2"
-        >
-          <Plus size={18} />
-          Add Account
-        </button>
+        {hasPermission("account.create") && (
+          <button
+            type="button"
+            onClick={() => setAddOpen(true)}
+            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2"
+          >
+            <Plus size={18} />
+            Add Account
+          </button>
+        )}
 
       </div>
 

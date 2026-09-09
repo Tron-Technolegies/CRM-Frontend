@@ -6,9 +6,11 @@ import ReportsRevenueChart from "../components/reports/ReportsRevenueChart";
 import ReportsDealsByStage from "../components/reports/ReportsDealsByStage";
 import ReportsLeadsSource from "../components/reports/ReportsLeadsSource";
 import { useReports } from "../hooks/useReports";
+import usePermissions from "../permissions/usePermissions";
 
 export default function Reports() {
   const { report, loading, error, startDate, endDate, setStartDate, setEndDate } = useReports();
+  const { hasPermission } = usePermissions();
   const [exporting, setExporting] = useState(false);
 
   const handleExport = () => {
@@ -220,24 +222,26 @@ export default function Reports() {
               className="outline-none bg-transparent cursor-pointer"
             />
           </div>
-          <button
-            type="button"
-            onClick={handleExport}
-            disabled={!report || loading || exporting}
-            className="h-10 px-4 rounded-xl bg-[#2B61FF] hover:bg-blue-700 active:scale-[0.98] transition text-white text-sm font-semibold flex items-center gap-2 cursor-pointer disabled:opacity-60 shadow-sm"
-          >
-            {exporting ? (
-              <>
-                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                </svg>
-                Exporting…
-              </>
-            ) : (
-              <>↓ Export PDF</>
-            )}
-          </button>
+          {hasPermission("report.export") && (
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={!report || loading || exporting}
+              className="h-10 px-4 rounded-xl bg-[#2B61FF] hover:bg-blue-700 active:scale-[0.98] transition text-white text-sm font-semibold flex items-center gap-2 cursor-pointer disabled:opacity-60 shadow-sm"
+            >
+              {exporting ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  </svg>
+                  Exporting…
+                </>
+              ) : (
+                <>↓ Export PDF</>
+              )}
+            </button>
+          )}
         </div>
       </div>
 

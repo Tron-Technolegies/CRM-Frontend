@@ -5,8 +5,10 @@ import SalesOrdersTable from "./SalesOrder_main/SalesOrdersTable";
 import SalesOrderViewModal from "./SalesOrder_main/SalesOrderViewModal";
 import ConfirmDialog from "../ui/ConfirmDialog";
 import useSalesOrders from "../../hooks/useSalesOrders";
+import usePermissions from "../../permissions/usePermissions";
 
 const SalesOrders = () => {
+  const { hasPermission } = usePermissions();
   const navigate = useNavigate();
   const { salesOrders, loading, fetchSalesOrders, removeSalesOrder } =
     useSalesOrders();
@@ -52,14 +54,16 @@ const SalesOrders = () => {
     <div className="mt-5 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-[28px] font-bold text-[#111827]">Sales Orders</h1>
-        <button
-          type="button"
-          onClick={handleAdd}
-          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2"
-        >
-          <Plus size={18} />
-          Create Sales Order
-        </button>
+        {hasPermission("salesorder.create") && (
+          <button
+            type="button"
+            onClick={handleAdd}
+            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2"
+          >
+            <Plus size={18} />
+            Create Sales Order
+          </button>
+        )}
       </div>
 
       <SalesOrdersTable
@@ -74,10 +78,10 @@ const SalesOrders = () => {
         open={viewOpen}
         onClose={() => setViewOpen(false)}
         orderId={viewOrderId}
-        onEdit={(order) => {
+        onEdit={hasPermission("salesorder.edit") ? (order) => {
           setViewOpen(false);
           handleEdit(order.id);
-        }}
+        } : undefined}
       />
 
       <ConfirmDialog

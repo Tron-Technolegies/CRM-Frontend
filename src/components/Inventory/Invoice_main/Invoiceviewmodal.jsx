@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, FileText, Pencil, Download } from "lucide-react";
 import { getInvoice, downloadInvoicePdf } from "../../../api/invoice";
+import usePermissions from "../../../permissions/usePermissions";
 
 function Badge({ children, dot, dotColor }) {
   return (
@@ -29,6 +30,7 @@ const statusDot = {
 };
 
 export default function InvoiceViewModal({ invoiceId, onClose, onEdit }) {
+  const { hasPermission } = usePermissions();
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -179,10 +181,12 @@ export default function InvoiceViewModal({ invoiceId, onClose, onEdit }) {
               <button type="button" onClick={onClose} className="px-4 h-11 rounded-xl border border-[#E5E7EB] text-[#111827] hover:bg-gray-50">
                 Close
               </button>
-              <button type="button" onClick={() => onEdit?.(invoice.id)} className="px-4 h-11 rounded-xl bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2">
-                <Pencil size={16} />
-                Edit Invoice
-              </button>
+              {hasPermission("invoice.edit") && (
+                <button type="button" onClick={() => onEdit?.(invoice.id)} className="px-4 h-11 rounded-xl bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2">
+                  <Pencil size={16} />
+                  Edit Invoice
+                </button>
+              )}
             </div>
           </div>
         )}

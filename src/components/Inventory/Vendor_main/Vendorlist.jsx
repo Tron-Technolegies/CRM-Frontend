@@ -4,6 +4,7 @@ import { Eye, Pencil, Trash2, X, Search } from "lucide-react";
 import { Plus } from "lucide-react";
 import Pagination from "../../Pagination";
 import usePagination from "../../../api/usePagination";
+import usePermissions from "../../../permissions/usePermissions";
 
 function DeleteConfirmModal({ onCancel, onConfirm, deleting }) {
   return (
@@ -51,6 +52,7 @@ function DeleteConfirmModal({ onCancel, onConfirm, deleting }) {
 }
 
 export default function VendorList({ onAdd, onEdit, onView }) {
+  const { hasPermission } = usePermissions();
   const { vendors, loading, error, removeVendor } = useVendor();
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState(null);
@@ -98,14 +100,16 @@ export default function VendorList({ onAdd, onEdit, onView }) {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-[#111827]">Vendors</h1>
-        <button
-          type="button"
-          onClick={onAdd}
-          className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          <Plus size={18} />
-          Add Vendor
-        </button>
+        {hasPermission("vendor.create") && (
+          <button
+            type="button"
+            onClick={onAdd}
+            className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            <Plus size={18} />
+            Add Vendor
+          </button>
+        )}
       </div>
 
       {/* Search */}
@@ -194,22 +198,26 @@ export default function VendorList({ onAdd, onEdit, onView }) {
                       >
                         <Eye size={18} />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => onEdit(v.id)}
-                        className="text-blue-600 hover:text-blue-700"
-                        aria-label="Edit vendor"
-                      >
-                        <Pencil size={18} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDeleteTargetId(v.id)}
-                        className="text-red-600 hover:text-red-700"
-                        aria-label="Delete vendor"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      {hasPermission("vendor.edit") && (
+                        <button
+                          type="button"
+                          onClick={() => onEdit(v.id)}
+                          className="text-blue-600 hover:text-blue-700"
+                          aria-label="Edit vendor"
+                        >
+                          <Pencil size={18} />
+                        </button>
+                      )}
+                      {hasPermission("vendor.delete") && (
+                        <button
+                          type="button"
+                          onClick={() => setDeleteTargetId(v.id)}
+                          className="text-red-600 hover:text-red-700"
+                          aria-label="Delete vendor"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
