@@ -11,3 +11,13 @@ export const login = (data) => {
 export const changePassword = (data) =>
     api.post("password/change/", data);
 
+export const verifyInvitation = (token) => {
+    return api.get("staff/verify-invitation/", {
+        params: { token },
+    });
+};
+
+export const acceptInvitation = ({ token, password }) => {
+    return api.post("staff/acceptinvitation/", { token, password });
+};
+

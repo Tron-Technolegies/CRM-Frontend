@@ -15,10 +15,21 @@ const api = axios.create({
   baseURL: BASE_URL,
 });
 
-const AUTH_ENDPOINTS = ["staff/login/", "staff/signup/"];
+const AUTH_ENDPOINTS = [
+  "staff/login/",
+  "staff/signup/",
+  "staff/verify-invitation/",
+  "staff/acceptinvitation/",
+];
+
+const isAuthUrl = (url = "") => {
+  if (!url) return false;
+  const cleanUrl = url.replace(/^\/+/, "");
+  return AUTH_ENDPOINTS.some((endpoint) => cleanUrl.startsWith(endpoint));
+};
 
 api.interceptors.request.use((config) => {
-  if (AUTH_ENDPOINTS.includes(config.url)) {
+  if (isAuthUrl(config.url)) {
     return config;
   }
 
@@ -57,9 +68,9 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     const status = error.response?.status;
-    const isAuthEndpoint = AUTH_ENDPOINTS.includes(originalRequest?.url);
+    const isAuthEndpoint = isAuthUrl(originalRequest?.url);
 
-    // Bad credentials on login/signup itself — not a session issue, just reject.
+    // Bad credentials or invalid invitation on auth endpoints — not a session issue, just reject.
     if (status === 401 && isAuthEndpoint) {
       return Promise.reject(error);
     }
@@ -109,6 +120,9 @@ api.interceptors.response.use(
 
     // Handle 403 Forbidden without expiring session
     if (status === 403) {
+      if (isAuthEndpoint) {
+        return Promise.reject(error);
+      }
       const errorData = error.response?.data;
       window.dispatchEvent(
         new CustomEvent("rbacForbidden", {
