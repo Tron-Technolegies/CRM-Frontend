@@ -42,6 +42,7 @@ import DataSecurity from "./components/settings/DataPrivacy/DataSecurity";
 import Login from "./components/auth/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Signup from "./components/auth/Signup";
+import AcceptInvitation from "./components/auth/AcceptInvitation";
 import AccessDenied from "./pages/AccessDenied";
 import QuoteFormPage from "./components/quotes/QuoteFormPage";
 import SalesOrderFormPage from "./components/Inventory/SalesOrder_main/SalesOrderFormPage";
@@ -56,6 +57,14 @@ const router = createBrowserRouter([
   {
     path: "/signup",
     element: <Signup />,
+  },
+  {
+    path: "/staff/accept-invitation",
+    element: <AcceptInvitation />,
+  },
+  {
+    path: "/accept-invitation",
+    element: <AcceptInvitation />,
   },
   {
     path: "/403",
