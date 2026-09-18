@@ -44,7 +44,7 @@ export default function Invoice() {
   }
 
   return (
-    <>
+    <div className="mt-5 space-y-6">
       <InvoiceList onAdd={handleAdd} onEdit={handleEdit} onView={handleView} />
 
       {viewingInvoiceId && (
@@ -54,6 +54,6 @@ export default function Invoice() {
           onEdit={handleEdit}
         />
       )}
-    </>
+    </div>
   );
 }

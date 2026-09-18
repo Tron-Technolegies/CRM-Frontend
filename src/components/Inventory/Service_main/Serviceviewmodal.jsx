@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { X, Wrench, Pencil } from "lucide-react";
 import { getService } from "../../../api/service";
 import usePermissions from "../../../permissions/usePermissions";
+import AuditHistory from "../../ui/AuditHistory";
 
 function Badge({ children, dot, dotColor }) {
   return (
@@ -184,6 +185,15 @@ export default function ServiceViewModal({ serviceId, onClose, onEdit }) {
                   {service.description || "No description added."}
                 </div>
               </div>
+
+              <AuditHistory
+                lastEditedBy={service.lastEditedBy}
+                lastEditedAt={service.lastEditedAt}
+                editHistory={service.editHistory}
+                modelName="service"
+                objectId={service.id || serviceId}
+                className="mt-5"
+              />
             </>
           )}
         </div>

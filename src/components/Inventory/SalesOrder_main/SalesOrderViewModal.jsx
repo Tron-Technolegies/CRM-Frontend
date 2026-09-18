@@ -1,6 +1,7 @@
 import { Calendar, FileText, MapPin, Pencil, Tag, Truck, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import Modal from "../../ui/Modal";
+import AuditHistory from "../../ui/AuditHistory";
 import { getSalesOrder } from "../../../api/salesOrders";
 import { lineTotal } from "../../../utils/salesOrderMapping";
 
@@ -197,6 +198,14 @@ export default function SalesOrderViewModal({ open, onClose, onEdit, orderId = n
                 <AddressBlock title="Shipping Address" address={data.shippingAddress} />
               </div>
             </Section>
+
+            <AuditHistory
+              lastEditedBy={data.lastEditedBy}
+              lastEditedAt={data.lastEditedAt}
+              editHistory={data.editHistory}
+              modelName="salesorder"
+              objectId={data.id || orderId}
+            />
           </div>
 
           <div className="mt-5 pt-4 border-t border-[#F0F2F5] flex items-center justify-between">

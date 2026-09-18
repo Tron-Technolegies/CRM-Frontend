@@ -216,6 +216,9 @@ export default function LeadsManagement() {
         expected_closing_date: form.expectedClosingDate || null,
         lead_description: form.description.trim(),
         assigned_to: form.assignedTo || null,
+        enquiry_type: form.enquiryType || "not_specified",
+        product_id: form.enquiryType === "product" && form.productId ? Number(form.productId) : null,
+        service_id: form.enquiryType === "service" && form.serviceId ? Number(form.serviceId) : null,
       });
 
       await fetchLeads();
@@ -257,6 +260,9 @@ export default function LeadsManagement() {
         expected_closing_date: form.expectedClosingDate || null,
         lead_description: form.description.trim(),
         assigned_to: form.assignedTo || null,
+        enquiry_type: form.enquiryType || "not_specified",
+        product_id: form.enquiryType === "product" && form.productId ? Number(form.productId) : null,
+        service_id: form.enquiryType === "service" && form.serviceId ? Number(form.serviceId) : null,
       });
 
       await fetchLeads();

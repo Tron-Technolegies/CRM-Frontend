@@ -1,6 +1,7 @@
 import { Calendar, Flag, Link, Tag, Users, Pencil, CheckCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Modal from "../ui/Modal";
+import AuditHistory from "../ui/AuditHistory";
 import { getTask } from "../../api/task";
 
 const priorityConfig = {
@@ -170,6 +171,14 @@ export default function TaskViewModal({ open, onClose, onEdit, taskId = null }) 
                 <p className="text-sm text-[#374151] leading-relaxed">{data.description}</p>
               </Section>
             )}
+
+            <AuditHistory
+              lastEditedBy={data.lastEditedBy}
+              lastEditedAt={data.lastEditedAt}
+              editHistory={data.editHistory}
+              modelName="task"
+              objectId={data.id || taskId}
+            />
           </div>
 
           <div className="mt-5 pt-4 border-t border-[#F0F2F5] flex items-center justify-between">

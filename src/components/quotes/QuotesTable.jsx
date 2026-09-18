@@ -52,45 +52,37 @@ const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete })
     resetPage();
   }, [search, stage]);
 
-  const tabs = [
-    { key: "all", label: "All" },
-    { key: "draft", label: "Draft" },
-    { key: "negotiation", label: "Negotiation" },
-    { key: "closed_won", label: "Closed Won" },
-  ];
-
   return (
     <div className="max-w-full">
-      <div className="rounded-lg border border-gray-300 bg-white shadow-lg overflow-hidden">
+      <div className="rounded-lg border border-[#E5E7EB] bg-white overflow-hidden">
         <div className="px-12 py-5">
           <div className="flex flex-wrap items-center gap-3">
-            <div className="relative w-96">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <div className="h-12 w-full xl:w-[340px] rounded-xl border border-[#E5E7EB] px-4 flex items-center gap-3">
+              <Search size={18} className="text-[#6B7280]" />
               <input
                 type="text"
                 placeholder="Search by Quote ID, Customer or Subject..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-md border border-gray-300 py-3 pl-10 pr-4 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="bg-transparent outline-none w-full text-sm cursor-text"
               />
             </div>
 
             <div className="ml-auto flex items-center gap-3">
-              <div className="flex items-center rounded-lg bg-[#E5EEFF] p-2">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setStage(tab.key)}
-                    className={`rounded-md px-4 py-1 text-md font-semibold transition ${
-                      stage === tab.key
-                        ? "bg-white text-[#004EDC]"
-                        : "text-[#5A5F68] hover:bg-white hover:text-[#004EDC]"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
+              <select
+                value={stage}
+                onChange={(e) => setStage(e.target.value)}
+                className="h-11 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] bg-white cursor-pointer outline-none focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="all">Stage: All</option>
+                <option value="draft">Stage: Draft</option>
+                <option value="negotiation">Stage: Negotiation</option>
+                <option value="delivered">Stage: Delivered</option>
+                <option value="on_hold">Stage: On Hold</option>
+                <option value="confirmed">Stage: Confirmed</option>
+                <option value="closed_won">Stage: Closed Won</option>
+                <option value="closed_lost">Stage: Closed Lost</option>
+              </select>
             </div>
           </div>
         </div>
@@ -98,16 +90,16 @@ const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete })
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse">
             <thead>
-              <tr className="bg-[#E5EEFF] border border-gray-300">
-                <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">Subject</th>
-                <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">Quote Stage</th>
-                <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">Grand Total</th>
-                <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">Deal Name</th>
-                <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">Contact Name</th>
-                <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">Account Name</th>
-                <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">Customer Name</th>
-                <th className="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide text-[#64748B]">Quote Owner</th>
-                <th className="px-5 py-4 text-center text-xs font-bold uppercase tracking-wide text-[#64748B]">Action</th>
+              <tr className="border border-[#EEF2F7]">
+                <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Subject</th>
+                <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Quote Stage</th>
+                <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Grand Total</th>
+                <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Deal Name</th>
+                <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Contact Name</th>
+                <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Account Name</th>
+                <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Customer Name</th>
+                <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Quote Owner</th>
+                <th className="px-5 py-4 text-center text-sm font-medium tracking-wide text-[#64748B]">Action</th>
               </tr>
             </thead>
 

@@ -6,6 +6,7 @@ import { getCustomers } from "../../../api/customer";
 import { getSalesOrders } from "../../../api/salesOrders";
 import { getProducts } from "../../../api/products";
 import { mapInvoiceFromApi, mapInvoiceToApi, emptyInvoiceForm, emptyItem } from "../../../utils/invoiceMapping";
+import { useToast } from "../../ui/toastContext";
 
 const inputClass =
   "h-11 w-full rounded-xl border border-[#E5E7EB] px-4 text-sm text-[#111827] outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400";
@@ -14,6 +15,7 @@ const labelClass = "block text-xs font-medium text-[#64748B] mb-2";
 const STATUS_OPTIONS = ["draft", "sent", "paid", "overdue", "cancelled"];
 
 export default function AddInvoice({ invoiceId, onCancel, onSaved }) {
+  const { pushToast } = useToast();
   const isEditMode = Boolean(invoiceId);
 
   const [form, setForm] = useState(emptyInvoiceForm());
@@ -152,9 +154,17 @@ export default function AddInvoice({ invoiceId, onCancel, onSaved }) {
       const payload = mapInvoiceToApi(form);
       if (isEditMode) {
         await updateInvoice(invoiceId, payload);
+        pushToast({
+          title: "Invoice updated",
+          variant: "success",
+        });
         onSaved?.();
       } else {
         await addInvoice(payload);
+        pushToast({
+          title: "Invoice created",
+          variant: "success",
+        });
         if (andNew) {
           setForm(emptyInvoiceForm());
           setAdjustment(0);
@@ -169,6 +179,11 @@ export default function AddInvoice({ invoiceId, onCancel, onSaved }) {
           ? err.response.data
           : "Something went wrong while saving the invoice.";
       setError(message);
+      pushToast({
+        title: "Failed to save invoice",
+        message: message,
+        variant: "error",
+      });
     } finally {
       setSaving(false);
     }

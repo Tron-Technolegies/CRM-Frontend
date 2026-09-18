@@ -11,6 +11,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import Modal from "../ui/Modal";
+import AuditHistory from "../ui/AuditHistory";
 import { getCall } from "../../api/call";
 
 const statusConfig = {
@@ -204,6 +205,14 @@ export default function CallViewModal({ open, onClose, onEdit, callId }) {
             <p className="text-xs text-gray-400 uppercase mb-2">Notes</p>
             <p className="text-sm whitespace-pre-wrap">{data.notes || "—"}</p>
           </div>
+
+          <AuditHistory
+            lastEditedBy={data.lastEditedBy}
+            lastEditedAt={data.lastEditedAt}
+            editHistory={data.editHistory}
+            modelName="call"
+            objectId={data.id || callId}
+          />
 
           <div className="flex justify-end gap-3 border-t pt-4">
             <button onClick={onClose} className="px-5 py-2 border rounded-xl">

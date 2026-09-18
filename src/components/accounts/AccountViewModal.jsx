@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import Modal from "../ui/Modal";
+import AuditHistory from "../ui/AuditHistory";
 
 function formatValue(value) {
   if (value === null || value === undefined || value === "") return "—";
@@ -126,6 +127,14 @@ export default function AccountViewModal({ open, onClose, onEdit, account, accou
             <AddressBlock title="Shipping Address" address={account.shipping_address} />
           </div>
         </div>
+
+        <AuditHistory
+          lastEditedBy={account.lastEditedBy}
+          lastEditedAt={account.lastEditedAt}
+          editHistory={account.editHistory}
+          modelName="account"
+          objectId={account.id}
+        />
 
         <div className="flex justify-end gap-3 border-t border-[#EEF2F7] pt-4">
           <button

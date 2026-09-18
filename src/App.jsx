@@ -154,7 +154,7 @@ const router = createBrowserRouter([
         path: "meetings/:id/room",
         element: <MeetingRoom/>,
       },
-            {
+      {
         path: "calls",
         element: (
           <ProtectedRoute permission="call.view">
