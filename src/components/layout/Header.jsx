@@ -1,7 +1,9 @@
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { Bell, Menu } from "lucide-react";
+import { Bell, Menu, StickyNote } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import api from "../../api/Api";
+import { checkStickyNoteDue } from "../../api/stickyNote";
+import StickyNoteWidget from "../stickyNote/StickyNoteWidget";
 
 export default function Header({ setSidebarOpen }) {
   const location = useLocation();
@@ -12,6 +14,10 @@ export default function Header({ setSidebarOpen }) {
   const [recentNotes, setRecentNotes] = useState([]);
   const [profilePicture, setProfilePicture] = useState(null);
   const [fullName, setFullName] = useState("");
+
+  const [stickyOpen, setStickyOpen] = useState(false);
+  const [hasReminder, setHasReminder] = useState(false);
+  const stickyButtonRef = useRef(null);
 
   const dropdownRef = useRef(null);
 
@@ -58,9 +64,19 @@ export default function Header({ setSidebarOpen }) {
     }
   };
 
+  const loadDueReminder = async () => {
+    try {
+      const res = await checkStickyNoteDue();
+      setHasReminder(Boolean(res?.has_reminder));
+    } catch (err) {
+      // non-critical
+    }
+  };
+
   useEffect(() => {
     loadUnreadCount();
     loadProfilePicture();
+    loadDueReminder();
 
     const handleProfileUpdated = (e) => {
       if (e.detail?.profilePicture) {
@@ -83,8 +99,13 @@ export default function Header({ setSidebarOpen }) {
       loadUnreadCount();
     }, 10000); // check every 10s
 
+    const stickyInterval = setInterval(() => {
+      loadDueReminder();
+    }, 30000); // check every 30s per specification
+
     return () => {
       clearInterval(interval);
+      clearInterval(stickyInterval);
       window.removeEventListener("profileUpdated", handleProfileUpdated);
       window.removeEventListener("notificationUpdated", handleNotificationUpdated);
     };
@@ -172,6 +193,35 @@ export default function Header({ setSidebarOpen }) {
 
       {/* Right */}
       <div className="flex items-center gap-4">
+        {/* Sticky Note Button */}
+        <button
+          ref={stickyButtonRef}
+          type="button"
+          onClick={() => setStickyOpen((prev) => !prev)}
+          title={hasReminder ? "Sticky Note (Reminder Due)" : "Sticky Note"}
+          className={`
+            relative w-11 h-11 rounded-xl border border-[#dddddd]
+            flex items-center justify-center transition cursor-pointer
+            ${stickyOpen ? "bg-amber-100/90 border-amber-300 text-amber-900" : "text-black hover:bg-amber-50/60"}
+          `}
+        >
+          <StickyNote size={20} className={stickyOpen ? "text-amber-700" : "text-gray-700"} />
+
+          {hasReminder && (
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-red-600 text-white rounded-full flex items-center justify-center shadow-sm animate-pulse">
+              1
+            </span>
+          )}
+        </button>
+
+        {/* Floating Sticky Note Widget */}
+        <StickyNoteWidget
+          isOpen={stickyOpen}
+          onClose={() => setStickyOpen(false)}
+          toggleButtonRef={stickyButtonRef}
+          onReminderStatusChange={loadDueReminder}
+        />
+
         {/* Notification bell — standalone, not nested inside the profile link */}
         <div className="relative" ref={dropdownRef}>
           <button
