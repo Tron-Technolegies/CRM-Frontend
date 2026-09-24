@@ -44,6 +44,10 @@ export default function Sidebar({ sidebarOpen }) {
 
     { name: "Quotes", icon: <FileText size={18} />, path: "/quotes", permission: "quote.view" },
 
+    { name: "Sales Order", icon: <Tag size={18} />, path: "/inventory/salesOrder", permission: "salesorder.view" },
+
+    { name: "Invoices", icon: <NotepadText size={18} />, path: "/inventory/invoices", permission: "invoice.view" },
+
     {
       name: "Inventory",
       icon: <Package size={18} />,
@@ -69,21 +73,9 @@ export default function Sidebar({ sidebarOpen }) {
         },
         {
           icon: <Tag size={18} />,
-          name: "Sales",
-          path: "/inventory/salesOrder",
-          permission: "salesorder.view",
-        },
-        {
-          icon: <Tag size={18} />,
-          name: "Purchase",
+          name: "Purchase Order",
           path: "/inventory/purchase",
           permission: "purchaseorder.view",
-        },
-        {
-          icon: <NotepadText size={18} />,
-          name: "Invoices",
-          path: "/inventory/invoices",
-          permission: "invoice.view",
         },
       ],
     },

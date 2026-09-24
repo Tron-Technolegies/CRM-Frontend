@@ -16,7 +16,10 @@ export default function useLead() {
   const fetchLeads = async () => {
     try {
       const data = await getLeads();
-      setLeads(data || []);
+      const activeLeads = Array.isArray(data)
+        ? data.filter((lead) => (lead.status || "").toLowerCase() !== "converted")
+        : [];
+      setLeads(activeLeads);
     } finally {
       setLoading(false);
     }

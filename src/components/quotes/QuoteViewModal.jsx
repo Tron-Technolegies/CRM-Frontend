@@ -1,6 +1,7 @@
 import { Calendar, FileText, MapPin, Pencil, Tag, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import Modal from "../ui/Modal";
+import AuditHistory from "../ui/AuditHistory";
 import { getQuote } from "../../api/quotes";
 
 function formatValue(value) {
@@ -225,6 +226,14 @@ export default function QuoteViewModal({ open, onClose, onEdit, quoteId = null }
                 <AddressBlock title="Shipping Address" address={data.shippingAddress} />
               </div>
             </Section>
+
+            <AuditHistory
+              lastEditedBy={data.lastEditedBy}
+              lastEditedAt={data.lastEditedAt}
+              editHistory={data.editHistory}
+              modelName="quote"
+              objectId={data.id || quoteId}
+            />
           </div>
 
           <div className="mt-5 pt-4 border-t border-[#F0F2F5] flex items-center justify-between">

@@ -1,6 +1,7 @@
 import { Calendar, DollarSign, Flag, Tag, Users, Pencil, Briefcase, Building2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Modal from "../ui/Modal";
+import AuditHistory from "../ui/AuditHistory";
 import { getDeal } from "../../api/deal";
 
 const priorityConfig = {
@@ -173,6 +174,14 @@ export default function DealViewModal({ open, onClose, onEdit, dealId = null }) 
                 <p className="text-sm text-[#374151] leading-relaxed">{data.description}</p>
               </Section>
             )}
+
+            <AuditHistory
+              lastEditedBy={data.lastEditedBy}
+              lastEditedAt={data.lastEditedAt}
+              editHistory={data.editHistory}
+              modelName="deal"
+              objectId={data.id || dealId}
+            />
           </div>
 
           <div className="mt-5 pt-4 border-t border-[#F0F2F5] flex items-center justify-between">

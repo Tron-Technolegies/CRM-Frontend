@@ -2,18 +2,21 @@ import {
   Building2,
   Calendar,
   Mail,
+  Package,
   Phone,
   PhoneCall,
   Tag,
   Users,
   Pencil,
   ArrowRightLeft,
-  AlertCircle
+  AlertCircle,
+  Wrench,
 } from "lucide-react";
 
 import { useEffect, useRef, useState } from "react";
 
 import Modal from "../ui/Modal";
+import AuditHistory from "../ui/AuditHistory";
 
 import { getLead } from "../../api/lead";
 
@@ -24,20 +27,35 @@ import { createTask } from "../../api/task";
 
 
 const priorityConfig = {
+  high: {
+    style: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
+    dot: "bg-rose-500",
+    label: "Priority: High"
+  },
+  medium: {
+    style: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+    dot: "bg-amber-500",
+    label: "Priority: Medium"
+  },
+  low: {
+    style: "bg-green-50 text-green-700 ring-1 ring-green-200",
+    dot: "bg-green-500",
+    label: "Priority: Low"
+  },
   High: {
     style: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
     dot: "bg-rose-500",
-    label: "High Priority"
+    label: "Priority: High"
   },
   Medium: {
     style: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
     dot: "bg-amber-500",
-    label: "Medium Priority"
+    label: "Priority: Medium"
   },
   Low: {
     style: "bg-green-50 text-green-700 ring-1 ring-green-200",
     dot: "bg-green-500",
-    label: "Low Priority"
+    label: "Priority: Low"
   },
 };
 
@@ -71,14 +89,39 @@ function normalize(value) {
 }
 
 
-function Badge({ value, config }) {
+const ENQUIRY_LABELS = {
+  not_specified: "Not Specified",
+  product: "Product",
+  service: "Service",
+};
+
+function formatEnquiryType(val) {
+  if (!val) return "Not Specified";
+  return ENQUIRY_LABELS[val.toLowerCase()] || val;
+}
+
+
+function formatPriority(value) {
+  if (!value) return "";
+  const val = value.toString().trim();
+  const lower = val.toLowerCase();
+  if (lower === "high") return "Priority: High";
+  if (lower === "medium") return "Priority: Medium";
+  if (lower === "low") return "Priority: Low";
+  return `Priority: ${val.charAt(0).toUpperCase() + val.slice(1)}`;
+}
+
+
+function Badge({ value, config, isPriority = false }) {
   const key = normalize(value);
+  const defaultLabel = isPriority && value ? formatPriority(value) : value;
 
   const cfg =
-    config[key] || {
+    config[key] ||
+    config[value] || {
       style: "bg-slate-100 text-slate-600",
       dot: "bg-slate-400",
-      label: value
+      label: defaultLabel
     };
 
   return (
@@ -86,7 +129,7 @@ function Badge({ value, config }) {
       className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs ${cfg.style}`}
     >
       <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-      {cfg.label || value}
+      {cfg.label || defaultLabel}
     </span>
   );
 }
@@ -249,7 +292,7 @@ export default function LeadViewModal({
 
               <div className="flex gap-2 mt-3">
                 <Badge value={data.status} config={statusConfig} />
-                <Badge value={data.priority} config={priorityConfig} />
+                <Badge value={data.priority} config={priorityConfig} isPriority={true} />
               </div>
             </div>
           </div>
@@ -296,6 +339,55 @@ export default function LeadViewModal({
                 {data.description || "—"}
               </p>
           </div>
+
+          {/* Enquiry Information */}
+          {(() => {
+            const et = normalize(data.enquiry_type || data.enquiryType);
+            const productName = data.product?.name || null;
+            const serviceName = data.service?.name || null;
+            return (
+              <div className="p-5 border rounded-2xl space-y-3">
+                <p className="text-xs text-gray-400 uppercase mb-1">Enquiry Information</p>
+                <div className="flex items-center gap-3">
+                  {et === "product" ? (
+                    <Package size={16} className="text-blue-500 shrink-0" />
+                  ) : et === "service" ? (
+                    <Wrench size={16} className="text-purple-500 shrink-0" />
+                  ) : (
+                    <Tag size={16} className="text-gray-400 shrink-0" />
+                  )}
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">Enquiry For</p>
+                    <p className="text-sm font-medium mt-0.5">{formatEnquiryType(data.enquiry_type || data.enquiryType)}</p>
+                  </div>
+                </div>
+                {et === "product" && productName && (
+                  <div className="flex items-center gap-3 pl-1">
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide">Product</p>
+                      <p className="text-sm font-medium mt-0.5 text-blue-700">{productName}</p>
+                    </div>
+                  </div>
+                )}
+                {et === "service" && serviceName && (
+                  <div className="flex items-center gap-3 pl-1">
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide">Service</p>
+                      <p className="text-sm font-medium mt-0.5 text-purple-700">{serviceName}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          <AuditHistory
+            lastEditedBy={data.lastEditedBy}
+            lastEditedAt={data.lastEditedAt}
+            editHistory={data.editHistory}
+            modelName="lead"
+            objectId={data.id || leadId}
+          />
 
           <div
             className="

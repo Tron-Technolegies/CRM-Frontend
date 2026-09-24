@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Plus, Trash2 } from "lucide-react";
+import { useToast } from "../../ui/toastContext";
 import useSalesOrders from "../../../hooks/useSalesOrders";
 import useQuotes from "../../../hooks/useQuotes";
 import useDeals from "../../../hooks/useDeal";
@@ -21,6 +22,7 @@ const formatCurrency = (value) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value || 0);
 
 const SalesOrderFormPage = () => {
+  const { pushToast } = useToast();
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -121,9 +123,17 @@ const SalesOrderFormPage = () => {
     if (!validate()) return;
     try {
       await saveSalesOrder(toApiPayload(form), id);
+      pushToast({
+        title: id ? "Sales order updated" : "Sales order created",
+        variant: "success",
+      });
       navigate("/inventory/salesOrder");
     } catch (err) {
       console.error("SAVE SALES ORDER ERROR:", err);
+      pushToast({
+        title: "Failed to save sales order",
+        variant: "error",
+      });
     }
   };
 

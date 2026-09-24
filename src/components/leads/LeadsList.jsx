@@ -32,6 +32,17 @@ function statusLabel(status) {
   return STATUS_LABELS[normalize(status)] || status;
 }
 
+const ENQUIRY_LABELS = {
+  not_specified: "Not Specified",
+  product: "Product",
+  service: "Service",
+};
+
+function enquiryLabel(val) {
+  if (!val) return "";
+  return ENQUIRY_LABELS[normalize(val)] || val;
+}
+
 export default function LeadsList({
   leads,
   staff,
@@ -48,7 +59,13 @@ export default function LeadsList({
   const [callLead, setCallLead] = useState(null);
 
   const statusOptions = useMemo(() => {
-    const unique = Array.from(new Set(leads.map((l) => l.status))).filter(Boolean);
+    const unique = Array.from(
+      new Set(
+        leads
+          .filter((l) => normalize(l.status) !== "converted")
+          .map((l) => l.status)
+      )
+    ).filter(Boolean);
     return ["All", ...unique];
   }, [leads]);
 
@@ -64,15 +81,17 @@ export default function LeadsList({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return leads.filter((l) => {
-      const matchesQuery =
-        !q ||
-        [l.name, l.email, l.phone].filter(Boolean).some((v) => v.toLowerCase().includes(q));
-      const matchesStatus = status === "All" || l.status === status;
-      const matchesSource = source === "All" || l.source === source;
-      const matchesAssigned = assignedTo === "All" || l.assignedTo === assignedTo;
-      return matchesQuery && matchesStatus && matchesSource && matchesAssigned;
-    });
+    return leads
+      .filter((l) => normalize(l.status) !== "converted")
+      .filter((l) => {
+        const matchesQuery =
+          !q ||
+          [l.name, l.email, l.phone].filter(Boolean).some((v) => v.toLowerCase().includes(q));
+        const matchesStatus = status === "All" || l.status === status;
+        const matchesSource = source === "All" || l.source === source;
+        const matchesAssigned = assignedTo === "All" || l.assignedTo === assignedTo;
+        return matchesQuery && matchesStatus && matchesSource && matchesAssigned;
+      });
   }, [leads, query, status, source, assignedTo]);
 
   const {
@@ -141,6 +160,12 @@ export default function LeadsList({
                 <p className="text-[#64748B]">Assigned</p>
                 <p className="text-[#111827] font-medium">{lead.assignedTo}</p>
               </div>
+              {lead.enquiry_type && (
+                <div>
+                  <p className="text-[#64748B]">Enquiry For</p>
+                  <p className="text-[#111827] font-medium">{enquiryLabel(lead.enquiry_type)}</p>
+                </div>
+              )}
               <div className="col-span-2">
                 <p className="text-[#64748B]">Date Added</p>
                 <p className="text-[#111827] font-medium">{lead.dateAdded}</p>
@@ -176,6 +201,7 @@ export default function LeadsList({
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Lead Name</th>
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Contact</th>
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Source</th>
+              <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Enquiry For</th>
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Status</th>
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Assigned To</th>
               <th className="px-6 py-4 text-sm text-[#64748B] font-medium">Date Added</th>
@@ -210,6 +236,21 @@ export default function LeadsList({
                 </td>
                 <td className="px-6 py-5">
                   <p className="text-sm text-[#111827]">{lead.source}</p>
+                </td>
+                <td className="px-6 py-5">
+                  {lead.enquiry_type ? (
+                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                      normalize(lead.enquiry_type) === "product"
+                        ? "bg-blue-50 text-blue-700"
+                        : normalize(lead.enquiry_type) === "service"
+                        ? "bg-purple-50 text-purple-700"
+                        : "bg-slate-100 text-slate-600"
+                    }`}>
+                      {enquiryLabel(lead.enquiry_type)}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-[#D1D5DB]">—</span>
+                  )}
                 </td>
                 <td className="px-6 py-5">
                   <span className={`inline-flex px-3 py-1 rounded-full text-sm ${statusStyles(lead.status)}`}>
@@ -249,7 +290,7 @@ export default function LeadsList({
             ))}
             {paginated.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-6 py-10 text-sm text-[#64748B]">No leads found.</td>
+                <td colSpan={8} className="px-6 py-10 text-sm text-[#64748B]">No leads found.</td>
               </tr>
             )}
           </tbody>

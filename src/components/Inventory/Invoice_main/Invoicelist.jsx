@@ -1,68 +1,43 @@
 import { useEffect, useState } from "react";
 import useInvoices from "../../../hooks/useInvoices";
 import { downloadInvoicePdf } from "../../../api/invoice";
-import { Eye, Pencil, Trash2, X, Search, Download } from "lucide-react";
-import { Plus } from "lucide-react";
+import { Eye, Pencil, Trash2, Search, Download, Plus } from "lucide-react";
 import Pagination from "../../Pagination";
 import usePagination from "../../../api/usePagination";
 import usePermissions from "../../../permissions/usePermissions";
+import ConfirmDialog from "../../ui/ConfirmDialog";
+import { useToast } from "../../ui/toastContext";
 
-function DeleteConfirmModal({ onCancel, onConfirm, deleting }) {
-  return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
-        <div className="flex items-start justify-between px-6 pt-6">
-          <div>
-            <h2 className="text-xl font-semibold text-[#111827]">Delete invoice?</h2>
-            <p className="text-sm text-[#6B7280] mt-1">This action cannot be undone.</p>
-          </div>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="w-9 h-9 rounded-lg border border-[#E5E7EB] flex items-center justify-center text-[#6B7280] hover:bg-gray-50"
-            aria-label="Close"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="flex justify-end gap-3 px-6 py-6">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-5 h-11 rounded-xl border border-[#E5E7EB] text-[#111827] hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={deleting}
-            className="px-5 h-11 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 disabled:opacity-60"
-          >
-            {deleting ? "Deleting..." : "Delete"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+const STATUS_LABELS = {
+  draft: "Draft",
+  sent: "Sent",
+  paid: "Paid",
+  overdue: "Overdue",
+  cancelled: "Cancelled",
+};
 
 export default function InvoiceList({ onAdd, onEdit, onView }) {
+  const { pushToast } = useToast();
   const { hasPermission } = usePermissions();
   const { invoices, loading, error, removeInvoice } = useInvoices();
   const [search, setSearch] = useState("");
-  const [deletingId, setDeletingId] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [downloadingId, setDownloadingId] = useState(null);
 
   const filteredInvoices = (invoices || []).filter((inv) => {
-    const q = search.toLowerCase();
-    return (
+    const q = search.trim().toLowerCase();
+    const matchesSearch =
+      !q ||
       inv.subject?.toLowerCase().includes(q) ||
       inv.invoiceNumber?.toLowerCase().includes(q) ||
-      inv.customer?.toLowerCase().includes(q)
-    );
+      inv.customer?.toLowerCase().includes(q);
+
+    const matchesStatus =
+      statusFilter === "all" || inv.status?.toLowerCase() === statusFilter;
+
+    return matchesSearch && matchesStatus;
   });
 
   const {
@@ -73,23 +48,30 @@ export default function InvoiceList({ onAdd, onEdit, onView }) {
     paginatedData: paginatedInvoices,
     changePage,
     resetPage,
-  } = usePagination(filteredInvoices, 8);
+  } = usePagination(filteredInvoices, 10);
 
   useEffect(() => {
     resetPage();
-  }, [search]);
+  }, [search, statusFilter]);
 
   const handleConfirmDelete = async () => {
-    const id = deleteTargetId;
-    setDeletingId(id);
+    if (!deleteTargetId) return;
+    setDeleteLoading(true);
     try {
-      await removeInvoice(id);
+      await removeInvoice(deleteTargetId);
+      pushToast({
+        title: "Invoice deleted",
+        variant: "success",
+      });
       setDeleteTargetId(null);
     } catch (err) {
       console.error("DELETE INVOICE ERROR:", err);
-      alert("Could not delete this invoice. Please try again.");
+      pushToast({
+        title: "Failed to delete invoice",
+        variant: "error",
+      });
     } finally {
-      setDeletingId(null);
+      setDeleteLoading(false);
     }
   };
 
@@ -97,152 +79,207 @@ export default function InvoiceList({ onAdd, onEdit, onView }) {
     setDownloadingId(inv.id);
     try {
       await downloadInvoicePdf(inv.id, inv.invoiceNumber);
+      pushToast({
+        title: "PDF Downloaded",
+        message: `Invoice #${inv.invoiceNumber} downloaded`,
+        variant: "success",
+      });
     } catch (err) {
       console.error("DOWNLOAD INVOICE PDF ERROR:", err);
-      alert("Could not download the invoice PDF. Please try again.");
+      pushToast({
+        title: "Failed to download PDF",
+        variant: "error",
+      });
     } finally {
       setDownloadingId(null);
     }
   };
 
-  const statusStyles = {
-    draft: "bg-gray-100 text-[#6B7280]",
-    sent: "bg-blue-50 text-blue-700",
-    paid: "bg-green-50 text-green-700",
-    overdue: "bg-red-50 text-red-700",
-    cancelled: "bg-gray-100 text-[#6B7280]",
+  const getStatusBadge = (status) => {
+    const label = STATUS_LABELS[status] || status || "Draft";
+    const colors = {
+      draft: "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
+      sent: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
+      paid: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+      overdue: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
+      cancelled: "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
+    };
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+          colors[String(status).toLowerCase()] || colors.draft
+        }`}
+      >
+        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+        {label}
+      </span>
+    );
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-[#111827]">Invoices</h1>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-[28px] font-bold text-[#111827]">Invoices</h1>
         {hasPermission("invoice.create") && (
           <button
             type="button"
             onClick={() => onAdd?.()}
-            className="flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-medium text-white hover:bg-blue-700"
+            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 cursor-pointer"
           >
             <Plus size={18} />
-            Create Invoice
+            Add Invoice
           </button>
         )}
       </div>
 
-      <div className="mb-4 flex h-11 w-full max-w-sm items-center gap-3 rounded-xl border border-[#E5E7EB] px-4">
-        <Search size={18} className="text-[#6B7280]" />
-        <input
-          type="text"
-          placeholder="Search by subject, number or customer..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-transparent text-sm outline-none"
-        />
-      </div>
+      <div className="max-w-full">
+        <div className="rounded-lg border border-[#E5E7EB] bg-white overflow-hidden">
+          <div className="px-6 md:px-12 py-5 border-b border-gray-100">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="h-12 w-full xl:w-[340px] rounded-xl border border-[#E5E7EB] px-4 flex items-center gap-3">
+                <Search size={18} className="text-[#6B7280]"/>
+                <input
+                  type="text"
+                  placeholder="Search by subject, number or customer..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="bg-transparent outline-none w-full text-sm cursor-text"
+                />
+              </div>
 
-      {error && (
-        <div className="mb-4 px-4 py-3 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm">
-          {error}
-        </div>
-      )}
-
-      <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-blue-50 text-[#374151]">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium">Subject</th>
-              <th className="text-left px-4 py-3 font-medium">Invoice #</th>
-              <th className="text-left px-4 py-3 font-medium">Status</th>
-              <th className="text-left px-4 py-3 font-medium">Invoice Date</th>
-              <th className="text-left px-4 py-3 font-medium">Customer</th>
-              <th className="text-left px-4 py-3 font-medium">Owner</th>
-              <th className="text-right px-4 py-3 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-[#6B7280]">
-                  Loading invoices...
-                </td>
-              </tr>
-            )}
-
-            {!loading && paginatedInvoices.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-[#6B7280]">
-                  No invoices found.
-                </td>
-              </tr>
-            )}
-
-            {!loading &&
-              paginatedInvoices.map((inv) => (
-                <tr
-                  key={inv.id}
-                  onClick={() => onView?.(inv.id)}
-                  className="border-t border-[#E5E7EB] hover:bg-gray-50 cursor-pointer"
+              <div className="flex items-center gap-3">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="h-11 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] bg-white cursor-pointer outline-none focus:ring-2 focus:ring-blue-100"
                 >
-                  <td className="px-4 py-3 text-[#111827]">{inv.subject}</td>
-                  <td className="px-4 py-3 text-[#6B7280]">{inv.invoiceNumber}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-lg text-xs font-medium capitalize ${statusStyles[inv.status] || "bg-gray-100 text-[#6B7280]"}`}>
-                      {inv.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-[#6B7280]">{inv.invoiceDate}</td>
-                  <td className="px-4 py-3 text-[#6B7280]">{inv.customer}</td>
-                  <td className="px-4 py-3 text-[#6B7280]">{inv.owner}</td>
-                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex justify-end gap-3">
-                      <button type="button" onClick={() => onView?.(inv.id)} className="text-[#6B7280] hover:text-[#111827]" aria-label="View invoice">
-                        <Eye size={18} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDownload(inv)}
-                        disabled={downloadingId === inv.id}
-                        className="text-[#6B7280] hover:text-[#111827] disabled:opacity-50"
-                        aria-label="Download invoice PDF"
-                      >
-                        <Download size={18} />
-                      </button>
-                      {hasPermission("invoice.edit") && (
-                        <button type="button" onClick={() => onEdit?.(inv.id)} className="text-blue-600 hover:text-blue-700" aria-label="Edit invoice">
-                          <Pencil size={18} />
-                        </button>
-                      )}
-                      {hasPermission("invoice.delete") && (
-                        <button type="button" onClick={() => setDeleteTargetId(inv.id)} className="text-red-600 hover:text-red-700" aria-label="Delete invoice">
-                          <Trash2 size={18} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
+                  <option value="all">Status: All</option>
+                  <option value="draft">Status: Draft</option>
+                  <option value="sent">Status: Sent</option>
+                  <option value="paid">Status: Paid</option>
+                  <option value="overdue">Status: Overdue</option>
+                  <option value="cancelled">Status: Cancelled</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {error && (
+            <div className="m-6 px-4 py-3 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse">
+              <thead>
+                <tr className="border-b border-[#E5E7EB]">
+                  <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Subject</th>
+                  <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Invoice #</th>
+                  <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Status</th>
+                  <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Invoice Date</th>
+                  <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Customer</th>
+                  <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Owner</th>
+                  <th className="px-5 py-4 text-center text-sm font-medium tracking-wide text-[#64748B]">Actions</th>
                 </tr>
-              ))}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-6 text-gray-500">
+                      Loading invoices...
+                    </td>
+                  </tr>
+                ) : paginatedInvoices.length > 0 ? (
+                  paginatedInvoices.map((inv) => (
+                    <tr
+                      key={inv.id}
+                      onClick={() => onView?.(inv.id)}
+                      className="hover:bg-gray-50 border-b border-gray-200 cursor-pointer transition-colors"
+                    >
+                      <td className="px-5 py-4 text-sm font-medium text-gray-900">{inv.subject}</td>
+                      <td className="px-5 py-4 text-sm font-medium text-gray-700">{inv.invoiceNumber}</td>
+                      <td className="px-5 py-4 text-sm font-medium">
+                        {getStatusBadge(inv.status)}
+                      </td>
+                      <td className="px-5 py-4 text-sm font-medium text-gray-700">{inv.invoiceDate || "—"}</td>
+                      <td className="px-5 py-4 text-sm font-medium text-gray-700">{inv.customer || "—"}</td>
+                      <td className="px-5 py-4 text-sm font-medium text-gray-700">{inv.owner || "—"}</td>
+                      <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => onView?.(inv.id)}
+                            className="text-gray-700 hover:text-blue-600 transition"
+                            aria-label="View invoice"
+                          >
+                            <Eye size={18} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDownload(inv)}
+                            disabled={downloadingId === inv.id}
+                            className="text-gray-700 hover:text-blue-600 transition disabled:opacity-50"
+                            aria-label="Download invoice PDF"
+                          >
+                            <Download size={18} />
+                          </button>
+                          {hasPermission("invoice.edit") && (
+                            <button
+                              type="button"
+                              onClick={() => onEdit?.(inv.id)}
+                              className="text-gray-700 hover:text-blue-600 transition"
+                              aria-label="Edit invoice"
+                            >
+                              <Pencil size={18} />
+                            </button>
+                          )}
+                          {hasPermission("invoice.delete") && (
+                            <button
+                              type="button"
+                              onClick={() => setDeleteTargetId(inv.id)}
+                              className="text-gray-700 hover:text-red-600 transition"
+                              aria-label="Delete invoice"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="text-center py-6 text-gray-500">
+                      No invoices found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            itemName="invoices"
+            onPageChange={changePage}
+          />
+        </div>
       </div>
 
-      <div className="mt-4">
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          itemName="invoices"
-          onPageChange={changePage}
-        />
-      </div>
-
-      {deleteTargetId && (
-        <DeleteConfirmModal
-          onCancel={() => setDeleteTargetId(null)}
-          onConfirm={handleConfirmDelete}
-          deleting={deletingId === deleteTargetId}
-        />
-      )}
+      <ConfirmDialog
+        open={!!deleteTargetId}
+        title="Delete invoice?"
+        description="This action cannot be undone."
+        confirmText="Delete"
+        danger
+        loading={deleteLoading}
+        onCancel={() => setDeleteTargetId(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

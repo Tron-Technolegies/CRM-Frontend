@@ -1,6 +1,7 @@
 import { Building2, Calendar, Mail, Phone, Tag, TrendingUp, User, Pencil, ArrowRightLeft, HelpCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Modal from "../ui/Modal";
+import AuditHistory from "../ui/AuditHistory";
 import { getCustomer } from "../../api/customer";
 import { addDeal } from "../../api/deal";
 import DealFormModal from "../deals/DealFormModal";
@@ -198,6 +199,14 @@ export default function CustomerViewModal({ open, onClose, onEdit, customerId = 
                   <Field label="Join Date" icon={Calendar} value={data.joinDate} />
                 </div>
               </Section>
+
+              <AuditHistory
+                lastEditedBy={data.lastEditedBy}
+                lastEditedAt={data.lastEditedAt}
+                editHistory={data.editHistory}
+                modelName="customer"
+                objectId={data.id || customerId}
+              />
 
               {/* Convert to Deal banner */}
               <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-100">

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { X, Building2, UserRound, Pencil } from "lucide-react";
 import { getVendor } from "../../../api/vendor";
 import usePermissions from "../../../permissions/usePermissions";
+import AuditHistory from "../../ui/AuditHistory";
 
 function Badge({ children, dot, dotColor }) {
   return (
@@ -183,6 +184,15 @@ export default function VendorViewModal({ vendorId, onClose, onEdit }) {
                   </div>
                 </div>
               )}
+
+              <AuditHistory
+                lastEditedBy={vendor.lastEditedBy}
+                lastEditedAt={vendor.lastEditedAt}
+                editHistory={vendor.editHistory}
+                modelName="vendor"
+                objectId={vendor.id || vendorId}
+                className="mt-5"
+              />
             </>
           )}
         </div>

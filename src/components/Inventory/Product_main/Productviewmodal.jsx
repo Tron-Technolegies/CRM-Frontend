@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { X, Package, Pencil } from "lucide-react";
 import { getProduct } from "../../../api/products";
 import usePermissions from "../../../permissions/usePermissions";
+import AuditHistory from "../../ui/AuditHistory";
 
 function Badge({ children, dot, dotColor }) {
   return (
@@ -175,6 +176,15 @@ export default function ProductViewModal({ productId, onClose, onEdit }) {
                   {product.description || "No description added."}
                 </div>
               </div>
+
+              <AuditHistory
+                lastEditedBy={product.lastEditedBy}
+                lastEditedAt={product.lastEditedAt}
+                editHistory={product.editHistory}
+                modelName="product"
+                objectId={product.id || productId}
+                className="mt-5"
+              />
             </>
           )}
         </div>

@@ -155,13 +155,13 @@ const AccountsList = ({
         <table className="w-full min-w-[980px]">
           <thead className="border-b border-[#EEF2F7]">
             <tr className="text-left">
-              <th className="px-6 py-4 text-sm text-[#64748B]">Account Name</th>
-              <th className="px-6 py-4 text-sm text-[#64748B]">Phone</th>
-              <th className="px-6 py-4 text-sm text-[#64748B]">Type</th>
-              <th className="px-6 py-4 text-sm text-[#64748B]">Industry</th>
-              <th className="px-6 py-4 text-sm text-[#64748B]">Assigned To</th>
-              <th className="px-6 py-4 text-sm text-[#64748B]">Parent Account</th>
-              <th className="px-6 py-4 text-sm text-[#64748B]">Actions</th>
+              <th className="px-6 py-4 font-medium text-sm text-[#64748B]">Account Name</th>
+              <th className="px-6 py-4 font-medium text-sm text-[#64748B]">Phone</th>
+              <th className="px-6 py-4 font-medium text-sm text-[#64748B]">Type</th>
+              <th className="px-6 py-4 font-medium text-sm text-[#64748B]">Industry</th>
+              <th className="px-6 py-4 font-medium text-sm text-[#64748B]">Assigned To</th>
+              <th className="px-6 py-4 font-medium text-sm text-[#64748B]">Parent Account</th>
+              <th className="px-6 py-4 font-medium text-sm text-[#64748B]">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#EEF2F7]">

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Modal from "../ui/Modal";
+import AuditHistory from "../ui/AuditHistory";
 import { getMeeting } from "../../api/meeting";
 
 function formatDateTime(value) {
@@ -430,6 +431,14 @@ export default function MeetingViewModal({
                 </div>
               </Section>
             )}
+
+            <AuditHistory
+              lastEditedBy={data.lastEditedBy}
+              lastEditedAt={data.lastEditedAt}
+              editHistory={data.editHistory}
+              modelName="meeting"
+              objectId={data.id || meetingId}
+            />
           </div>
 
           <div className="mt-5 pt-4 border-t border-[#F0F2F5] flex items-center justify-between">

@@ -4,10 +4,12 @@ import { Plus } from "lucide-react";
 import SalesOrdersTable from "./SalesOrder_main/SalesOrdersTable";
 import SalesOrderViewModal from "./SalesOrder_main/SalesOrderViewModal";
 import ConfirmDialog from "../ui/ConfirmDialog";
+import { useToast } from "../ui/toastContext";
 import useSalesOrders from "../../hooks/useSalesOrders";
 import usePermissions from "../../permissions/usePermissions";
 
 const SalesOrders = () => {
+  const { pushToast } = useToast();
   const { hasPermission } = usePermissions();
   const navigate = useNavigate();
   const { salesOrders, loading, fetchSalesOrders, removeSalesOrder } =
@@ -43,6 +45,16 @@ const SalesOrders = () => {
 
     try {
       await removeSalesOrder(deleteTargetId);
+      pushToast({
+        title: "Sales order deleted",
+        variant: "success",
+      });
+    } catch (err) {
+      console.error("Delete sales order failed:", err);
+      pushToast({
+        title: "Failed to delete sales order",
+        variant: "error",
+      });
     } finally {
       setDeleteLoading(false);
       setConfirmDeleteOpen(false);
@@ -58,10 +70,10 @@ const SalesOrders = () => {
           <button
             type="button"
             onClick={handleAdd}
-            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2"
+            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 cursor-pointer"
           >
             <Plus size={18} />
-            Create Sales Order
+            Add Sales Order
           </button>
         )}
       </div>
