@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -183,13 +183,20 @@ const Login = () => {
 
           </p>
 
-
-
         </div>
 
+        <div className="mt-6 text-center text-xs text-slate-400">
+          <Link
+            to="/privacy-policy"
+            className="hover:text-slate-600 underline transition"
+          >
+            Privacy Policy
+          </Link>
+          <span className="mx-2">•</span>
+          <span>© 2026 Tron Technologies</span>
+        </div>
 
       </div>
-
 
     </div>
   );

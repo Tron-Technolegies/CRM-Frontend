@@ -19,7 +19,8 @@ import {
   Phone,
   ChevronDown,
   Store,
-  Wrench
+  Wrench,
+  Shield,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
@@ -267,19 +268,41 @@ export default function Sidebar({ sidebarOpen }) {
 
 
 
-      {/* LOGOUT */}
-      <div className="border-t border-[#E2E8F0] p-4">
+      {/* PRIVACY POLICY & LOGOUT */}
+      <div className="border-t border-[#E2E8F0] p-4 space-y-1">
+
+        <NavLink
+          to="/privacy-policy"
+          title={!sidebarOpen ? "Privacy Policy" : undefined}
+          className={({ isActive }) =>
+            `w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
+            ${isActive
+              ? "bg-[#E8F0FF] text-[#2563EB]"
+              : "text-[#0F172A] hover:bg-[#EFF6FF]"
+            }`
+          }
+        >
+          <div className="w-6 flex items-center justify-center text-slate-600">
+            <Shield size={18} />
+          </div>
+
+          {sidebarOpen && (
+            <span className="font-medium text-[15px]">
+              Privacy Policy
+            </span>
+          )}
+        </NavLink>
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl
-          text-[#0F172A] hover:bg-[#EFF6FF] transition"
+          title={!sidebarOpen ? "Logout" : undefined}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
+          text-[#0F172A] hover:bg-[#EFF6FF] transition cursor-pointer"
         >
 
-          <div className="w-6 flex items-center justify-center">
+          <div className="w-6 flex items-center justify-center text-slate-600">
             <LogOut size={18} />
           </div>
-
 
           {sidebarOpen && (
             <span className="font-medium text-[15px]">
