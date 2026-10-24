@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Bell, ChevronRight, Globe, Lock, Mail, PhoneCall, User } from "lucide-react";
+import { Bell, ChevronRight, Globe, Lock, Mail, PhoneCall, User, Shield } from "lucide-react";
 import usePermissions from "../permissions/usePermissions";
 
 const sections = [
@@ -42,6 +42,12 @@ const sections = [
     icon: Globe,
     path: "/settings/preferences",
     permission: "picklist.view",
+  },
+  {
+    title: "Privacy Policy",
+    description: "Review data protection terms, Meta Lead Ads policies, and privacy rights.",
+    icon: Shield,
+    path: "/privacy-policy",
   },
   // {
   //   title: "Billing",

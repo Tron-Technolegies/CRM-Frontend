@@ -48,6 +48,7 @@ import QuoteFormPage from "./components/quotes/QuoteFormPage";
 import SalesOrderFormPage from "./components/Inventory/SalesOrder_main/SalesOrderFormPage";
 import PurchaseOrderFormPage from "./components/Inventory/purchaseOrder_main/PurchaseOrderFormPage";
 import MeetingRoom from "./pages/MeetingRoom";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const router = createBrowserRouter([
   {
@@ -57,6 +58,10 @@ const router = createBrowserRouter([
   {
     path: "/signup",
     element: <Signup />,
+  },
+  {
+    path: "/privacy-policy",
+    element: <PrivacyPolicy />,
   },
   {
     path: "/staff/accept-invitation",
