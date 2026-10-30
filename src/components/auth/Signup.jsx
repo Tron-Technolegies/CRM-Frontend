@@ -483,6 +483,13 @@ const Signup = () => {
             Privacy Policy
           </Link>
           <span className="mx-2">•</span>
+          <Link
+            to="/data-deletion"
+            className="hover:text-slate-600 underline transition"
+          >
+            Data Deletion
+          </Link>
+          <span className="mx-2">•</span>
           <span>© 2026 Tron Technologies</span>
         </div>
 

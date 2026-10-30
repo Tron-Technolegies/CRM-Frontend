@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Bell, ChevronRight, Globe, Lock, Mail, PhoneCall, User, Shield } from "lucide-react";
+import { Bell, ChevronRight, Globe, Lock, Mail, PhoneCall, User, Shield, Trash2 } from "lucide-react";
 import usePermissions from "../permissions/usePermissions";
 
 const sections = [
@@ -11,8 +11,8 @@ const sections = [
     path: "/settings/profile",
   },
   {
-    title: "Notifications",
-    description: "Manage your email and in-app notifications.",
+    title: "Notifications & Integrations",
+    description: "Manage email and in-app notifications, and connect external services such as Meta.",
     icon: Bell,
     path: "/settings/notifications",
   },
@@ -48,6 +48,12 @@ const sections = [
     description: "Review data protection terms, Meta Lead Ads policies, and privacy rights.",
     icon: Shield,
     path: "/privacy-policy",
+  },
+  {
+    title: "Data Deletion Instructions",
+    description: "Review instructions for disconnecting Meta integrations and requesting data deletion.",
+    icon: Trash2,
+    path: "/data-deletion",
   },
   // {
   //   title: "Billing",
