@@ -49,6 +49,7 @@ import SalesOrderFormPage from "./components/Inventory/SalesOrder_main/SalesOrde
 import PurchaseOrderFormPage from "./components/Inventory/purchaseOrder_main/PurchaseOrderFormPage";
 import MeetingRoom from "./pages/MeetingRoom";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import DataDeletion from "./pages/DataDeletion";
 
 const router = createBrowserRouter([
   {
@@ -62,6 +63,10 @@ const router = createBrowserRouter([
   {
     path: "/privacy-policy",
     element: <PrivacyPolicy />,
+  },
+  {
+    path: "/data-deletion",
+    element: <DataDeletion />,
   },
   {
     path: "/staff/accept-invitation",

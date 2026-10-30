@@ -690,9 +690,12 @@ export default function PrivacyPolicy() {
                     </li>
                     <li>
                       <strong>Directly to Tron Technologies:</strong> Send an email to our Data Protection team at{" "}
-                      <span className="font-mono font-semibold text-blue-700 bg-white px-2 py-0.5 rounded border border-blue-200">
-                        [privacy@trontechnologies.com - To be supplied]
-                      </span>{" "}
+                      <a
+                        href="mailto:trontechnologies.access@gmail.com"
+                        className="font-mono font-semibold text-blue-700 hover:underline bg-white px-2 py-0.5 rounded border border-blue-200"
+                      >
+                        trontechnologies.access@gmail.com
+                      </a>{" "}
                       with the subject line <em>&quot;Personal Data Deletion Request - Meta Lead Ads&quot;</em>. Include your full name, email address, phone number, and the Facebook Page name you engaged with.
                     </li>
                     <li>
@@ -706,6 +709,17 @@ export default function PrivacyPolicy() {
                   <p>
                     Upon receiving your request, we verify identity to protect against fraudulent erasure. We coordinate with the respective subscriber to erase your contact details, lead history, and notes from active databases within <strong>30 calendar days</strong>, providing confirmation upon completion.
                   </p>
+                </div>
+
+                <div className="pt-2">
+                  <Link
+                    to="/data-deletion"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold border border-blue-200 transition"
+                  >
+                    <Trash2 size={14} className="text-blue-600" />
+                    <span>View Dedicated Meta Data Deletion Instructions</span>
+                    <ChevronRight size={14} />
+                  </Link>
                 </div>
               </div>
             </section>
@@ -834,15 +848,21 @@ export default function PrivacyPolicy() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     <div>
                       <span className="font-semibold text-slate-700 block">Privacy & Compliance Office:</span>
-                      <span className="font-mono text-blue-600">
-                        [privacy@trontechnologies.com - To be supplied]
-                      </span>
+                      <a
+                        href="mailto:trontechnologies.access@gmail.com"
+                        className="font-mono text-blue-600 hover:underline font-semibold"
+                      >
+                        trontechnologies.access@gmail.com
+                      </a>
                     </div>
                     <div>
                       <span className="font-semibold text-slate-700 block">General Support:</span>
-                      <span className="font-mono text-slate-600">
-                        [support@trontechnologies.com - To be supplied]
-                      </span>
+                      <a
+                        href="mailto:trontechnologies.access@gmail.com"
+                        className="font-mono text-blue-600 hover:underline font-semibold"
+                      >
+                        trontechnologies.access@gmail.com
+                      </a>
                     </div>
                     <div>
                       <span className="font-semibold text-slate-700 block">Registered Legal Address:</span>
@@ -897,9 +917,12 @@ export default function PrivacyPolicy() {
               <span className="text-xs text-slate-400">| © 2026 Tron Technologies. All rights reserved.</span>
             </div>
 
-            <div className="flex items-center gap-6 text-xs text-slate-500">
+            <div className="flex flex-wrap items-center gap-6 text-xs text-slate-500">
               <Link to="/privacy-policy" className="hover:text-blue-600 font-semibold text-blue-600">
                 Privacy Policy
+              </Link>
+              <Link to="/data-deletion" className="hover:text-blue-600 transition">
+                Data Deletion
               </Link>
               {isAuthenticated ? (
                 <>
