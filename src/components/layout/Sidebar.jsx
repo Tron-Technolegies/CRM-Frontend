@@ -21,12 +21,13 @@ import {
   Store,
   Wrench,
   Shield,
+  X,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
 import usePermissions from "../../permissions/usePermissions";
 
-export default function Sidebar({ sidebarOpen }) {
+export default function Sidebar({ sidebarOpen, onCloseMobile }) {
   const navigate = useNavigate();
   const { hasPermission } = usePermissions();
 
@@ -34,21 +35,13 @@ export default function Sidebar({ sidebarOpen }) {
 
   const menus = useMemo(() => [
     { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/" },
-
     { name: "Leads", icon: <Users size={18} />, path: "/leads", permission: "lead.view" },
-
     { name: "Customers", icon: <UserRound size={18} />, path: "/customers", permission: "customer.view" },
-
     { name: "Accounts", icon: <Building2 size={18} />, path: "/accounts", permission: "account.view" },
-
     { name: "Deals", icon: <Handshake size={18} />, path: "/deals", permission: "deal.view" },
-
     { name: "Quotes", icon: <FileText size={18} />, path: "/quotes", permission: "quote.view" },
-
     { name: "Sales Order", icon: <Tag size={18} />, path: "/inventory/salesOrder", permission: "salesorder.view" },
-
     { name: "Invoices", icon: <NotepadText size={18} />, path: "/inventory/invoices", permission: "invoice.view" },
-
     {
       name: "Inventory",
       icon: <Package size={18} />,
@@ -80,17 +73,11 @@ export default function Sidebar({ sidebarOpen }) {
         },
       ],
     },
-
     { name: "Tasks", icon: <ClipboardList size={18} />, path: "/tasks", permission: "task.view" },
-
     { name: "Meetings", icon: <CalendarDays size={18} />, path: "/meetings", permission: "meeting.view" },
-
     { name: "Calls", icon: <Phone size={18} />, path: "/calls", permission: "call.view" },
-
     { name: "Reports", icon: <BarChart3 size={18} />, path: "/reports", permission: "report.view" },
-
     { name: "Users", icon: <User size={18} />, path: "/users", permission: "staff.view" },
-
     { name: "Settings", icon: <Settings size={18} />, path: "/settings" },
   ], []);
 
@@ -110,95 +97,92 @@ export default function Sidebar({ sidebarOpen }) {
   }, [menus, hasPermission]);
 
   const handleLogout = () => {
-
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
-
+    onCloseMobile?.();
     navigate("/login");
-
   };
 
+  const handleLinkClick = () => {
+    onCloseMobile?.();
+  };
 
   return (
     <aside
       className={`${sidebarOpen ? "w-[260px]" : "w-24"}
       duration-300 bg-[#F8FAFC] border-r border-[#E2E8F0]
-      flex flex-col h-screen`}
+      flex flex-col h-screen max-w-[85vw] shadow-lg md:shadow-none`}
     >
-
-
       {/* LOGO */}
-      <div className="h-20 border-b border-[#E2E8F0] flex items-center px-6">
+      <div className="h-16 sm:h-20 border-b border-[#E2E8F0] flex items-center justify-between px-4 sm:px-6">
+        <div className="flex items-center">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#2563EB] flex items-center justify-center shrink-0">
+            <Box size={22} className="text-white" />
+          </div>
 
-        <div className="w-11 h-11 rounded-xl bg-[#2563EB] flex items-center justify-center">
-          <Box size={22} className="text-white" />
+          {sidebarOpen && (
+            <div className="ml-3">
+              <h1 className="text-[22px] sm:text-[24px] font-bold text-[#0F172A]">
+                CRM
+              </h1>
+            </div>
+          )}
         </div>
 
-
+        {/* Mobile close button */}
         {sidebarOpen && (
-          <div className="ml-3">
-            <h1 className="text-[24px] font-bold text-[#0F172A]">
-              CRM
-            </h1>
-          </div>
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={onCloseMobile}
+            className="md:hidden p-1.5 rounded-lg text-slate-500 hover:bg-slate-200 transition cursor-pointer"
+          >
+            <X size={20} />
+          </button>
         )}
-
       </div>
 
-
-
       {/* MENU */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-
+      <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6">
         <div className="space-y-1">
-
-
-          {visibleMenus.map((item) => (
-
+          {visibleMenus.map((item) =>
             item.dropdown ? (
-
               <div key={item.name}>
-
-
                 {/* Inventory Button */}
                 <button
                   onClick={() => setInventoryOpen(!inventoryOpen)}
-                  className="flex items-center gap-3 w-full px-3 py-3 rounded-xl
-                  text-[#0F172A] hover:bg-[#EFF6FF] transition"
+                  className="flex items-center gap-3 w-full px-3 py-2.5 sm:py-3 rounded-xl
+                  text-[#0F172A] hover:bg-[#EFF6FF] transition cursor-pointer"
                 >
-
-                  <div className="w-6 flex items-center justify-center">
+                  <div className="w-6 flex items-center justify-center shrink-0">
                     {item.icon}
                   </div>
 
-
                   {sidebarOpen && (
                     <>
-                      <span className="font-medium text-[15px] flex-1 text-left">
+                      <span className="font-medium text-[14px] sm:text-[15px] flex-1 text-left">
                         {item.name}
                       </span>
 
                       <ChevronDown
                         size={16}
-                        className={`transition-transform ${inventoryOpen ? "rotate-180" : ""
-                          }`}
+                        className={`transition-transform ${
+                          inventoryOpen ? "rotate-180" : ""
+                        }`}
                       />
                     </>
                   )}
-
                 </button>
 
                 {/* Dropdown Items */}
                 {inventoryOpen && sidebarOpen && (
-
-                  <div className="ml-8 mt-2 space-y-1">
-
+                  <div className="ml-7 sm:ml-8 mt-1 space-y-1">
                     {item.children.map((child) => (
-
                       <NavLink
                         key={child.path}
                         to={child.path}
+                        onClick={handleLinkClick}
                         className={({ isActive }) =>
                           `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition
                           ${isActive
@@ -207,72 +191,51 @@ export default function Sidebar({ sidebarOpen }) {
                           }`
                         }
                       >
-
-                        <div className="w-5 flex items-center justify-center">
+                        <div className="w-5 flex items-center justify-center shrink-0">
                           {child.icon}
                         </div>
 
                         <span className="font-medium">
                           {child.name}
                         </span>
-
                       </NavLink>
-
                     ))}
-
                   </div>
-
                 )}
-
               </div>
-
-
             ) : (
-
-
               <NavLink
                 key={item.path}
                 to={item.path}
+                onClick={handleLinkClick}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200
+                  `flex items-center gap-3 px-3 py-2.5 sm:py-3 rounded-xl transition-all duration-200
                   ${isActive
                     ? "bg-[#E8F0FF] text-[#2563EB]"
                     : "text-[#0F172A] hover:bg-[#EFF6FF]"
                   }`
                 }
               >
-
-                <div className="w-6 flex items-center justify-center">
+                <div className="w-6 flex items-center justify-center shrink-0">
                   {item.icon}
                 </div>
 
-
                 {sidebarOpen && (
-                  <span className="font-medium text-[15px]">
+                  <span className="font-medium text-[14px] sm:text-[15px]">
                     {item.name}
                   </span>
                 )}
-
               </NavLink>
-
-
             )
-
-          ))}
-
-
+          )}
         </div>
-
       </div>
 
-
-
-
       {/* PRIVACY POLICY & LOGOUT */}
-      <div className="border-t border-[#E2E8F0] p-4 space-y-1">
-
+      <div className="border-t border-[#E2E8F0] p-3 sm:p-4 space-y-1">
         <NavLink
           to="/privacy-policy"
+          onClick={handleLinkClick}
           title={!sidebarOpen ? "Privacy Policy" : undefined}
           className={({ isActive }) =>
             `w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
@@ -282,12 +245,12 @@ export default function Sidebar({ sidebarOpen }) {
             }`
           }
         >
-          <div className="w-6 flex items-center justify-center text-slate-600">
+          <div className="w-6 flex items-center justify-center text-slate-600 shrink-0">
             <Shield size={18} />
           </div>
 
           {sidebarOpen && (
-            <span className="font-medium text-[15px]">
+            <span className="font-medium text-[14px] sm:text-[15px]">
               Privacy Policy
             </span>
           )}
@@ -299,22 +262,17 @@ export default function Sidebar({ sidebarOpen }) {
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
           text-[#0F172A] hover:bg-[#EFF6FF] transition cursor-pointer"
         >
-
-          <div className="w-6 flex items-center justify-center text-slate-600">
+          <div className="w-6 flex items-center justify-center text-slate-600 shrink-0">
             <LogOut size={18} />
           </div>
 
           {sidebarOpen && (
-            <span className="font-medium text-[15px]">
+            <span className="font-medium text-[14px] sm:text-[15px]">
               Logout
             </span>
           )}
-
         </button>
-
       </div>
-
-
     </aside>
   );
 }

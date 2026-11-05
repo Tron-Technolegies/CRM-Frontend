@@ -199,27 +199,29 @@ export default function Reports() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-semibold text-[#111827]">Reports</h1>
-          <p className="text-sm text-[#64748B] mt-1">Overview of your key CRM metrics.</p>
+          <h1 className="text-2xl sm:text-[28px] font-semibold text-[#111827]">Reports</h1>
+          <p className="text-xs sm:text-sm text-[#64748B] mt-1">Overview of your key CRM metrics.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="h-10 px-4 rounded-xl border border-[#E5E7EB] flex items-center gap-2 text-sm text-[#111827]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <div className="h-10 px-3 sm:px-4 rounded-xl border border-[#E5E7EB] bg-white flex items-center justify-between gap-1 sm:gap-2 text-xs sm:text-sm text-[#111827]">
             <span>📅</span>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="outline-none bg-transparent cursor-pointer"
+              className="outline-none bg-transparent cursor-pointer text-xs sm:text-sm"
+              aria-label="Start date"
             />
             <span>-</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="outline-none bg-transparent cursor-pointer"
+              className="outline-none bg-transparent cursor-pointer text-xs sm:text-sm"
+              aria-label="End date"
             />
           </div>
           {hasPermission("report.export") && (
@@ -227,7 +229,7 @@ export default function Reports() {
               type="button"
               onClick={handleExport}
               disabled={!report || loading || exporting}
-              className="h-10 px-4 rounded-xl bg-[#2B61FF] hover:bg-blue-700 active:scale-[0.98] transition text-white text-sm font-semibold flex items-center gap-2 cursor-pointer disabled:opacity-60 shadow-sm"
+              className="h-10 px-4 rounded-xl bg-[#2B61FF] hover:bg-blue-700 active:scale-[0.98] transition text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 shadow-sm shrink-0"
             >
               {exporting ? (
                 <>
@@ -258,7 +260,7 @@ export default function Reports() {
           <ReportsKpis report={report} />
           <ReportsRevenueChart report={report} />
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
             <ReportsDealsByStage report={report} />
             <ReportsLeadsSource report={report} />
           </div>
@@ -266,4 +268,4 @@ export default function Reports() {
       )}
     </div>
   );
-}
+}

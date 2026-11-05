@@ -134,7 +134,7 @@ export default function InvoiceList({ onAdd, onEdit, onView }) {
 
       <div className="max-w-full">
         <div className="rounded-lg border border-[#E5E7EB] bg-white overflow-hidden">
-          <div className="px-6 md:px-12 py-5 border-b border-gray-100">
+          <div className="px-4 sm:px-6 md:px-12 py-4 sm:py-5 border-b border-gray-100">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="h-12 w-full xl:w-[340px] rounded-xl border border-[#E5E7EB] px-4 flex items-center gap-3">
                 <Search size={18} className="text-[#6B7280]"/>
@@ -171,7 +171,7 @@ export default function InvoiceList({ onAdd, onEdit, onView }) {
           )}
 
           <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse">
+            <table className="w-full min-w-[850px] border-collapse">
               <thead>
                 <tr className="border-b border-[#E5E7EB]">
                   <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Subject</th>

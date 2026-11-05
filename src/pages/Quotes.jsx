@@ -52,8 +52,8 @@ const Quotes = () => {
 
   return (
     <div className="mt-5 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[28px] font-bold text-[#111827]">Quotes</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h1 className="text-2xl sm:text-[28px] font-bold text-[#111827]">Quotes</h1>
         {hasPermission("quote.create") && (
           <button
             type="button"

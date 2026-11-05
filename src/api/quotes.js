@@ -24,3 +24,5 @@ export const deleteQuote = async (id) => {
   const { data } = await api.delete(`/quote/delete/${id}/`);
   return data;
 };
+
+export { downloadQuotePdf } from "../utils/quotePdf";

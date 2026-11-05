@@ -176,23 +176,24 @@ export default function Header({ setSidebarOpen }) {
   };
 
   return (
-    <header className="h-20 bg-white border-b border-[#dddddd] px-6 flex items-center justify-between">
+    <header className="h-16 sm:h-20 bg-white border-b border-[#dddddd] px-3 sm:px-6 flex items-center justify-between shrink-0">
       {/* Left */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         <button
           onClick={() => setSidebarOpen((prev) => !prev)}
-          className="w-11 h-11 rounded-xl border border-gray-200 text-black cursor-pointer flex items-center justify-center hover:bg-blue-50 transition md:hidden"
+          className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl border border-gray-200 text-black cursor-pointer flex items-center justify-center hover:bg-blue-50 transition md:hidden shrink-0"
+          aria-label="Toggle menu"
         >
-          <Menu size={20} />
+          <Menu size={18} className="sm:w-5 sm:h-5" />
         </button>
 
-        <div>
-          <h1 className="text-xl font-semibold text-black">{title}</h1>
+        <div className="min-w-0">
+          <h1 className="text-base sm:text-xl font-semibold text-black truncate">{title}</h1>
         </div>
       </div>
 
       {/* Right */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
         {/* Sticky Note Button */}
         <button
           ref={stickyButtonRef}
@@ -200,15 +201,15 @@ export default function Header({ setSidebarOpen }) {
           onClick={() => setStickyOpen((prev) => !prev)}
           title={hasReminder ? "Sticky Note (Reminder Due)" : "Sticky Note"}
           className={`
-            relative w-11 h-11 rounded-xl border border-[#dddddd]
-            flex items-center justify-center transition cursor-pointer
+            relative w-9 h-9 sm:w-11 sm:h-11 rounded-xl border border-[#dddddd]
+            flex items-center justify-center transition cursor-pointer shrink-0
             ${stickyOpen ? "bg-amber-100/90 border-amber-300 text-amber-900" : "text-black hover:bg-amber-50/60"}
           `}
         >
-          <StickyNote size={20} className={stickyOpen ? "text-amber-700" : "text-gray-700"} />
+          <StickyNote size={18} className={`sm:w-5 sm:h-5 ${stickyOpen ? "text-amber-700" : "text-gray-700"}`} />
 
           {hasReminder && (
-            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-red-600 text-white rounded-full flex items-center justify-center shadow-sm animate-pulse">
+            <span className="absolute -top-1 -right-1 min-w-[16px] sm:min-w-[18px] h-[16px] sm:h-[18px] px-1 text-[9px] sm:text-[10px] font-bold bg-red-600 text-white rounded-full flex items-center justify-center shadow-sm animate-pulse">
               1
             </span>
           )}
@@ -226,25 +227,26 @@ export default function Header({ setSidebarOpen }) {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={handleBellClick}
-            className="relative w-11 h-11 rounded-xl border border-[#dddddd] flex items-center justify-center text-black hover:bg-blue-50 transition"
+            aria-label="Notifications"
+            className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-xl border border-[#dddddd] flex items-center justify-center text-black hover:bg-blue-50 transition shrink-0"
           >
-            <Bell size={20} />
+            <Bell size={18} className="sm:w-5 sm:h-5" />
 
             {unreadCount > 0 && (
-                <span className="absolute top-1 right-2 w-4 h-4 text-[11px] font-semibold bg-red-500 text-white rounded-full flex items-center justify-center">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
+              <span className="absolute top-1 right-1.5 sm:right-2 min-w-[16px] h-4 px-1 text-[10px] sm:text-[11px] font-semibold bg-red-500 text-white rounded-full flex items-center justify-center">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
             )}
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
+            <div className="fixed sm:absolute top-16 sm:top-auto sm:right-0 right-2 left-2 sm:left-auto mt-2 max-w-sm sm:w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
                 <p className="text-sm font-semibold text-gray-800">Notifications</p>
                 {unreadCount > 0 && (
                   <button
                     onClick={handleMarkAllRead}
-                    className="text-xs text-blue-600 hover:underline"
+                    className="text-xs text-blue-600 hover:underline cursor-pointer"
                   >
                     Mark all read
                   </button>
@@ -289,7 +291,7 @@ export default function Header({ setSidebarOpen }) {
                   setDropdownOpen(false);
                   navigate("/notifications");
                 }}
-                className="w-full text-center text-xs text-blue-600 py-2 border-t border-gray-100 hover:bg-gray-50"
+                className="w-full text-center text-xs text-blue-600 py-2 border-t border-gray-100 hover:bg-gray-50 cursor-pointer"
               >
                 View all notifications
               </button>
@@ -298,15 +300,15 @@ export default function Header({ setSidebarOpen }) {
         </div>
 
         {/* Profile — its own link, separate from the bell */}
-        <Link to="/settings/profile">
-          <div className="flex items-center gap-3 cursor-pointer">
+        <Link to="/settings/profile" className="shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 cursor-pointer">
             <img
               src={profilePicture || avatarFallback}
               alt="profile"
-              className="w-10 h-10 rounded-full object-cover border border-[#e5e7eb]"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border border-[#e5e7eb]"
             />
             <div className="hidden sm:block">
-              <p className="text-sm font-semibold text-[#111827]">{fullName || "Admin"}</p>
+              <p className="text-sm font-semibold text-[#111827] max-w-[120px] truncate">{fullName || "Admin"}</p>
             </div>
           </div>
         </Link>

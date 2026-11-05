@@ -1,8 +1,10 @@
-import { Eye, Pencil, Funnel, Search, Trash2 } from "lucide-react";
+import { Eye, Pencil, Search, Trash2, Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import Pagination from "../Pagination";
 import usePagination from "../../api/usePagination";
 import usePermissions from "../../permissions/usePermissions";
+import { downloadQuotePdf } from "../../api/quotes";
+import { useToast } from "../ui/toastContext";
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value || 0);
@@ -18,9 +20,11 @@ const STAGE_LABELS = {
 };
 
 const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete }) => {
+  const { pushToast } = useToast();
   const { hasPermission } = usePermissions();
   const [search, setSearch] = useState("");
   const [stage, setStage] = useState("all");
+  const [downloadingId, setDownloadingId] = useState(null);
   const searchText = search.trim().toLowerCase();
 
   const filteredQuotes = (quotes || []).filter((quote) => {
@@ -52,10 +56,30 @@ const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete })
     resetPage();
   }, [search, stage]);
 
+  const handleDownload = async (quote) => {
+    setDownloadingId(quote.id);
+    try {
+      const quoteNumber = await downloadQuotePdf(quote.id, quote.subject);
+      pushToast({
+        title: "PDF Downloaded",
+        message: `Quote #${quoteNumber} downloaded`,
+        variant: "success",
+      });
+    } catch (err) {
+      console.error("DOWNLOAD QUOTE PDF ERROR:", err);
+      pushToast({
+        title: "Failed to download PDF",
+        variant: "error",
+      });
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   return (
     <div className="max-w-full">
       <div className="rounded-lg border border-[#E5E7EB] bg-white overflow-hidden">
-        <div className="px-12 py-5">
+        <div className="px-4 sm:px-6 md:px-12 py-4 sm:py-5">
           <div className="flex flex-wrap items-center gap-3">
             <div className="h-12 w-full xl:w-[340px] rounded-xl border border-[#E5E7EB] px-4 flex items-center gap-3">
               <Search size={18} className="text-[#6B7280]" />
@@ -68,11 +92,11 @@ const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete })
               />
             </div>
 
-            <div className="ml-auto flex items-center gap-3">
+            <div className="w-full sm:w-auto sm:ml-auto flex items-center gap-3">
               <select
                 value={stage}
                 onChange={(e) => setStage(e.target.value)}
-                className="h-11 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] bg-white cursor-pointer outline-none focus:ring-2 focus:ring-blue-100"
+                className="h-11 w-full sm:w-auto px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] bg-white cursor-pointer outline-none focus:ring-2 focus:ring-blue-100"
               >
                 <option value="all">Stage: All</option>
                 <option value="draft">Stage: Draft</option>
@@ -88,7 +112,7 @@ const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete })
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse">
+          <table className="w-full min-w-[980px] border-collapse">
             <thead>
               <tr className="border border-[#EEF2F7]">
                 <th className="px-5 py-4 text-left text-sm font-medium tracking-wide text-[#64748B]">Subject</th>
@@ -127,14 +151,44 @@ const QuotesTable = ({ quotes = [], loading = false, onEdit, onView, onDelete })
                     <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">{quote.accountName}</td>
                     <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">{quote.customerName}</td>
                     <td className="border-b border-gray-200 px-5 py-4 text-sm font-medium">{quote.quoteOwner}</td>
-                    <td className="border-b border-gray-200 px-5 py-4">
+                    <td className="border-b border-gray-200 px-5 py-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-center gap-3">
-                        <Eye size={18} className="cursor-pointer text-gray-700" onClick={() => onView?.(quote.id)} />
+                        <button
+                          type="button"
+                          onClick={() => onView?.(quote.id)}
+                          className="text-gray-700 hover:text-blue-600 transition cursor-pointer"
+                          aria-label="View quote"
+                        >
+                          <Eye size={18} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDownload(quote)}
+                          disabled={downloadingId === quote.id}
+                          className="text-gray-700 hover:text-blue-600 transition disabled:opacity-50 cursor-pointer"
+                          aria-label="Download quote PDF"
+                        >
+                          <Download size={18} />
+                        </button>
                         {hasPermission("quote.edit") && (
-                          <Pencil size={18} className="cursor-pointer text-gray-700" onClick={() => onEdit?.(quote.id)} />
+                          <button
+                            type="button"
+                            onClick={() => onEdit?.(quote.id)}
+                            className="text-gray-700 hover:text-blue-600 transition cursor-pointer"
+                            aria-label="Edit quote"
+                          >
+                            <Pencil size={18} />
+                          </button>
                         )}
                         {hasPermission("quote.delete") && (
-                          <Trash2 size={18} className="cursor-pointer text-gray-700" onClick={() => onDelete?.(quote.id)} />
+                          <button
+                            type="button"
+                            onClick={() => onDelete?.(quote.id)}
+                            className="text-gray-700 hover:text-red-600 transition cursor-pointer"
+                            aria-label="Delete quote"
+                          >
+                            <Trash2 size={18} />
+                          </button>
                         )}
                       </div>
                     </td>

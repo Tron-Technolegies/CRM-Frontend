@@ -145,9 +145,9 @@ export default function AddCall({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-[#EEF2F7]">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#EEF2F7] shrink-0">
           <div>
             <h2 className="text-xl font-semibold text-[#111827]">Log New Call</h2>
             <p className="text-sm text-[#64748B] mt-1">Record a new call activity</p>
@@ -157,7 +157,7 @@ export default function AddCall({
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1">
           {error && (
             <div className="mb-4 px-4 py-3 rounded-xl bg-rose-50 border border-rose-100 text-sm text-rose-600">
               {error}
@@ -366,7 +366,7 @@ export default function AddCall({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-[#EEF2F7]">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 p-4 sm:p-6 border-t border-[#EEF2F7] shrink-0">
           <button type="button" onClick={onClose} disabled={loading} className="h-11 px-5 rounded-xl border border-[#E5E7EB] text-sm font-medium text-[#111827] hover:bg-gray-50 transition cursor-pointer disabled:opacity-60">
             Cancel
           </button>

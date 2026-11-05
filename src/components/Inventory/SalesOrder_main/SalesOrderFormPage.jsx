@@ -142,10 +142,10 @@ const SalesOrderFormPage = () => {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-3 sm:p-6 max-w-5xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-2xl font-semibold text-[#111827]">Sales Orders</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button onClick={() => navigate("/inventory/salesOrder")} className="h-11 px-4 rounded-xl border border-[#E5E7EB] text-sm font-medium text-[#111827] hover:bg-gray-50">
             Cancel
           </button>
@@ -275,7 +275,8 @@ const SalesOrderFormPage = () => {
           </button>
         </div>
 
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+          <table className="w-full min-w-[700px] text-sm">
           <thead>
             <tr className="text-left text-xs font-medium text-[#6B7280] uppercase">
               <th className="py-2 pr-2">#</th>
@@ -324,6 +325,7 @@ const SalesOrderFormPage = () => {
             ))}
           </tbody>
         </table>
+        </div>
 
         <div className="flex justify-end mt-4">
           <div className="w-64 space-y-1 text-sm">

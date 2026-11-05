@@ -6,7 +6,7 @@ import BackButton from "../../common/BackButton";
 
 const Security = () => {
     return (
-        <div className="p-8">
+        <div className="space-y-6">
             <div className="flex items-center gap-4 mb-6">
                 <BackButton />
                 <h1 className="text-3xl font-bold text-gray-800">Security</h1>

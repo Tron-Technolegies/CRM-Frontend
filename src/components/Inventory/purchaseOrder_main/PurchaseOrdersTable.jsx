@@ -70,7 +70,8 @@ const PurchaseOrdersTable = ({ orders = [], loading = false, error = null, onEdi
       )}
 
       <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[850px] text-sm">
           <thead className="bg-blue-50 text-[#374151]">
             <tr>
               <th className="text-left px-4 py-3 font-medium">PO Number</th>
@@ -159,7 +160,8 @@ const PurchaseOrdersTable = ({ orders = [], loading = false, error = null, onEdi
                 </tr>
               ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       <div className="mt-4">

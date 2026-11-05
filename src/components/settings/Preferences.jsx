@@ -106,13 +106,13 @@ export default function Preferences() {
 
       <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6">
         {/* Field list */}
-        <div className="bg-white border border-[#E5E7EB] rounded-2xl p-2 h-fit">
+        <div className="bg-white border border-[#E5E7EB] rounded-2xl p-2 h-fit flex md:flex-col overflow-x-auto gap-1">
           {fieldGroups.map((f) => (
             <button
               key={f.key}
               type="button"
               onClick={() => selectField(f.key)}
-              className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition cursor-pointer ${
+              className={`shrink-0 md:shrink md:w-full text-left px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm whitespace-nowrap md:whitespace-normal transition cursor-pointer ${
                 activeField === f.key ? "bg-blue-50 text-blue-600 font-medium" : "text-[#374151] hover:bg-[#F9FAFB]"
               }`}
             >

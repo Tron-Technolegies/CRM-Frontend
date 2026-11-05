@@ -700,14 +700,19 @@ export default function StickyNoteWidget({
 
   if (!isOpen) return null;
 
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 480;
+  const currentLeft = isMobile ? Math.max(8, Math.min(window.innerWidth - 300, position.x)) : position.x;
+
   return (
     <div
       ref={containerRef}
       style={{
-        left: `${position.x}px`,
+        left: `${currentLeft}px`,
         top: `${position.y}px`,
         width: `${dimensions.width}px`,
         height: `${dimensions.height}px`,
+        maxWidth: "calc(100vw - 16px)",
+        maxHeight: "calc(100vh - 40px)",
         backgroundColor: activeTheme.bg,
       }}
       className="
@@ -717,7 +722,7 @@ export default function StickyNoteWidget({
         shadow-[0_16px_40px_rgba(0,0,0,0.16),0_4px_12px_rgba(0,0,0,0.06)]
         border border-black/10
         transition-colors duration-200
-        select-none
+        select-none overflow-hidden
       "
     >
       {/* ── 1. DRAGGABLE HEADER / TOP SECTION (~50px) ───────────────── */}
@@ -1011,7 +1016,7 @@ export default function StickyNoteWidget({
         className="
           h-[35px] px-3 shrink-0
           border-b border-black/10
-          flex items-center gap-1
+          flex items-center gap-1 overflow-x-auto
           no-drag
         "
       >

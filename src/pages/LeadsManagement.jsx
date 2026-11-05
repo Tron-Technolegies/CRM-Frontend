@@ -298,8 +298,8 @@ export default function LeadsManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-[28px] font-semibold">Leads</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h1 className="text-2xl sm:text-[28px] font-semibold text-[#111827]">Leads</h1>
 
         {hasPermission("lead.create") && (
           <button
@@ -353,7 +353,7 @@ export default function LeadsManagement() {
               bg-white
               rounded-2xl
               p-6
-              w-[350px]
+              w-full max-w-[350px] mx-4
               space-y-4
             "
           >
