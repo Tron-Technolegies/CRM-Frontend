@@ -199,7 +199,7 @@ export default function AddInvoice({ invoiceId, onCancel, onSaved }) {
         <h1 className="text-2xl font-semibold text-[#111827]">
           {isEditMode ? "Edit Invoice" : "Add Invoice"}
         </h1>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <button type="button" onClick={() => onCancel?.()} className="px-4 h-11 rounded-xl border border-[#E5E7EB] text-[#111827] hover:bg-gray-50">
             Cancel
           </button>
@@ -344,7 +344,7 @@ export default function AddInvoice({ invoiceId, onCancel, onSaved }) {
         <h2 className="text-lg font-semibold text-[#111827] mb-5">Ordered Items</h2>
 
         <div className="overflow-x-auto rounded-xl border border-[#E5E7EB]">
-          <table className="w-full border-collapse table-fixed">
+          <table className="w-full min-w-[760px] border-collapse">
             <thead>
               <tr className="bg-blue-50">
                 <th className="w-12 px-3 py-3 text-center text-sm font-semibold text-[#374151]">#</th>

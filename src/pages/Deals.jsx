@@ -162,8 +162,8 @@ export default function Deals() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[28px] font-semibold text-[#111827]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h1 className="text-2xl sm:text-[28px] font-semibold text-[#111827]">
           Deals
         </h1>
 

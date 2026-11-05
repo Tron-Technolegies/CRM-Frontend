@@ -22,47 +22,44 @@ export default function DashboardTasksDueToday() {
   }, []);
 
   return (
-    <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 h-full">
-      <h2 className="text-[20px] font-semibold text-[#111827]">
-        Tasks Due Today
-      </h2>
+    <div className="bg-white border border-[#E5E7EB] rounded-2xl p-4 sm:p-6 h-full flex flex-col justify-between">
+      <div>
+        <h2 className="text-lg sm:text-[20px] font-semibold text-[#111827]">
+          Tasks Due Today
+        </h2>
 
-      <div className="mt-6 divide-y divide-[#EEF2F7] max-h-[400px] overflow-y-auto">
-        {tasks.length === 0 ? (
-          <p className="text-sm text-[#64748B] py-4">
-            No tasks due today.
-          </p>
-        ) : (
-          tasks.map((t) => (
-            <div
-              key={t.id}
-              className="py-5 flex items-start justify-between gap-4"
-            >
-              <div className="flex items-start gap-4 min-w-0">
-                <p className="text-sm text-[#111827] truncate">
-                  {t.title}
-                </p>
+        <div className="mt-4 sm:mt-6 divide-y divide-[#EEF2F7] max-h-[400px] overflow-y-auto">
+          {tasks.length === 0 ? (
+            <p className="text-sm text-[#64748B] py-4">
+              No tasks due today.
+            </p>
+          ) : (
+            tasks.map((t) => (
+              <div
+                key={t.id}
+                className="py-3 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-[#111827] truncate">
+                    {t.title}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 sm:gap-6 shrink-0 text-xs sm:text-sm text-[#64748B]">
+                  <span className="truncate max-w-[120px]">{t.assignedTo || "—"}</span>
+                  <span>{t.dueDate || "—"}</span>
+                </div>
               </div>
-
-              <div className="flex items-center gap-6 shrink-0">
-                <p className="text-sm text-[#64748B]">
-                  {t.assignedTo || "—"}
-                </p>
-
-                <p className="text-sm text-[#64748B]">
-                  {t.dueDate || "—"}
-                </p>
-              </div>
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
       </div>
 
-      <div className="pt-4">
+      <div className="pt-4 border-t border-[#EEF2F7] sm:border-0 mt-2">
         <button
           type="button"
           onClick={() => navigate("/tasks")}
-          className="w-full text-sm text-blue-600 hover:text-blue-700 transition"
+          className="w-full text-sm text-blue-600 hover:text-blue-700 transition cursor-pointer text-center font-medium"
         >
           View All Tasks →
         </button>

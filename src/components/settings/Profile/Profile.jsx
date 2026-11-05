@@ -20,14 +20,14 @@ const Profile = () => {
   )}&background=e5e7eb&color=6b7280&size=200`;
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="space-y-6">
 
       <div className="flex items-center gap-4 mb-6">
         <BackButton />
         <h1 className="text-3xl font-bold text-gray-800">Profile</h1>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-lg p-15 mb-5">
+      <div className="bg-white rounded-2xl shadow-sm border border-[#E5E7EB] p-4 sm:p-6 md:p-8 mb-5">
         <div className="flex flex-col md:flex-row gap-6 items-start">
           <img
             src={profile?.profilePicture || avatarFallback}

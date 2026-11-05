@@ -37,7 +37,7 @@ function DeleteConfirmModal({ onCancel, onConfirm, deleting }) {
           </button>
         </div>
 
-        <div className="flex justify-end gap-3 px-6 py-6">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 px-4 sm:px-6 py-4 sm:py-6">
           <button
             type="button"
             onClick={onCancel}

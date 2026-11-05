@@ -20,7 +20,7 @@ const Notification = () => {
     useNotificationSettings();
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="space-y-6">
       <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-4 mb-6">
           <BackButton />

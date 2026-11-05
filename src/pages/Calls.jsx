@@ -169,7 +169,7 @@ export default function Calls() {
   return (
     <>
       <div className="mt-5">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h1 className="text-[28px] font-bold text-[#111827]">Calls</h1>
 
           {hasPermission("call.create") && (

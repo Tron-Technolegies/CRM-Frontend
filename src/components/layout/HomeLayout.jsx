@@ -1,11 +1,25 @@
-import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 
 export default function HomeLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth >= 768 : true
+  );
+  const location = useLocation();
+
+  // Auto-close sidebar on mobile when navigating routes
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname]);
+
+  const handleCloseSidebar = () => {
+    setSidebarOpen(false);
+  };
 
   return (
     <div className="flex h-screen bg-[#F7F8FA] overflow-hidden">
@@ -17,7 +31,11 @@ export default function HomeLayout() {
           transition-transform duration-300
         `}
       >
-        <Sidebar sidebarOpen={sidebarOpen} />
+        <Sidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          onCloseMobile={handleCloseSidebar}
+        />
       </div>
 
       {/* Backdrop (mobile) */}
@@ -25,17 +43,17 @@ export default function HomeLayout() {
         <button
           type="button"
           aria-label="Close sidebar"
-          onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-30 bg-black/20 md:hidden"
+          onClick={handleCloseSidebar}
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
         />
       )}
 
       {/* Main */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} />
 
         {/* Pages Render Here */}
-        <main className="flex-1 overflow-y-auto bg-[#F7F8FA] p-6">
+        <main className="flex-1 overflow-y-auto bg-[#F7F8FA] p-3 sm:p-4 md:p-6 min-w-0">
           <Outlet />
         </main>
       </div>

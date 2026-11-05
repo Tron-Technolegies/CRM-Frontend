@@ -202,7 +202,7 @@ export default function AddMeeting({
   return (
     // flex-col + max-h on the OUTER wrapper is what keeps the footer
     // pinned and visible no matter how tall the form content gets.
-    <div className="bg-white rounded-2xl shadow-xl border border-[#E5E7EB] max-h-[90vh] flex flex-col">
+    <div className="bg-white rounded-2xl shadow-xl border border-[#E5E7EB] max-h-[90vh] flex flex-col w-full">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-[#E5E7EB] shrink-0">
         <div>
@@ -545,7 +545,7 @@ export default function AddMeeting({
       </div>
 
       {/* Footer — shrink-0 + outside the scroll area, so it's always visible */}
-      <div className="border-t border-[#E5E7EB] px-6 py-4 flex justify-end gap-3 shrink-0">
+      <div className="border-t border-[#E5E7EB] px-4 sm:px-6 py-3 sm:py-4 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 shrink-0">
         <button
           type="button"
           onClick={onClose}

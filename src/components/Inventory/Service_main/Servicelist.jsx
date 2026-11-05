@@ -104,8 +104,8 @@ export default function ServiceList({ onAdd, onEdit, onView }) {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-semibold text-[#111827]">Services</h1>
         {hasPermission("service.create") && (
           <button
@@ -138,7 +138,8 @@ export default function ServiceList({ onAdd, onEdit, onView }) {
       )}
 
       <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px] text-sm">
           <thead className="bg-blue-50 text-[#374151]">
             <tr>
               <th className="text-left px-4 py-3 font-medium">Service Name</th>
@@ -236,7 +237,8 @@ export default function ServiceList({ onAdd, onEdit, onView }) {
                 </tr>
               ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       <div className="mt-4">

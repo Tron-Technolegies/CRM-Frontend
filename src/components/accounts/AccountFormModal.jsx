@@ -425,7 +425,7 @@ export default function AccountFormModal({
         </div>
       </div>
 
-      <div className="mt-6 flex items-center justify-end gap-3">
+      <div className="mt-6 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
         <button
           type="button"
           onClick={closeAndReset}
@@ -438,7 +438,7 @@ export default function AccountFormModal({
           type="button"
           onClick={submit}
           disabled={loading}
-          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 disabled:opacity-60"
+          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-60"
         >
           {loading && <Spinner size={16} className="text-white" />}
           {convertMode ? "Save & Continue" : initialData ? "Save Changes" : "Save Account"}

@@ -127,13 +127,13 @@ export default function AddProduct({ productId, onCancel, onSaved }) {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-semibold text-[#111827]">
           {isEditMode ? "Edit Product" : "Add Product"}
         </h1>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={onCancel}

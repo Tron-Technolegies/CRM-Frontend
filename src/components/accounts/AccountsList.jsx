@@ -137,7 +137,7 @@ const AccountsList = ({
               </div>
 
               <div
-                className="mt-4 flex items-center gap-3 text-[#64748B]"
+                className="mt-4 flex flex-wrap items-center gap-2 text-[#64748B]"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button type="button" className="h-10 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#111827]" onClick={() => onView(account)}>View</button>

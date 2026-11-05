@@ -1,8 +1,9 @@
-import { Calendar, FileText, MapPin, Pencil, Tag, Users } from "lucide-react";
+import { Calendar, Download, FileText, MapPin, Pencil, Tag, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import Modal from "../ui/Modal";
 import AuditHistory from "../ui/AuditHistory";
-import { getQuote } from "../../api/quotes";
+import { getQuote, downloadQuotePdf } from "../../api/quotes";
+import { useToast } from "../ui/toastContext";
 
 function formatValue(value) {
   if (value === null || value === undefined || value === "") return "—";
@@ -120,9 +121,11 @@ function AddressBlock({ title, address }) {
 }
 
 export default function QuoteViewModal({ open, onClose, onEdit, quoteId = null }) {
+  const { pushToast } = useToast();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     if (!open || !quoteId) return;
@@ -147,6 +150,27 @@ export default function QuoteViewModal({ open, onClose, onEdit, quoteId = null }
       cancelled = true;
     };
   }, [open, quoteId]);
+
+  const handleDownload = async () => {
+    if (!data) return;
+    setDownloading(true);
+    try {
+      const quoteNumber = await downloadQuotePdf(data);
+      pushToast({
+        title: "PDF Downloaded",
+        message: `Quote #${quoteNumber} downloaded`,
+        variant: "success",
+      });
+    } catch (err) {
+      console.error("DOWNLOAD QUOTE PDF ERROR:", err);
+      pushToast({
+        title: "Failed to download PDF",
+        variant: "error",
+      });
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const products = Array.isArray(data?.products) ? data.products : [];
   const total = products.reduce((sum, item) => sum + Number(item.lineTotal || 0), 0);
@@ -227,6 +251,18 @@ export default function QuoteViewModal({ open, onClose, onEdit, quoteId = null }
               </div>
             </Section>
 
+            {(data.termsConditions || data.terms_conditions) && (
+              <Section title="Terms & Conditions">
+                <p className="text-sm text-[#374151] whitespace-pre-wrap">{data.termsConditions || data.terms_conditions}</p>
+              </Section>
+            )}
+
+            {data.description && (
+              <Section title="Description">
+                <p className="text-sm text-[#374151] whitespace-pre-wrap">{data.description}</p>
+              </Section>
+            )}
+
             <AuditHistory
               lastEditedBy={data.lastEditedBy}
               lastEditedAt={data.lastEditedAt}
@@ -241,8 +277,17 @@ export default function QuoteViewModal({ open, onClose, onEdit, quoteId = null }
             <div className="flex items-center gap-2.5">
               <button
                 type="button"
+                onClick={handleDownload}
+                disabled={downloading}
+                className="h-10 px-4 rounded-xl border border-[#E5E7EB] text-sm text-[#374151] font-medium hover:bg-[#F9FAFB] transition flex items-center gap-2 disabled:opacity-60 cursor-pointer"
+              >
+                <Download size={14} />
+                {downloading ? "Downloading..." : "Download PDF"}
+              </button>
+              <button
+                type="button"
                 onClick={onClose}
-                className="h-10 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#374151] font-medium hover:bg-[#F9FAFB] transition"
+                className="h-10 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#374151] font-medium hover:bg-[#F9FAFB] transition cursor-pointer"
               >
                 Close
               </button>
@@ -253,7 +298,7 @@ export default function QuoteViewModal({ open, onClose, onEdit, quoteId = null }
                     onClose();
                     onEdit(data);
                   }}
-                  className="h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 active:scale-[0.98] transition text-white text-sm font-semibold flex items-center gap-2 shadow-sm"
+                  className="h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 active:scale-[0.98] transition text-white text-sm font-semibold flex items-center gap-2 shadow-sm cursor-pointer"
                 >
                   <Pencil size={13} />
                   Edit Quote

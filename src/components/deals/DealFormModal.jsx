@@ -526,14 +526,14 @@ export default function DealFormModal({
 
       </div>
 
-      <div className="mt-6 flex justify-end gap-3">
+      <div className="mt-6 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
 
         {onBack && (
           <button
             type="button"
             onClick={onBack}
             disabled={loading}
-            className="h-11 px-5 rounded-xl border border-[#E5E7EB] mr-auto"
+            className="h-11 px-5 rounded-xl border border-[#E5E7EB] sm:mr-auto"
           >
             Back
           </button>
@@ -552,7 +552,7 @@ export default function DealFormModal({
           type="button"
           onClick={submit}
           disabled={loading}
-          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+          className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2"
         >
           {loading && <Spinner size={16} className="text-white" />}
           Save Deal

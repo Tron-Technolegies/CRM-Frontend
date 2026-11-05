@@ -13,12 +13,12 @@ export default function ReportsDealsByStage({ report }) {
   const maxCount = Math.max(...stages.map((s) => s.count), 1);
 
   return (
-    <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6">
-      <h2 className="text-[20px] font-semibold text-[#111827] mb-6">Deals by Stage</h2>
-      <div className="space-y-4">
+    <div className="bg-white border border-[#E5E7EB] rounded-2xl p-4 sm:p-6">
+      <h2 className="text-lg sm:text-[20px] font-semibold text-[#111827] mb-4 sm:mb-6">Deals by Stage</h2>
+      <div className="space-y-3 sm:space-y-4">
         {stages.map((stage) => (
-          <div key={stage.name} className="flex items-center gap-4">
-            <p className="text-sm text-[#111827] w-24 shrink-0">{stage.name}</p>
+          <div key={stage.name} className="flex items-center gap-2 sm:gap-4">
+            <p className="text-xs sm:text-sm text-[#111827] w-20 sm:w-24 shrink-0 font-medium truncate">{stage.name}</p>
             <div className="flex-1 h-3 bg-[#F1F5F9] rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full"
@@ -28,8 +28,8 @@ export default function ReportsDealsByStage({ report }) {
                 }}
               />
             </div>
-            <p className="text-sm text-[#64748B] w-24 text-right shrink-0">
-              {stage.count} <span className="text-[#94A3B8]">({((stage.count / total) * 100).toFixed(1)}%)</span>
+            <p className="text-xs sm:text-sm text-[#64748B] w-20 sm:w-24 text-right shrink-0">
+              {stage.count} <span className="text-[#94A3B8]">({((stage.count / total) * 100).toFixed(0)}%)</span>
             </p>
           </div>
         ))}

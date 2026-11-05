@@ -4,7 +4,6 @@ import Spinner from "../ui/Spinner";
 import { usePicklist } from "../../hooks/usePicklist";
 import { getLeads, getLeadToCustomerPrefill } from "../../api/lead";
 
-
 function validateCustomer(form) {
   const errors = {};
   if (!form.contactName.trim()) errors.contactName = "Contact name is required";
@@ -21,7 +20,6 @@ export default function CustomerFormModal({
     onSubmit,
     loading = false,
     initialData = null,
-
     leadId = null,
     convertMode = false,
     onContinue = null,
@@ -51,7 +49,6 @@ export default function CustomerFormModal({
       .then(setLeads)
       .catch(console.error);
   }, [open, convertMode, initialData]);
-
 
   useEffect(() => {
     if (initialData) {
@@ -150,7 +147,7 @@ export default function CustomerFormModal({
       onClose={closeAndReset}
       maxWidthClassName="max-w-3xl"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
 
         {!initialData && !convertMode && (
           <div className="md:col-span-2">
@@ -262,11 +259,11 @@ export default function CustomerFormModal({
 
       </div>
 
-      <div className="mt-6 pt-6 border-t border-[#EEF2F7] flex items-center justify-end gap-3">
-        <button type="button" onClick={closeAndReset} disabled={loading} className="h-11 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] disabled:opacity-60 cursor-pointer">
+      <div className="mt-6 pt-4 sm:pt-6 border-t border-[#EEF2F7] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
+        <button type="button" onClick={closeAndReset} disabled={loading} className="h-10 sm:h-11 px-5 rounded-xl border border-[#E5E7EB] text-sm text-[#111827] disabled:opacity-60 cursor-pointer">
           Cancel
         </button>
-        <button type="button" onClick={submit} disabled={loading} className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center gap-2 disabled:opacity-60 cursor-pointer">
+        <button type="button" onClick={submit} disabled={loading} className="h-10 sm:h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer">
           {loading && <Spinner size={16} className="text-white" />}
           {convertMode
             ? "Save & Continue"

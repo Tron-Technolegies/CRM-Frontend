@@ -172,7 +172,7 @@ export default function LeadsList({
               </div>
             </div>
 
-            <div className="mt-4 flex items-center gap-3 text-[#64748B]">
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-[#64748B]">
               <button
                 type="button"
                 className="h-10 px-3.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-sm font-medium flex items-center gap-1.5 transition"
